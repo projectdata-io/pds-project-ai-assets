@@ -66,7 +66,7 @@ Run `npm run compile` to create transient Copilot Studio bundles under ignored `
 
 `npm run compile:solutions` additionally uses Power Platform CLI to create local CLI-authored agent workspaces and unmanaged solution ZIP files in ignored `build/` and `dist/` directories. It does not import or deploy them.
 
-The **Build unmanaged solutions** GitHub Actions workflow is the preferred packaging path. It uploads the six ZIP files and SHA-256 checksums as a temporary workflow artifact; solution ZIP files are not stored in source control.
+The **Build unmanaged solutions** GitHub Actions workflow is the preferred packaging path. It versions solutions as `1.0.<github.run_number>.<github.run_attempt>` and uploads the six ZIP files, version metadata, and SHA-256 checksums as a temporary workflow artifact. Pushes to the default branch also create a versioned GitHub Release. Solution ZIP files are not stored in source control.
 
 ## License
 

@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const catalog = JSON.parse(readFileSync(join(rootPath, "catalog.json"), "utf8"));
 const publisherPrefix = process.env.PDS_POWER_PLATFORM_PUBLISHER_PREFIX ?? "pds";
+const solutionVersion = process.env.PDS_POWER_PLATFORM_SOLUTION_VERSION ?? "1.0.0.1";
 const buildRoot = join(rootPath, "build", "power-platform");
 const outputRoot = join(rootPath, "dist", "solutions");
 const pacCommand = process.env.PAC_CLI_PATH ?? "pac";
@@ -37,6 +38,9 @@ function runPac(args) {
 
 if (!/^[A-Za-z][A-Za-z0-9]{1,7}$/.test(publisherPrefix) || publisherPrefix.toLowerCase().startsWith("mscrm")) {
   throw new Error("PDS_POWER_PLATFORM_PUBLISHER_PREFIX must be 2-8 alphanumeric characters, start with a letter, and not start with mscrm");
+}
+if (!/^\d+\.\d+\.\d+\.\d+$/.test(solutionVersion)) {
+  throw new Error("PDS_POWER_PLATFORM_SOLUTION_VERSION must contain four numeric parts, for example 1.0.123.2");
 }
 
 runPac(["help"]);
@@ -100,7 +104,40 @@ for (const agent of catalog.agents) {
     "--output-path",
     outputRoot
   ]);
-  solutionPaths.push(join(outputRoot, `${solutionName}.zip`));
+  const solutionPath = join(outputRoot, `${solutionName}.zip`);
+  const unpackedSolutionPath = join(buildRoot, "unpacked-solutions", agent.name);
+  runPac([
+    "solution",
+    "unpack",
+    "--zipfile",
+    solutionPath,
+    "--folder",
+    unpackedSolutionPath,
+    "--packagetype",
+    "Unmanaged"
+  ]);
+
+  const solutionXmlPath = join(unpackedSolutionPath, "Other", "Solution.xml");
+  const solutionXml = readFileSync(solutionXmlPath, "utf8");
+  if (!/<Version>[^<]+<\/Version>/.test(solutionXml)) {
+    throw new Error(`Unpacked solution ${solutionName} does not contain a Version element`);
+  }
+  writeFileSync(
+    solutionXmlPath,
+    solutionXml.replace(/<Version>[^<]+<\/Version>/, `<Version>${solutionVersion}</Version>`),
+    "utf8"
+  );
+  runPac([
+    "solution",
+    "pack",
+    "--zipfile",
+    solutionPath,
+    "--folder",
+    unpackedSolutionPath,
+    "--packagetype",
+    "Unmanaged"
+  ]);
+  solutionPaths.push(solutionPath);
 }
 
 for (const solutionPath of solutionPaths) {
@@ -110,4 +147,4 @@ for (const solutionPath of solutionPaths) {
 }
 
 console.log(`Generated ${catalog.agents.length} CLI-authored workspaces in ${buildRoot}`);
-console.log(`Packed ${solutionPaths.length} unmanaged solution ZIP files in ${outputRoot}`);
+console.log(`Packed ${solutionPaths.length} unmanaged solution ZIP files at version ${solutionVersion} in ${outputRoot}`);

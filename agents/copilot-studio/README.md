@@ -24,10 +24,12 @@ The workflow:
 
 1. Installs the pinned Power Platform CLI version.
 2. Validates source and generated assets.
-3. Builds all six CLI-authored workspaces and unmanaged solution ZIP files.
-4. Verifies that every solution contains `Managed=0`.
-5. Creates `SHA256SUMS.txt`.
-6. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
+3. Sets solution version `1.0.<github.run_number>.<github.run_attempt>`.
+4. Builds all six CLI-authored workspaces and unmanaged solution ZIP files.
+5. Verifies that every solution contains `Managed=0` and the expected version.
+6. Creates `SHA256SUMS.txt` and `VERSION.txt`.
+7. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
+8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing all six ZIPs, checksums, and version metadata.
 
 Download the artifact from the workflow run's **Artifacts** section. Solution ZIP files are never committed to the repository.
 
@@ -70,6 +72,13 @@ npm run compile:solutions
 ```
 
 The prefix must contain 2-8 alphanumeric characters, start with a letter, and not start with `mscrm`.
+
+Local builds default to solution version `1.0.0.1`. Override it with a four-part numeric version:
+
+```powershell
+$env:PDS_POWER_PLATFORM_SOLUTION_VERSION = '1.0.123.2'
+npm run compile:solutions
+```
 
 ## 1. Choose an Agent Bundle
 
