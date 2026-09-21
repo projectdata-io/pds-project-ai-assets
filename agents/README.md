@@ -13,6 +13,8 @@ Each package under `copilot-studio/` contains:
 
 These files intentionally do not contain tenant, environment, connection, deployment, or authentication values.
 
+The `skills` arrays in `agent.json` are repository routing metadata. They are not Copilot Studio native skill components.
+
 | Package | Access |
 | --- | --- |
 | `project-manager-assistant` | Read-only |
@@ -51,4 +53,4 @@ See [Apply Generated Assets in Copilot Studio](copilot-studio/README.md) for the
 7. Require end-user confirmation for `commit_edit_draft` and any externally visible write.
 8. Test the agent with the matching cases in `examples/evaluations.json` before publishing.
 
-The generated files are portable authoring assets, not a Copilot Studio solution ZIP or an automatically importable agent package.
+The compiled workflow files are portable authoring assets. Solution ZIPs are built from the canonical exported seed and include native MCP workflow tools plus the PDS Project AI custom connector and agent binding.

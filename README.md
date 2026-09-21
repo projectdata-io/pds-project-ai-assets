@@ -15,7 +15,9 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 
 This repository's top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
 
-## Available skills
+## Available workflow specifications
+
+These `SKILL.md` files are reusable workflow specifications. Copilot Studio agents using the standard harness do not import them as native skills, topics, or tools.
 
 | Skill | Purpose |
 | --- | --- |
@@ -64,7 +66,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
 
 Run `npm run compile` to create transient Copilot Studio bundles under ignored `build/copilot-studio/`. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and compiled bundle consistency. Pull requests and pushes to `main` run the same validation in GitHub Actions.
 
-`npm run compile:solutions` additionally uses Power Platform CLI to create local CLI-authored agent workspaces and unmanaged solution ZIP files in ignored `build/` and `dist/` directories. It does not import or deploy them.
+`npm run compile:solutions` clones the audited canonical Power Platform seed under `seeds/power-platform/`, injects each agent's instructions, adds one native MCP TaskDialog per mapped workflow, preserves the PDS Project AI MCP custom connector and connection-reference binding, and writes unmanaged solution ZIP files to ignored `dist/solutions/`. The command does not import or deploy them.
 
 The **Build unmanaged solutions** GitHub Actions workflow is the preferred packaging path. It versions solutions as `1.0.<github.run_number>.<github.run_attempt>` and uploads the six ZIP files, version metadata, and SHA-256 checksums as a temporary workflow artifact. Pushes to the default branch also create a versioned GitHub Release. Solution ZIP files are not stored in source control.
 

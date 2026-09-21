@@ -1,8 +1,8 @@
 # Apply Generated Assets in Copilot Studio
 
-The compiled directories are portable authoring bundles. Use `npm run compile:solutions` to turn their agent instructions into CLI-authored Copilot Studio workspaces and unmanaged Microsoft Power Platform solution ZIP files.
+The compiled directories are portable authoring bundles. Use `npm run compile:solutions` to combine them with the canonical exported seed and produce native MCP-enabled Copilot Studio agents in unmanaged Microsoft Power Platform solution ZIP files.
 
-The packaged agents include their generated main instructions. MCP connections, authentication, and the Markdown workflow specifications under `topics/` still require environment-specific configuration after import.
+The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions, the PDS Project AI MCP custom connector, its agent connection-reference binding, the generic MCP tool, and one native MCP TaskDialog for every mapped workflow. The repository `SKILL.md` files remain source specifications; their compiled TaskDialogs appear as tools in Copilot Studio.
 
 ## Prerequisites
 
@@ -18,14 +18,14 @@ The packaged agents include their generated main instructions. MCP connections, 
 
 The preferred build path is the **Build unmanaged solutions** workflow in `.github/workflows/build-solutions.yml`.
 
-It runs for pull requests and pushes to `main`, and it can also be started manually with **Actions → Build unmanaged solutions → Run workflow**. A manual run can override the default `pds` publisher prefix.
+It runs for pull requests and pushes to `main`, and it can also be started manually with **Actions → Build unmanaged solutions → Run workflow**. The publisher prefix is fixed to `pds` because the exported MCP connector and connection-reference components use that identity.
 
 The workflow:
 
 1. Installs the pinned Power Platform CLI version.
 2. Validates source and generated assets.
 3. Sets solution version `1.0.<github.run_number>.<github.run_attempt>`.
-4. Builds all six CLI-authored workspaces and unmanaged solution ZIP files.
+4. Builds all six seed-based native MCP agent workspaces and unmanaged solution ZIP files.
 5. Verifies that every solution contains `Managed=0` and the expected version.
 6. Creates `SHA256SUMS.txt` and `VERSION.txt`.
 7. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
@@ -44,8 +44,9 @@ npm run compile:solutions
 This local-only command:
 
 1. Regenerates the portable Copilot Studio bundles.
-2. Runs `pac copilot init` without an environment to create six CLI-authored workspaces under `build/power-platform/`.
-3. Runs `pac copilot pack` to create six unmanaged solution ZIP files under `dist/solutions/`.
+2. Clones the audited exported seed into six native agent workspaces under `build/power-platform/`.
+3. Replaces seed identity and instructions, then adds one native MCP TaskDialog per mapped workflow.
+4. Packages six unmanaged solution ZIP files under `dist/solutions/` and validates them with PAC.
 
 The default output files are:
 
@@ -57,21 +58,6 @@ The default output files are:
 - `PDSProjectPlanEditor.zip`
 
 The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts and must not be committed.
-
-Set a different publisher prefix when needed:
-
-```sh
-PDS_POWER_PLATFORM_PUBLISHER_PREFIX=contoso npm run compile:solutions
-```
-
-On PowerShell:
-
-```powershell
-$env:PDS_POWER_PLATFORM_PUBLISHER_PREFIX = 'contoso'
-npm run compile:solutions
-```
-
-The prefix must contain 2-8 alphanumeric characters, start with a letter, and not start with `mscrm`.
 
 Local builds default to solution version `1.0.0.1`. Override it with a four-part numeric version:
 
@@ -137,6 +123,12 @@ Compare the MCP tools shown in Copilot Studio with the `tools` array in `manifes
 5. Keep confirmation enabled for other externally visible write actions where available.
 
 If individual MCP tools cannot be disabled, rely on OAuth scopes and server-side authorization to enforce the boundary.
+
+### MCP ALM behavior
+
+The canonical seed was exported from a non-production environment after creating the solution-aware MCP custom connector and binding it to a classic Copilot Studio agent. The compiler preserves those exported component IDs and dependency mappings while cloning the agent and adding workflow tools.
+
+After import, create or authorize the connector connection in the target environment. Credentials, OAuth consent, and connection instances aren't stored in the seed or generated ZIPs.
 
 ## 5. Apply Workflow Topics
 

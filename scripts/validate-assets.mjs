@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -260,6 +261,25 @@ if (!evaluations || !Array.isArray(evaluations.cases)) {
     }
     if (agent.access === "read-only" && !evaluation.forbiddenTools.includes("commit_edit_draft")) {
       failures.push(`Read-only evaluation ${evaluation.id} must forbid commit_edit_draft`);
+    }
+  }
+}
+
+const seedMetadata = loadJson("seeds/power-platform/seed.json");
+if (!seedMetadata || typeof seedMetadata.file !== "string" || typeof seedMetadata.sha256 !== "string" || typeof seedMetadata.size !== "number") {
+  failures.push("Canonical Power Platform seed metadata is invalid");
+} else {
+  const seedPath = join(rootPath, "seeds", "power-platform", seedMetadata.file);
+  if (!existsSync(seedPath)) {
+    failures.push(`Canonical Power Platform seed is missing: ${seedMetadata.file}`);
+  } else {
+    const seedBytes = readFileSync(seedPath);
+    const seedHash = createHash("sha256").update(seedBytes).digest("hex");
+    if (seedBytes.length !== seedMetadata.size) {
+      failures.push(`Canonical Power Platform seed size changed: ${seedBytes.length} != ${seedMetadata.size}`);
+    }
+    if (seedHash !== seedMetadata.sha256) {
+      failures.push(`Canonical Power Platform seed SHA-256 changed: ${seedHash}`);
     }
   }
 }

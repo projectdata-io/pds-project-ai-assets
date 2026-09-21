@@ -28,3 +28,5 @@ secrets*.json
 Thumbs.db
 .idea/
 .vscode/
+
+tmp/

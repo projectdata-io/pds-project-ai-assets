@@ -1,0 +1,16 @@
+# Canonical Power Platform Seed
+
+`Agentseed_1_0_0_1.zip` is an audited unmanaged solution exported from a non-production Power Platform environment.
+
+It provides the canonical component structures that can't be invented safely by an offline PAC scaffold:
+
+- Classic Copilot Studio agent and system topics.
+- PDS Project AI MCP custom connector using `mcp-streamable-1.0`.
+- Agent connection reference and connector binding.
+- Known-good native MCP `TaskDialog` invoking `InvokeServer`.
+
+The compiler clones this seed for each catalog agent, replaces seed identity and instructions, and adds one native MCP TaskDialog per mapped workflow. PAC validates every generated solution by unpacking it after packaging.
+
+The seed contains no credentials, tokens, current connection values, tenant IDs, user identities, or customer data. It references the public production MCP endpoint. Connections and OAuth consent must be created in each target environment after import.
+
+Do not edit seed archive components manually. To update the seed, configure and export a replacement unmanaged solution from a non-production environment, audit it for sensitive values, replace the ZIP, and rerun the full build and verification suite.
