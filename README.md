@@ -42,6 +42,12 @@ This repository is also consumed as a submodule by the PDS Project AI product re
 | [`mpp-schedule-editor`](skills/mpp-schedule-editor/SKILL.md) | Stage and validate task, hierarchy, duration, and dependency edits. |
 | [`mpp-resource-editor`](skills/mpp-resource-editor/SKILL.md) | Stage and validate resource and assignment edits. |
 | [`mpp-draft-repair`](skills/mpp-draft-repair/SKILL.md) | Repair structured draft validation issues without committing. |
+| [`mpp-dependency-audit`](skills/mpp-dependency-audit/SKILL.md) | Audit dependency completeness, integrity, cycles, lag, and handoffs. |
+| [`mpp-constraint-review`](skills/mpp-constraint-review/SKILL.md) | Review constraints, deadlines, date restrictions, and schedule exposure. |
+| [`mpp-project-manager-brief`](skills/mpp-project-manager-brief/SKILL.md) | Produce an operational briefing for near-term project delivery. |
+| [`mpp-resource-manager-report`](skills/mpp-resource-manager-report/SKILL.md) | Report staffing demand, availability, assignment load, and decisions. |
+| [`mpp-portfolio-rollup`](skills/mpp-portfolio-rollup/SKILL.md) | Roll up resolved master-project nodes without double-counting. |
+| [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development
 
