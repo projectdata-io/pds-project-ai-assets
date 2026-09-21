@@ -32,6 +32,16 @@ This repository is also consumed as a submodule by the PDS Project AI product re
 | [`mpp-calendar-analysis`](skills/mpp-calendar-analysis/SKILL.md) | Explain working time, exceptions, work weeks, and calendar inheritance. |
 | [`mpp-wbs-analysis`](skills/mpp-wbs-analysis/SKILL.md) | Analyze hierarchy, work packages, rollups, and outline anomalies. |
 | [`mpp-master-project-navigation`](skills/mpp-master-project-navigation/SKILL.md) | Navigate read-only master-project graphs and child project data. |
+| [`mpp-data-quality-audit`](skills/mpp-data-quality-audit/SKILL.md) | Audit identifiers, relationships, dates, hierarchy, and planning completeness. |
+| [`mpp-custom-field-analysis`](skills/mpp-custom-field-analysis/SKILL.md) | Discover and analyze custom fields, aliases, and extended attributes. |
+| [`mpp-lookahead-report`](skills/mpp-lookahead-report/SKILL.md) | Report upcoming work, milestones, handoffs, and near-term resource demand. |
+| [`mpp-plan-comparison`](skills/mpp-plan-comparison/SKILL.md) | Compare two plans while preserving identity and match confidence. |
+| [`mpp-change-impact-report`](skills/mpp-change-impact-report/SKILL.md) | Explain previewed draft effects and validation status before commit. |
+| [`mpp-create-project`](skills/mpp-create-project/SKILL.md) | Create and validate a new project draft from explicit requirements. |
+| [`mpp-progress-editor`](skills/mpp-progress-editor/SKILL.md) | Stage and validate explicit task progress updates. |
+| [`mpp-schedule-editor`](skills/mpp-schedule-editor/SKILL.md) | Stage and validate task, hierarchy, duration, and dependency edits. |
+| [`mpp-resource-editor`](skills/mpp-resource-editor/SKILL.md) | Stage and validate resource and assignment edits. |
+| [`mpp-draft-repair`](skills/mpp-draft-repair/SKILL.md) | Repair structured draft validation issues without committing. |
 
 ## Development
 
