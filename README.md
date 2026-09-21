@@ -24,6 +24,14 @@ This repository is also consumed as a submodule by the PDS Project AI product re
 | [`mpp-resource-capacity`](skills/mpp-resource-capacity/SKILL.md) | Review overallocations, assignment load, availability, and workload concentration. |
 | [`mpp-executive-status-report`](skills/mpp-executive-status-report/SKILL.md) | Produce an evidence-based sponsor or steering status report. |
 | [`mpp-safe-commit`](skills/mpp-safe-commit/SKILL.md) | Stage, preview, validate, confirm, and commit explicitly requested MPP edits. |
+| [`mpp-milestone-review`](skills/mpp-milestone-review/SKILL.md) | Review upcoming, missed, completed, and dependency-exposed milestones. |
+| [`mpp-baseline-variance`](skills/mpp-baseline-variance/SKILL.md) | Compare current schedule, work, and cost values with saved baselines. |
+| [`mpp-earned-value-analysis`](skills/mpp-earned-value-analysis/SKILL.md) | Analyze stored and calculated earned-value performance measures. |
+| [`mpp-progress-audit`](skills/mpp-progress-audit/SKILL.md) | Find contradictory, incomplete, and stale project status data. |
+| [`mpp-cost-review`](skills/mpp-cost-review/SKILL.md) | Review current, actual, remaining, baseline, fixed, and overtime costs. |
+| [`mpp-calendar-analysis`](skills/mpp-calendar-analysis/SKILL.md) | Explain working time, exceptions, work weeks, and calendar inheritance. |
+| [`mpp-wbs-analysis`](skills/mpp-wbs-analysis/SKILL.md) | Analyze hierarchy, work packages, rollups, and outline anomalies. |
+| [`mpp-master-project-navigation`](skills/mpp-master-project-navigation/SKILL.md) | Navigate read-only master-project graphs and child project data. |
 
 ## Development
 
