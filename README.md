@@ -57,12 +57,15 @@ Requirements: Node.js 20 or newer.
 
 ```sh
 npm run compile
+npm run compile:solutions
 npm test
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
 
 Run `npm run compile` after changing the catalog, an agent package, or a mapped skill. Commit the generated output with its sources. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and whether generated bundles are current. Pull requests and pushes to `main` run the same validation in GitHub Actions.
+
+`npm run compile:solutions` additionally uses Power Platform CLI to create local CLI-authored agent workspaces and unmanaged solution ZIP files in ignored `build/` and `dist/` directories. It does not import or deploy them.
 
 ## License
 

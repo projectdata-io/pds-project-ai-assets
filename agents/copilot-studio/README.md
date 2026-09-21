@@ -1,6 +1,8 @@
 # Apply Generated Assets in Copilot Studio
 
-The generated directories are portable authoring bundles. They are not Microsoft Power Platform solution ZIP files and cannot be imported as complete Copilot Studio agents automatically.
+The generated directories are portable authoring bundles. Use `npm run compile:solutions` to turn their agent instructions into CLI-authored Copilot Studio workspaces and unmanaged Microsoft Power Platform solution ZIP files.
+
+The packaged agents include their generated main instructions. MCP connections, authentication, and the Markdown workflow specifications under `topics/` still require environment-specific configuration after import.
 
 ## Prerequisites
 
@@ -8,6 +10,47 @@ The generated directories are portable authoring bundles. They are not Microsoft
 - A deployed PDS Project AI MCP endpoint.
 - An OAuth connection authorized for `Session.ReadOnly` or `Session.ReadWrite`, according to the selected agent.
 - Generated bundles produced with `npm run compile`.
+- Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, when building solution ZIP files.
+
+## Build Unmanaged Solution ZIP Files
+
+Run:
+
+```sh
+npm run compile:solutions
+```
+
+This local-only command:
+
+1. Regenerates the portable Copilot Studio bundles.
+2. Runs `pac copilot init` without an environment to create six CLI-authored workspaces under `build/power-platform/`.
+3. Runs `pac copilot pack` to create six unmanaged solution ZIP files under `dist/solutions/`.
+
+The default output files are:
+
+- `PDSProjectManagerAssistant.zip`
+- `PDSScheduleQualityAnalyst.zip`
+- `PDSResourceManager.zip`
+- `PDSPortfolioExecutiveAnalyst.zip`
+- `PDSMppDataAuditor.zip`
+- `PDSProjectPlanEditor.zip`
+
+The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts.
+
+Set a different publisher prefix when needed:
+
+```sh
+PDS_POWER_PLATFORM_PUBLISHER_PREFIX=contoso npm run compile:solutions
+```
+
+On PowerShell:
+
+```powershell
+$env:PDS_POWER_PLATFORM_PUBLISHER_PREFIX = 'contoso'
+npm run compile:solutions
+```
+
+The prefix must contain 2-8 alphanumeric characters, start with a letter, and not start with `mscrm`.
 
 ## 1. Choose an Agent Bundle
 
