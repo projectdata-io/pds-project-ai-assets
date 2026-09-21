@@ -8,7 +8,7 @@
     "compile": "node scripts/compile-copilot-studio.mjs",
     "compile:solutions": "npm run compile && node scripts/compile-power-platform-solutions.mjs",
     "check:generated": "node scripts/compile-copilot-studio.mjs --check",
-    "test": "node scripts/validate-assets.mjs && npm run check:generated"
+    "test": "node scripts/validate-assets.mjs && npm run compile && npm run check:generated"
   },
   "engines": {
     "node": ">=20"

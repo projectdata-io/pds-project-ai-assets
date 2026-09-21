@@ -1,0 +1,92 @@
+name: Build unmanaged solutions
+
+on:
+  workflow_dispatch:
+    inputs:
+      publisher_prefix:
+        description: Power Platform publisher prefix
+        required: true
+        default: pds
+        type: string
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  PDS_POWER_PLATFORM_PUBLISHER_PREFIX: ${{ inputs.publisher_prefix || 'pds' }}
+
+jobs:
+  build-solutions:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install Power Platform CLI
+        shell: pwsh
+        run: |
+          dotnet tool install --global Microsoft.PowerApps.CLI.Tool --version 2.12.1
+          pac
+
+      - name: Validate source assets
+        run: npm test
+
+      - name: Build unmanaged solution ZIPs
+        run: npm run compile:solutions
+
+      - name: Verify unmanaged packages and create checksums
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $solutionFiles = @(Get-ChildItem -LiteralPath 'dist/solutions' -Filter '*.zip' -File)
+          if ($solutionFiles.Count -ne 6) {
+            throw "Expected 6 solution ZIP files, found $($solutionFiles.Count)."
+          }
+
+          foreach ($solutionFile in $solutionFiles) {
+            $archive = [System.IO.Compression.ZipFile]::OpenRead($solutionFile.FullName)
+            try {
+              $solutionEntry = $archive.Entries | Where-Object { $_.FullName -eq 'solution.xml' } | Select-Object -First 1
+              if (-not $solutionEntry) {
+                throw "$($solutionFile.Name) does not contain solution.xml."
+              }
+              $reader = [System.IO.StreamReader]::new($solutionEntry.Open())
+              try {
+                $solutionXml = $reader.ReadToEnd()
+              } finally {
+                $reader.Dispose()
+              }
+              if ($solutionXml -notmatch '<Managed>0</Managed>') {
+                throw "$($solutionFile.Name) is not an unmanaged solution."
+              }
+            } finally {
+              $archive.Dispose()
+            }
+          }
+
+          $checksumLines = $solutionFiles |
+            Sort-Object Name |
+            ForEach-Object {
+              $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              "$hash  $($_.Name)"
+            }
+          $checksumLines | Set-Content -LiteralPath 'dist/solutions/SHA256SUMS.txt' -Encoding ascii
+
+      - name: Upload unmanaged solutions
+        uses: actions/upload-artifact@v4
+        with:
+          name: pds-project-ai-unmanaged-solutions
+          path: dist/solutions/
+          if-no-files-found: error
+          retention-days: 14

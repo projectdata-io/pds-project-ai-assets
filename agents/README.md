@@ -30,15 +30,15 @@ Run:
 npm run compile
 ```
 
-Each directory under `generated/copilot-studio/` contains:
+Each directory under ignored `build/copilot-studio/` contains:
 
 - `instructions.md`: the base agent instructions plus a concise workflow routing catalog.
 - `manifest.json`: the agent metadata, access level, exact MCP tool allowlist, and topic inventory.
 - `topics/*.md`: condensed, copy-ready authoring instructions derived from mapped skills.
 
-Generated files are deterministic and committed to the repository. Run `npm run check:generated` to detect stale or manually edited output.
+Compiled files are deterministic transient build outputs and are not committed. Run `npm run compile` before inspecting them; `npm test` compiles and validates them automatically.
 
-See the generated [Copilot Studio application guide](../generated/copilot-studio/README.md) for the complete setup, permission, topic-authoring, testing, and publishing procedure.
+See [Apply Generated Assets in Copilot Studio](copilot-studio/README.md) for the complete setup, permission, topic-authoring, testing, and publishing procedure.
 
 ## Apply a bundle in Copilot Studio
 

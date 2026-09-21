@@ -48,7 +48,7 @@ const solutionPaths = [];
 
 for (const agent of catalog.agents) {
   const metadata = JSON.parse(readFileSync(join(rootPath, agent.path, "agent.json"), "utf8"));
-  const instructionsPath = join(rootPath, "generated", "copilot-studio", agent.name, "instructions.md");
+  const instructionsPath = join(rootPath, "build", "copilot-studio", agent.name, "instructions.md");
   if (!existsSync(instructionsPath)) {
     throw new Error(`Missing generated instructions for ${agent.name}; run npm run compile first`);
   }

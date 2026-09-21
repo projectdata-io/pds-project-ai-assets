@@ -1,6 +1,6 @@
 # Apply Generated Assets in Copilot Studio
 
-The generated directories are portable authoring bundles. Use `npm run compile:solutions` to turn their agent instructions into CLI-authored Copilot Studio workspaces and unmanaged Microsoft Power Platform solution ZIP files.
+The compiled directories are portable authoring bundles. Use `npm run compile:solutions` to turn their agent instructions into CLI-authored Copilot Studio workspaces and unmanaged Microsoft Power Platform solution ZIP files.
 
 The packaged agents include their generated main instructions. MCP connections, authentication, and the Markdown workflow specifications under `topics/` still require environment-specific configuration after import.
 
@@ -9,10 +9,29 @@ The packaged agents include their generated main instructions. MCP connections, 
 - Access to Microsoft Copilot Studio and permission to create agents and connections.
 - A deployed PDS Project AI MCP endpoint.
 - An OAuth connection authorized for `Session.ReadOnly` or `Session.ReadWrite`, according to the selected agent.
-- Generated bundles produced with `npm run compile`.
+- Compiled bundles produced with `npm run compile` under ignored `build/copilot-studio/`.
 - Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, when building solution ZIP files.
 
 ## Build Unmanaged Solution ZIP Files
+
+### GitHub Actions
+
+The preferred build path is the **Build unmanaged solutions** workflow in `.github/workflows/build-solutions.yml`.
+
+It runs for pull requests and pushes to `main`, and it can also be started manually with **Actions → Build unmanaged solutions → Run workflow**. A manual run can override the default `pds` publisher prefix.
+
+The workflow:
+
+1. Installs the pinned Power Platform CLI version.
+2. Validates source and generated assets.
+3. Builds all six CLI-authored workspaces and unmanaged solution ZIP files.
+4. Verifies that every solution contains `Managed=0`.
+5. Creates `SHA256SUMS.txt`.
+6. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
+
+Download the artifact from the workflow run's **Artifacts** section. Solution ZIP files are never committed to the repository.
+
+### Local build
 
 Run:
 
@@ -35,7 +54,7 @@ The default output files are:
 - `PDSMppDataAuditor.zip`
 - `PDSProjectPlanEditor.zip`
 
-The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts.
+The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts and must not be committed.
 
 Set a different publisher prefix when needed:
 
@@ -54,7 +73,7 @@ The prefix must contain 2-8 alphanumeric characters, start with a letter, and no
 
 ## 1. Choose an Agent Bundle
 
-Open one directory under `generated/copilot-studio/`:
+Open one directory under `build/copilot-studio/`:
 
 - `project-manager-assistant`: operational delivery reporting.
 - `schedule-quality-analyst`: schedule assurance and data-quality analysis.
@@ -157,8 +176,8 @@ Also test invalid files, expired sessions, incomplete pagination, unavailable ch
 
 1. Publish the agent only after its evaluation cases pass.
 2. After changing a source skill, catalog entry, or base agent instruction, run `npm run compile`.
-3. Review and commit both the source changes and generated bundle changes.
-4. Run `npm test`; CI rejects stale generated files and invalid access mappings.
+3. Review and commit only the canonical source changes; compiled bundles remain ignored.
+4. Run `npm test`; CI recompiles bundles and rejects invalid access mappings.
 5. Reapply changed generated instructions or topics in Copilot Studio and retest before republishing.
 
 Never store tenant IDs, client secrets, connection values, private endpoints, or customer MPP data in these bundles.

@@ -12,7 +12,6 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 - `templates/`: starting points for new assets.
 - `scripts/`: repository validation utilities.
 - `catalog.json`: machine-readable skill, tool, access, and agent mappings.
-- `generated/copilot-studio/`: deterministic, copy-ready agent bundles produced from the catalog and source assets.
 
 This repository's top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
 
@@ -63,9 +62,11 @@ npm test
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
 
-Run `npm run compile` after changing the catalog, an agent package, or a mapped skill. Commit the generated output with its sources. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and whether generated bundles are current. Pull requests and pushes to `main` run the same validation in GitHub Actions.
+Run `npm run compile` to create transient Copilot Studio bundles under ignored `build/copilot-studio/`. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and compiled bundle consistency. Pull requests and pushes to `main` run the same validation in GitHub Actions.
 
 `npm run compile:solutions` additionally uses Power Platform CLI to create local CLI-authored agent workspaces and unmanaged solution ZIP files in ignored `build/` and `dist/` directories. It does not import or deploy them.
+
+The **Build unmanaged solutions** GitHub Actions workflow is the preferred packaging path. It uploads the six ZIP files and SHA-256 checksums as a temporary workflow artifact; solution ZIP files are not stored in source control.
 
 ## License
 
