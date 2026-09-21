@@ -58,6 +58,7 @@ Requirements: Node.js 20 or newer.
 
 ```sh
 npm run compile
+npm run compile:agent-flows
 npm run compile:solutions
 npm test
 ```
@@ -66,9 +67,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
 
 Run `npm run compile` to create transient Copilot Studio bundles under ignored `build/copilot-studio/`. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and compiled bundle consistency. Pull requests and pushes to `main` run the same validation in GitHub Actions.
 
-`npm run compile:solutions` clones the audited canonical Power Platform seed under `seeds/power-platform/`, injects each agent's instructions, adds one native MCP TaskDialog per mapped workflow, preserves the PDS Project AI MCP custom connector and connection-reference binding, and writes unmanaged solution ZIP files to ignored `dist/solutions/`. The command does not import or deploy them.
+`npm run compile:solutions` builds offline unmanaged solution ZIPs for catalog agents targeted as **Standard Agent**. `npm run compile:agent-flows` builds complete `BotDefinition` YAML templates for catalog agents targeted as **Agent flow**, with mapped `SKILL.md` files represented as native `InlineAgentSkill` components.
 
-The **Build unmanaged solutions** GitHub Actions workflow is the preferred packaging path. It versions solutions as `1.0.<github.run_number>.<github.run_attempt>` and uploads the six ZIP files, version metadata, and SHA-256 checksums as a temporary workflow artifact. Pushes to the default branch also create a versioned GitHub Release. Solution ZIP files are not stored in source control.
+The **Build agent assets** GitHub Actions workflow is the preferred packaging path. It versions Standard Agent solutions as `1.0.<github.run_number>.<github.run_attempt>`, uploads Standard Agent ZIPs and Agent flow templates as temporary artifacts, and creates a versioned GitHub Release on default-branch pushes. Build outputs are not stored in source control.
 
 ## License
 

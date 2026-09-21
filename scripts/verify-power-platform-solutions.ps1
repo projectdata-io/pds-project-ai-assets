@@ -11,16 +11,18 @@ if ([string]::IsNullOrWhiteSpace($ExpectedVersion)) {
 }
 
 $catalog = Get-Content -LiteralPath 'catalog.json' -Raw | ConvertFrom-Json
+$agents = @($catalog.agents | Where-Object { $_.authoringTargets -contains 'standard-agent' })
 $solutionFiles = @(Get-ChildItem -LiteralPath $SolutionDirectory -Filter '*.zip' -File)
-if ($solutionFiles.Count -ne $catalog.agents.Count) {
-  throw "Expected $($catalog.agents.Count) solution ZIP files, found $($solutionFiles.Count)."
+if ($solutionFiles.Count -ne $agents.Count) {
+  throw "Expected $($agents.Count) Standard Agent solution ZIP files, found $($solutionFiles.Count)."
 }
 
-foreach ($agent in $catalog.agents) {
+foreach ($agent in $agents) {
   $metadata = Get-Content -LiteralPath (Join-Path $agent.path 'agent.json') -Raw | ConvertFrom-Json
-  $pascalName = (($agent.name -split '-') | ForEach-Object {
+  $basePascalName = (($agent.name -split '-') | ForEach-Object {
     $_.Substring(0, 1).ToUpperInvariant() + $_.Substring(1)
   }) -join ''
+  $pascalName = "${basePascalName}Standard"
   $agentSchema = "pds_$pascalName"
   $solutionPath = Join-Path $SolutionDirectory "PDS$pascalName.zip"
   if (-not (Test-Path -LiteralPath $solutionPath)) {

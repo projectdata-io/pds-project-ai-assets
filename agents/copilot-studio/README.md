@@ -1,6 +1,9 @@
 # Apply Generated Assets in Copilot Studio
 
-The compiled directories are portable authoring bundles. Use `npm run compile:solutions` to combine them with the canonical exported seed and produce native MCP-enabled Copilot Studio agents in unmanaged Microsoft Power Platform solution ZIP files.
+The repository supports both Copilot Studio authoring products:
+
+- **Standard Agent:** rule-based conversational agents with predefined topics and flows. These compile to offline unmanaged solution ZIP files.
+- **Agent flow:** skill-oriented agents for complex actions and human-facing interaction. These compile to `BotDefinition` YAML templates containing native inline skills and an MCP tool.
 
 The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions, the PDS Project AI MCP custom connector, its agent connection-reference binding, the generic MCP tool, and one native MCP TaskDialog for every mapped workflow. The repository `SKILL.md` files remain source specifications; their compiled TaskDialogs appear as tools in Copilot Studio.
 
@@ -12,28 +15,41 @@ The packaged agents are cloned from the audited canonical unmanaged seed in `see
 - Compiled bundles produced with `npm run compile` under ignored `build/copilot-studio/`.
 - Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, when building solution ZIP files.
 
-## Build Unmanaged Solution ZIP Files
+## Agent Target Matrix
+
+| Agent | Standard Agent | Agent flow |
+| --- | --- | --- |
+| Project Manager Assistant | Yes | Yes |
+| Schedule Quality Analyst | Yes | Yes |
+| Resource Manager | No | Yes |
+| Portfolio and Executive Analyst | Yes | Yes |
+| Project Plan Editor | No | Yes |
+| MPP Data Auditor | Yes | Yes |
+
+The catalog's `authoringTargets` field is authoritative for compilers and CI.
+
+## Build Agent Assets
 
 ### GitHub Actions
 
-The preferred build path is the **Build unmanaged solutions** workflow in `.github/workflows/build-solutions.yml`.
+The preferred build path is the **Build agent assets** workflow in `.github/workflows/build-solutions.yml`.
 
-It runs for pull requests and pushes to `main`, and it can also be started manually with **Actions → Build unmanaged solutions → Run workflow**. The publisher prefix is fixed to `pds` because the exported MCP connector and connection-reference components use that identity.
+It runs for pull requests and pushes to `main`, and it can also be started manually with **Actions → Build agent assets → Run workflow**. The publisher prefix is fixed to `pds` because the exported MCP connector and connection-reference components use that identity.
 
 The workflow:
 
 1. Installs the pinned Power Platform CLI version.
 2. Validates source and generated assets.
 3. Sets solution version `1.0.<github.run_number>.<github.run_attempt>`.
-4. Builds all six seed-based native MCP agent workspaces and unmanaged solution ZIP files.
+4. Builds four Standard Agent unmanaged solution ZIP files and six Agent flow templates.
 5. Verifies that every solution contains `Managed=0` and the expected version.
 6. Creates `SHA256SUMS.txt` and `VERSION.txt`.
 7. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
-8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing all six ZIPs, checksums, and version metadata.
+8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing Standard Agent ZIPs, Agent flow templates, checksums, and version metadata.
 
 Download the artifact from the workflow run's **Artifacts** section. Solution ZIP files are never committed to the repository.
 
-### Local build
+### Standard Agent local build
 
 Run:
 
@@ -44,18 +60,16 @@ npm run compile:solutions
 This local-only command:
 
 1. Regenerates the portable Copilot Studio bundles.
-2. Clones the audited exported seed into six native agent workspaces under `build/power-platform/`.
+2. Clones the audited exported seed into Standard Agent workspaces under `build/power-platform/`.
 3. Replaces seed identity and instructions, then adds one native MCP TaskDialog per mapped workflow.
-4. Packages six unmanaged solution ZIP files under `dist/solutions/` and validates them with PAC.
+4. Packages four unmanaged solution ZIP files under `dist/solutions/` and validates them with PAC.
 
 The default output files are:
 
-- `PDSProjectManagerAssistant.zip`
-- `PDSScheduleQualityAnalyst.zip`
-- `PDSResourceManager.zip`
-- `PDSPortfolioExecutiveAnalyst.zip`
-- `PDSMppDataAuditor.zip`
-- `PDSProjectPlanEditor.zip`
+- `PDSProjectManagerAssistantStandard.zip`
+- `PDSScheduleQualityAnalystStandard.zip`
+- `PDSPortfolioExecutiveAnalystStandard.zip`
+- `PDSMppDataAuditorStandard.zip`
 
 The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts and must not be committed.
 
@@ -126,9 +140,46 @@ If individual MCP tools cannot be disabled, rely on OAuth scopes and server-side
 
 ### MCP ALM behavior
 
-The canonical seed was exported from a non-production environment after creating the solution-aware MCP custom connector and binding it to a classic Copilot Studio agent. The compiler preserves those exported component IDs and dependency mappings while cloning the agent and adding workflow tools.
+The canonical seed was exported from a non-production environment after creating the solution-aware MCP custom connector and binding it to a Standard Agent. The compiler preserves those exported component IDs and dependency mappings while cloning the agent and adding workflow tools.
 
 After import, create or authorize the connector connection in the target environment. Credentials, OAuth consent, and connection instances aren't stored in the seed or generated ZIPs.
+
+## Agent flow templates
+
+Agent flows use PAC's internal `cli-copilot` authoring model. A normal unmanaged solution export can omit their inline skills and MCP tool binding, so the compiler emits complete `BotDefinition` YAML templates instead.
+
+The extracted template includes the portable authoring model required to recreate the agent:
+
+- `DialogComponent` with `dialog.kind: McpTool` for the PDS Project AI MCP server.
+- `DialogComponent` with `dialog.kind: InlineAgentSkill` for each coding-agent skill.
+- `connectionReferences` and `connectorDefinitions` used by the MCP tool.
+- `entity.configuration.authoringModel: CliCopilot` and the agent instruction segments.
+
+Generate templates locally:
+
+```sh
+npm run compile:agent-flows
+npm run verify:agent-flows
+```
+
+Templates are written to ignored `build/agent-flow-templates/`. Each contains sanitized generated IDs, one native `McpTool`, and all mapped `SKILL.md` files as `InlineAgentSkill` components. Connection and custom-connector IDs remain deployment placeholders.
+
+To create an Agent flow in a designated non-production environment, set the required deployment values and run the guarded helper:
+
+```powershell
+$env:PDS_POWER_PLATFORM_ENVIRONMENT = 'https://your-dev-environment.crm.dynamics.com'
+$env:PDS_POWER_PLATFORM_AGENT_FLOW_SOLUTION = 'PDSGeneratedAgents'
+$env:PDS_AGENT_FLOW_CONNECTION_ID = '<target-environment-connection-id>'
+$env:PDS_AGENT_FLOW_CUSTOM_CONNECTOR_ID = '<target-environment-custom-connector-id>'
+
+npm run deploy:agent-flows -- --confirm --agent mpp-data-auditor
+```
+
+After creation, export the unmanaged solution with `pac solution export`. This workflow requires authentication and mutates the selected development environment; unlike `pac copilot pack`, it isn't an offline build.
+
+Omit `--agent` to create every catalog Agent flow. This command mutates the target environment and refuses to run without `--confirm`.
+
+Raw extracted templates can contain environment-specific IDs, audit identities, synchronization data, and concrete connection IDs. They remain ignored. Generated templates remove those fields and require target-environment connector values at deployment time.
 
 ## 5. Apply Workflow Topics
 

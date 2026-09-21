@@ -6,9 +6,13 @@
   "type": "module",
   "scripts": {
     "compile": "node scripts/compile-copilot-studio.mjs",
+    "compile:agent-flows": "node scripts/compile-agent-flow-templates.mjs",
+    "deploy:agent-flows": "npm run compile:agent-flows && node scripts/deploy-agent-flows.mjs",
     "compile:solutions": "npm run compile && node scripts/compile-power-platform-solutions.mjs",
     "check:generated": "node scripts/compile-copilot-studio.mjs --check",
-    "test": "node scripts/validate-assets.mjs && npm run compile && npm run check:generated"
+    "check:agent-flows": "node scripts/compile-agent-flow-templates.mjs --check",
+    "verify:agent-flows": "node scripts/verify-agent-flow-templates.mjs",
+    "test": "node scripts/validate-assets.mjs && npm run compile && npm run compile:agent-flows && npm run check:generated && npm run check:agent-flows && npm run verify:agent-flows"
   },
   "engines": {
     "node": ">=20"

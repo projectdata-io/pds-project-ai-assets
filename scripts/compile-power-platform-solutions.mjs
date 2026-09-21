@@ -197,8 +197,9 @@ rmSync(outputRoot, { recursive: true, force: true });
 mkdirSync(buildRoot, { recursive: true });
 mkdirSync(outputRoot, { recursive: true });
 const solutionPaths = [];
+const standardAgents = catalog.agents.filter((agent) => agent.authoringTargets.includes("standard-agent"));
 
-for (const agent of catalog.agents) {
+for (const agent of standardAgents) {
   const metadata = JSON.parse(readFileSync(join(rootPath, agent.path, "agent.json"), "utf8"));
   const instructionsPath = join(rootPath, "build", "copilot-studio", agent.name, "instructions.md");
   if (!existsSync(instructionsPath)) {
@@ -206,16 +207,18 @@ for (const agent of catalog.agents) {
   }
 
   const instructions = readFileSync(instructionsPath, "utf8").trim();
-  const pascalName = toPascalCase(agent.name);
+  const basePascalName = toPascalCase(agent.name);
+  const pascalName = `${basePascalName}Standard`;
   const schemaName = `${publisherPrefix}_${pascalName}`;
   const solutionName = `${publisherPrefix.toUpperCase()}${pascalName}`;
+  const displayName = `${metadata.title} (Standard)`;
   const workspacePath = join(buildRoot, agent.name);
   mkdirSync(workspacePath, { recursive: true });
   runCommand("tar", ["-xf", seedPath, "-C", workspacePath]);
 
   replaceTextFiles(workspacePath, [
     ["pds_Agentseed", schemaName],
-    ["Agent seed", metadata.title]
+    ["Agent seed", displayName]
   ]);
   renameSchemaPaths(workspacePath, "pds_Agentseed", schemaName);
 
@@ -237,7 +240,7 @@ for (const agent of catalog.agents) {
   solutionXml = solutionXml
     .replace(/<UniqueName>[^<]+<\/UniqueName>/, `<UniqueName>${solutionName}</UniqueName>`)
     .replace(/<Version>[^<]+<\/Version>/, `<Version>${solutionVersion}</Version>`)
-    .replace(/<LocalizedName description="[^"]*" languagecode="1033"\s*\/>/, `<LocalizedName description="${xmlEscape(metadata.title)}" languagecode="1033" />`);
+    .replace(/<LocalizedName description="[^"]*" languagecode="1033"\s*\/>/, `<LocalizedName description="${xmlEscape(displayName)}" languagecode="1033" />`);
   writeFileSync(solutionXmlPath, solutionXml, "utf8");
 
   const solutionPath = join(outputRoot, `${solutionName}.zip`);
@@ -269,5 +272,5 @@ for (const solutionPath of solutionPaths) {
   }
 }
 
-console.log(`Generated ${catalog.agents.length} seed-based native MCP agent workspaces in ${buildRoot}`);
+console.log(`Generated ${standardAgents.length} Standard Agent workspaces in ${buildRoot}`);
 console.log(`Packed ${solutionPaths.length} unmanaged solution ZIP files at version ${solutionVersion} in ${outputRoot}`);

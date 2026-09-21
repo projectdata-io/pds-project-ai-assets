@@ -36,11 +36,17 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["name", "access", "path"],
+        "required": ["name", "access", "path", "authoringTargets"],
         "properties": {
           "name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "access": { "enum": ["read-only", "commit"] },
-          "path": { "type": "string", "pattern": "^agents/copilot-studio/" }
+          "path": { "type": "string", "pattern": "^agents/copilot-studio/" },
+          "authoringTargets": {
+            "type": "array",
+            "items": { "enum": ["standard-agent", "agent-flow"] },
+            "minItems": 1,
+            "uniqueItems": true
+          }
         },
         "additionalProperties": false
       }

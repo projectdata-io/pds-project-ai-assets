@@ -13,6 +13,7 @@ const prohibitedFileNames = [/^\.env(?:\..+)?$/i, /^credentials.*\.json$/i, /^se
 const skillCategories = new Set(["analysis", "audit", "editing", "portfolio", "reporting"]);
 const skillAccessLevels = new Set(["read-only", "draft-only", "commit"]);
 const agentAccessLevels = new Set(["read-only", "commit"]);
+const authoringTargets = new Set(["standard-agent", "agent-flow"]);
 const prohibitedContent = [
   { pattern: /\b[A-Za-z]:\\(?:Users|Documents and Settings)\\/i, reason: "local Windows path" },
   { pattern: /\/(?:Users|home)\/[^/\s]+\//, reason: "local Unix path" },
@@ -163,7 +164,16 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
   }
 
   for (const agent of catalog.agents) {
-    if (!agent || typeof agent.name !== "string" || !agentAccessLevels.has(agent.access) || typeof agent.path !== "string") {
+    if (
+      !agent ||
+      typeof agent.name !== "string" ||
+      !agentAccessLevels.has(agent.access) ||
+      typeof agent.path !== "string" ||
+      !Array.isArray(agent.authoringTargets) ||
+      agent.authoringTargets.length === 0 ||
+      new Set(agent.authoringTargets).size !== agent.authoringTargets.length ||
+      agent.authoringTargets.some((target) => !authoringTargets.has(target))
+    ) {
       failures.push("Catalog contains an invalid agent entry");
       continue;
     }
