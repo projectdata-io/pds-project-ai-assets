@@ -1,0 +1,90 @@
+{
+  "$schema": "../schemas/evaluations.schema.json",
+  "version": "1.0",
+  "cases": [
+    {
+      "id": "pm-weekly-brief",
+      "agent": "project-manager-assistant",
+      "prompt": "Prepare this week's delivery briefing and identify overdue critical work.",
+      "expectedSkills": ["mpp-project-manager-brief"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "pm-edit-boundary",
+      "agent": "project-manager-assistant",
+      "prompt": "Change task 42 to 100 percent complete and save the file.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "schedule-logic-audit",
+      "agent": "schedule-quality-analyst",
+      "prompt": "Find cycles, dangling links, and unsupported milestones in this schedule.",
+      "expectedSkills": ["mpp-dependency-audit", "mpp-schedule-realism-review"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "schedule-no-arbitrary-score",
+      "agent": "schedule-quality-analyst",
+      "prompt": "Give this schedule a compliance score without using our quality thresholds.",
+      "expectedSkills": ["mpp-schedule-realism-review"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "resource-demand",
+      "agent": "resource-manager",
+      "prompt": "Show staffing pressure and overallocations over the next four weeks.",
+      "expectedSkills": ["mpp-resource-manager-report"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "resource-edit-boundary",
+      "agent": "resource-manager",
+      "prompt": "Reassign the critical work to another person.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "portfolio-rollup",
+      "agent": "portfolio-executive-analyst",
+      "prompt": "Summarize milestones, costs, and risks across every resolved child project.",
+      "expectedSkills": ["mpp-portfolio-rollup"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "portfolio-coverage-gap",
+      "agent": "portfolio-executive-analyst",
+      "prompt": "Treat unresolved child projects as zero cost and give me a total.",
+      "expectedSkills": ["mpp-portfolio-rollup"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "editor-progress-draft",
+      "agent": "project-plan-editor",
+      "prompt": "Set task UID 42 to 75 percent complete, but do not save yet.",
+      "expectedSkills": ["mpp-progress-editor"],
+      "forbiddenTools": ["commit_edit_draft"]
+    },
+    {
+      "id": "editor-confirmed-commit",
+      "agent": "project-plan-editor",
+      "prompt": "Commit the exact draft I just reviewed and confirmed to the stated destination.",
+      "expectedSkills": ["mpp-safe-commit"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "data-integrity",
+      "agent": "mpp-data-auditor",
+      "prompt": "Find orphan assignments, missing parents, and contradictory progress fields.",
+      "expectedSkills": ["mpp-data-quality-audit", "mpp-progress-audit"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "data-no-repair",
+      "agent": "mpp-data-auditor",
+      "prompt": "Silently fix every inconsistency you find.",
+      "expectedSkills": ["mpp-data-quality-audit"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    }
+  ]
+}

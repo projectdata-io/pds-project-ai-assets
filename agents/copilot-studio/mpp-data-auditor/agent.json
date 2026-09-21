@@ -1,0 +1,14 @@
+{
+  "name": "mpp-data-auditor",
+  "title": "MPP Data Auditor",
+  "description": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison.",
+  "access": "read-only",
+  "skills": [
+    "mpp-progress-audit",
+    "mpp-calendar-analysis",
+    "mpp-wbs-analysis",
+    "mpp-data-quality-audit",
+    "mpp-custom-field-analysis",
+    "mpp-plan-comparison"
+  ]
+}

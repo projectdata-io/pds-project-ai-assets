@@ -1,0 +1,226 @@
+{
+  "$schema": "./schemas/catalog.schema.json",
+  "catalogVersion": "1.0",
+  "product": "PDS Project AI",
+  "mcpContractVersion": "1.0",
+  "skills": [
+    {
+      "name": "mpp-project-summary",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["project-manager-assistant"]
+    },
+    {
+      "name": "mpp-schedule-health",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst"]
+    },
+    {
+      "name": "mpp-critical-path-analysis",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst"]
+    },
+    {
+      "name": "mpp-resource-capacity",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_resources", "list_assignments", "list_tasks", "close_session"],
+      "agents": ["resource-manager"]
+    },
+    {
+      "name": "mpp-executive-status-report",
+      "category": "reporting",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-safe-commit",
+      "category": "editing",
+      "access": "commit",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "create_new_project_session", "get_edit_capabilities", "get_project", "list_tasks", "list_resources", "list_assignments", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "close_session"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-milestone-review",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-baseline-variance",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["schedule-quality-analyst", "portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-earned-value-analysis",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-progress-audit",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst", "mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-cost-review",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["resource-manager", "portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-calendar-analysis",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_calendars", "list_tasks", "list_resources", "close_session"],
+      "agents": ["schedule-quality-analyst", "resource-manager", "mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-wbs-analysis",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst", "mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-master-project-navigation",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "get_master_project_graph", "get_master_project_node", "list_master_project_node_entities", "close_session"],
+      "agents": ["portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-data-quality-audit",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "list_calendars", "list_attributes", "close_session"],
+      "agents": ["schedule-quality-analyst", "mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-custom-field-analysis",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_attributes", "list_tasks", "list_resources", "close_session"],
+      "agents": ["mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-lookahead-report",
+      "category": "reporting",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_assignments", "list_resources", "close_session"],
+      "agents": ["project-manager-assistant", "resource-manager"]
+    },
+    {
+      "name": "mpp-plan-comparison",
+      "category": "analysis",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["portfolio-executive-analyst", "mpp-data-auditor"]
+    },
+    {
+      "name": "mpp-change-impact-report",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["get_project", "list_tasks", "list_resources", "list_assignments", "preview_edit_draft", "validate_edit_draft"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-create-project",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "preview_edit_draft", "validate_edit_draft", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-progress-editor",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_edit_capabilities", "list_tasks", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "close_session"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-schedule-editor",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_edit_capabilities", "list_tasks", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "close_session"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-resource-editor",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_edit_capabilities", "list_tasks", "list_resources", "list_assignments", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "close_session"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-draft-repair",
+      "category": "editing",
+      "access": "draft-only",
+      "tools": ["get_edit_capabilities", "get_project", "list_tasks", "list_resources", "list_assignments", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft"],
+      "agents": ["project-plan-editor"]
+    },
+    {
+      "name": "mpp-dependency-audit",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst"]
+    },
+    {
+      "name": "mpp-constraint-review",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_tasks", "close_session"],
+      "agents": ["project-manager-assistant", "schedule-quality-analyst"]
+    },
+    {
+      "name": "mpp-project-manager-brief",
+      "category": "reporting",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["project-manager-assistant"]
+    },
+    {
+      "name": "mpp-resource-manager-report",
+      "category": "reporting",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "list_resources", "list_assignments", "list_calendars", "close_session"],
+      "agents": ["resource-manager"]
+    },
+    {
+      "name": "mpp-portfolio-rollup",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "get_master_project_graph", "get_master_project_node", "list_master_project_node_entities", "close_session"],
+      "agents": ["portfolio-executive-analyst"]
+    },
+    {
+      "name": "mpp-schedule-realism-review",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "list_calendars", "close_session"],
+      "agents": ["schedule-quality-analyst"]
+    }
+  ],
+  "agents": [
+    { "name": "project-manager-assistant", "access": "read-only", "path": "agents/copilot-studio/project-manager-assistant" },
+    { "name": "schedule-quality-analyst", "access": "read-only", "path": "agents/copilot-studio/schedule-quality-analyst" },
+    { "name": "resource-manager", "access": "read-only", "path": "agents/copilot-studio/resource-manager" },
+    { "name": "portfolio-executive-analyst", "access": "read-only", "path": "agents/copilot-studio/portfolio-executive-analyst" },
+    { "name": "project-plan-editor", "access": "commit", "path": "agents/copilot-studio/project-plan-editor" },
+    { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor" }
+  ]
+}

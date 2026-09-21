@@ -11,8 +11,10 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 - `schemas/`: machine-readable schemas for asset metadata and validation.
 - `templates/`: starting points for new assets.
 - `scripts/`: repository validation utilities.
+- `catalog.json`: machine-readable skill, tool, access, and agent mappings.
+- `generated/copilot-studio/`: deterministic, copy-ready agent bundles produced from the catalog and source assets.
 
-This repository is also consumed as a submodule by the PDS Project AI product repository. Its top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
+This repository's top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
 
 ## Available skills
 
@@ -54,10 +56,13 @@ This repository is also consumed as a submodule by the PDS Project AI product re
 Requirements: Node.js 20 or newer.
 
 ```sh
+npm run compile
 npm test
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
+
+Run `npm run compile` after changing the catalog, an agent package, or a mapped skill. Commit the generated output with its sources. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and whether generated bundles are current. Pull requests and pushes to `main` run the same validation in GitHub Actions.
 
 ## License
 

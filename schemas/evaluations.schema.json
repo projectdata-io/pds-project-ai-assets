@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectdata.io/schemas/pds-project-ai-assets/evaluations.schema.json",
+  "title": "PDS Project AI synthetic evaluations",
+  "type": "object",
+  "required": ["version", "cases"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "minLength": 1 },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "agent", "prompt", "expectedSkills", "forbiddenTools"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "agent": { "type": "string" },
+          "prompt": { "type": "string", "minLength": 1 },
+          "expectedSkills": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "forbiddenTools": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

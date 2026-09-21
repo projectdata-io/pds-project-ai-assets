@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projectdata.io/schemas/pds-project-ai-assets/catalog.schema.json",
+  "title": "PDS Project AI asset catalog",
+  "type": "object",
+  "required": ["catalogVersion", "product", "mcpContractVersion", "skills", "agents"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "catalogVersion": { "type": "string", "minLength": 1 },
+    "product": { "type": "string", "minLength": 1 },
+    "mcpContractVersion": { "type": "string", "minLength": 1 },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "category", "access", "tools", "agents"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "category": { "enum": ["analysis", "audit", "editing", "portfolio", "reporting"] },
+          "access": { "enum": ["read-only", "draft-only", "commit"] },
+          "tools": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+            "uniqueItems": true
+          },
+          "agents": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+            "uniqueItems": true
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "access", "path"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "access": { "enum": ["read-only", "commit"] },
+          "path": { "type": "string", "pattern": "^agents/copilot-studio/" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

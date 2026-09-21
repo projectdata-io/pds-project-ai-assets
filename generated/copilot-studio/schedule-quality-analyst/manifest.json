@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "generated": true,
+  "name": "schedule-quality-analyst",
+  "title": "Schedule Quality Analyst",
+  "description": "Read-only schedule assurance agent for logic, critical path, constraints, baselines, progress quality, calendars, WBS, and realism.",
+  "access": "read-only",
+  "instructions": "instructions.md",
+  "tools": [
+    "close_session",
+    "create_session_from_onedrive",
+    "create_session_from_reference",
+    "get_entity_schema",
+    "get_project",
+    "list_assignments",
+    "list_attributes",
+    "list_calendars",
+    "list_resources",
+    "list_tasks"
+  ],
+  "topics": [
+    {
+      "name": "mpp-schedule-health",
+      "file": "topics/mpp-schedule-health.md",
+      "source": "skills/mpp-schedule-health/SKILL.md"
+    },
+    {
+      "name": "mpp-critical-path-analysis",
+      "file": "topics/mpp-critical-path-analysis.md",
+      "source": "skills/mpp-critical-path-analysis/SKILL.md"
+    },
+    {
+      "name": "mpp-baseline-variance",
+      "file": "topics/mpp-baseline-variance.md",
+      "source": "skills/mpp-baseline-variance/SKILL.md"
+    },
+    {
+      "name": "mpp-progress-audit",
+      "file": "topics/mpp-progress-audit.md",
+      "source": "skills/mpp-progress-audit/SKILL.md"
+    },
+    {
+      "name": "mpp-calendar-analysis",
+      "file": "topics/mpp-calendar-analysis.md",
+      "source": "skills/mpp-calendar-analysis/SKILL.md"
+    },
+    {
+      "name": "mpp-wbs-analysis",
+      "file": "topics/mpp-wbs-analysis.md",
+      "source": "skills/mpp-wbs-analysis/SKILL.md"
+    },
+    {
+      "name": "mpp-data-quality-audit",
+      "file": "topics/mpp-data-quality-audit.md",
+      "source": "skills/mpp-data-quality-audit/SKILL.md"
+    },
+    {
+      "name": "mpp-dependency-audit",
+      "file": "topics/mpp-dependency-audit.md",
+      "source": "skills/mpp-dependency-audit/SKILL.md"
+    },
+    {
+      "name": "mpp-constraint-review",
+      "file": "topics/mpp-constraint-review.md",
+      "source": "skills/mpp-constraint-review/SKILL.md"
+    },
+    {
+      "name": "mpp-schedule-realism-review",
+      "file": "topics/mpp-schedule-realism-review.md",
+      "source": "skills/mpp-schedule-realism-review/SKILL.md"
+    }
+  ]
+}

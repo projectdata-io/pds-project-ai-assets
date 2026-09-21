@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "contractVersion": "1.0",
+  "tools": [
+    { "name": "create_session_from_reference", "scope": "Session.ReadOnly" },
+    { "name": "create_session_from_onedrive", "scope": "Session.ReadOnly" },
+    { "name": "init_upload", "scope": "Session.ReadOnly" },
+    { "name": "create_session_from_upload", "scope": "Session.ReadOnly" },
+    { "name": "create_new_project_session", "scope": "Session.ReadOnly" },
+    { "name": "create_session_from_base64", "scope": "Session.ReadOnly" },
+    { "name": "get_schema", "scope": "Session.ReadOnly" },
+    { "name": "get_edit_capabilities", "scope": "Session.ReadOnly" },
+    { "name": "get_entity_schema", "scope": "Session.ReadOnly" },
+    { "name": "get_project", "scope": "Session.ReadOnly" },
+    { "name": "get_master_project_graph", "scope": "Session.ReadOnly" },
+    { "name": "get_master_project_node", "scope": "Session.ReadOnly" },
+    { "name": "list_master_project_node_entities", "scope": "Session.ReadOnly" },
+    { "name": "list_tasks", "scope": "Session.ReadOnly" },
+    { "name": "list_resources", "scope": "Session.ReadOnly" },
+    { "name": "list_assignments", "scope": "Session.ReadOnly" },
+    { "name": "list_calendars", "scope": "Session.ReadOnly" },
+    { "name": "list_attributes", "scope": "Session.ReadOnly" },
+    { "name": "touch_session", "scope": "Session.ReadOnly" },
+    { "name": "create_edit_draft", "scope": "Session.ReadWrite" },
+    { "name": "add_edit_operations", "scope": "Session.ReadWrite" },
+    { "name": "replace_edit_operations", "scope": "Session.ReadWrite" },
+    { "name": "preview_edit_draft", "scope": "Session.ReadOnly" },
+    { "name": "validate_edit_draft", "scope": "Session.ReadWrite" },
+    { "name": "commit_edit_draft", "scope": "Session.ReadWrite" },
+    { "name": "close_session", "scope": "Session.ReadOnly" }
+  ]
+}

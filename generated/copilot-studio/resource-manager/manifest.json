@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0",
+  "generated": true,
+  "name": "resource-manager",
+  "title": "Resource Manager",
+  "description": "Read-only resource planning agent for assignment demand, overallocations, availability, cost, and near-term staffing pressure.",
+  "access": "read-only",
+  "instructions": "instructions.md",
+  "tools": [
+    "close_session",
+    "create_session_from_onedrive",
+    "create_session_from_reference",
+    "get_entity_schema",
+    "get_project",
+    "list_assignments",
+    "list_calendars",
+    "list_resources",
+    "list_tasks"
+  ],
+  "topics": [
+    {
+      "name": "mpp-resource-capacity",
+      "file": "topics/mpp-resource-capacity.md",
+      "source": "skills/mpp-resource-capacity/SKILL.md"
+    },
+    {
+      "name": "mpp-cost-review",
+      "file": "topics/mpp-cost-review.md",
+      "source": "skills/mpp-cost-review/SKILL.md"
+    },
+    {
+      "name": "mpp-calendar-analysis",
+      "file": "topics/mpp-calendar-analysis.md",
+      "source": "skills/mpp-calendar-analysis/SKILL.md"
+    },
+    {
+      "name": "mpp-lookahead-report",
+      "file": "topics/mpp-lookahead-report.md",
+      "source": "skills/mpp-lookahead-report/SKILL.md"
+    },
+    {
+      "name": "mpp-resource-manager-report",
+      "file": "topics/mpp-resource-manager-report.md",
+      "source": "skills/mpp-resource-manager-report/SKILL.md"
+    }
+  ]
+}

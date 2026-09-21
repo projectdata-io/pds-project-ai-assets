@@ -5,7 +5,9 @@
   "description": "Public agent assets for the PDS Project AI MCP server",
   "type": "module",
   "scripts": {
-    "test": "node scripts/validate-assets.mjs"
+    "compile": "node scripts/compile-copilot-studio.mjs",
+    "check:generated": "node scripts/compile-copilot-studio.mjs --check",
+    "test": "node scripts/validate-assets.mjs && npm run check:generated"
   },
   "engines": {
     "node": ">=20"

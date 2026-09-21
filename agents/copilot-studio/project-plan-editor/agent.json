@@ -1,0 +1,15 @@
+{
+  "name": "project-plan-editor",
+  "title": "Project Plan Editor",
+  "description": "Guarded Microsoft Project editing agent that stages, previews, validates, confirms, and commits explicitly requested changes.",
+  "access": "commit",
+  "skills": [
+    "mpp-change-impact-report",
+    "mpp-create-project",
+    "mpp-progress-editor",
+    "mpp-schedule-editor",
+    "mpp-resource-editor",
+    "mpp-draft-repair",
+    "mpp-safe-commit"
+  ]
+}

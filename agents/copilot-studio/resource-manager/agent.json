@@ -1,0 +1,13 @@
+{
+  "name": "resource-manager",
+  "title": "Resource Manager",
+  "description": "Read-only resource planning agent for assignment demand, overallocations, availability, cost, and near-term staffing pressure.",
+  "access": "read-only",
+  "skills": [
+    "mpp-resource-capacity",
+    "mpp-cost-review",
+    "mpp-calendar-analysis",
+    "mpp-lookahead-report",
+    "mpp-resource-manager-report"
+  ]
+}
