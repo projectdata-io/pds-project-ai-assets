@@ -12,6 +12,7 @@ const environment = process.env.PDS_POWER_PLATFORM_ENVIRONMENT;
 const solution = process.env.PDS_POWER_PLATFORM_AGENT_SOLUTION;
 const connectionId = process.env.PDS_AGENT_CONNECTION_ID;
 const customConnectorId = process.env.PDS_AGENT_CUSTOM_CONNECTOR_ID;
+const sharePointConnectionId = process.env.PDS_SHAREPOINT_WORKIQ_CONNECTION_ID;
 const pacCommand = process.env.PAC_CLI_PATH ?? "pac";
 const templateRoot = join(rootPath, "build", "agent-templates");
 const deployRoot = join(rootPath, "build", "agent-deploy");
@@ -61,9 +62,15 @@ for (const agent of agents) {
   if (!existsSync(sourcePath)) {
     throw new Error(`Missing template ${sourcePath}; run npm run compile:agents first`);
   }
-  const materialized = readFileSync(sourcePath, "utf8")
+  let materialized = readFileSync(sourcePath, "utf8")
     .replaceAll("__PDS_CONNECTION_ID__", connectionId)
     .replaceAll("__PDS_CUSTOM_CONNECTOR_ID__", customConnectorId);
+  if ((metadata.mcpServers ?? []).includes("sharepoint-workiq")) {
+    if (!sharePointConnectionId) {
+      throw new Error("PDS_SHAREPOINT_WORKIQ_CONNECTION_ID is required for an agent using SharePoint Work IQ MCP");
+    }
+    materialized = materialized.replaceAll("__PDS_SHAREPOINT_WORKIQ_CONNECTION_ID__", sharePointConnectionId);
+  }
   if (materialized.includes("__PDS_")) {
     throw new Error(`Unresolved deployment placeholder for ${agent.name}`);
   }

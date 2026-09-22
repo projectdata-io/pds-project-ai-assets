@@ -1,0 +1,10 @@
+{
+  "name": "portfolio-list-maintainer",
+  "title": "Portfolio List Maintainer",
+  "description": "Trigger-oriented Standard Agent that analyzes created or updated MPP files through the PDS Project AI MCP connector and maintains the corresponding SharePoint portfolio list row through the Work IQ SharePoint MCP connector.",
+  "access": "read-only",
+  "skills": [
+    "mpp-portfolio-list-maintenance"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

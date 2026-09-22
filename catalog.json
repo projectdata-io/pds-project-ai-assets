@@ -208,6 +208,13 @@
       "agents": ["portfolio-executive-analyst"]
     },
     {
+      "name": "mpp-portfolio-list-maintenance",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["portfolio-list-maintainer"]
+    },
+    {
       "name": "mpp-schedule-realism-review",
       "category": "audit",
       "access": "read-only",
@@ -222,6 +229,7 @@
     { "name": "portfolio-executive-analyst", "access": "read-only", "path": "agents/copilot-studio/portfolio-executive-analyst", "authoringTargets": ["standard-agent", "agent"] },
     { "name": "project-plan-editor", "access": "commit", "path": "agents/copilot-studio/project-plan-editor", "authoringTargets": ["agent"] },
     { "name": "project-schedule-generator", "access": "commit", "path": "agents/copilot-studio/project-schedule-generator", "authoringTargets": ["agent"] },
-    { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent"] }
+    { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent"] },
+    { "name": "portfolio-list-maintainer", "access": "read-only", "path": "agents/copilot-studio/portfolio-list-maintainer", "authoringTargets": ["standard-agent"] }
   ]
 }

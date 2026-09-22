@@ -16,6 +16,7 @@ Included solution ZIP assets:
 | `PDSScheduleQualityAnalystStandard.zip` | Schedule quality, critical path, constraints, and data checks |
 | `PDSPortfolioExecutiveAnalystStandard.zip` | Portfolio rollups, executive reporting, and cross-project analysis |
 | `PDSMppDataAuditorStandard.zip` | Read-only MPP data audit and custom-field review |
+| `PDSPortfolioListMaintainerStandard.zip` | MPP file-change analysis and portfolio list payload generation |
 
 Each solution includes the Copilot Studio agent package, the PDS Project AI MCP custom connector, connection-reference metadata, and native MCP tools for that agent.
 

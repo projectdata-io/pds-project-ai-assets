@@ -26,6 +26,7 @@ The packaged agents are cloned from the audited canonical unmanaged seed in `see
 | Project Plan Editor | No | Yes |
 | Project Schedule Generator | No | Yes |
 | MPP Data Auditor | Yes | Yes |
+| Portfolio List Maintainer | Yes | No |
 
 The catalog's `authoringTargets` field is authoritative for compilers and CI.
 

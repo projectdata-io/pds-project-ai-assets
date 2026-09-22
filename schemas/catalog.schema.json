@@ -46,6 +46,12 @@
             "items": { "enum": ["standard-agent", "agent"] },
             "minItems": 1,
             "uniqueItems": true
+          },
+          "mcpServers": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+            "minItems": 1,
+            "uniqueItems": true
           }
         },
         "additionalProperties": false

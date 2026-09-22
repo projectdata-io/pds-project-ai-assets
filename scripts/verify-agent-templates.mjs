@@ -27,10 +27,11 @@ for (const agent of agents) {
   }
 
   const content = readFileSync(templatePath, "utf8");
+  const mcpServers = metadata.mcpServers ?? ["project"];
   const mcpTools = (content.match(/^\s+kind: McpTool$/gm) ?? []).length;
   const inlineSkills = (content.match(/^\s+kind: InlineAgentSkill$/gm) ?? []).length;
-  if (mcpTools !== 1) {
-    failures.push(`${agent.name} has ${mcpTools} McpTool components; expected 1`);
+  if (mcpTools !== mcpServers.length) {
+    failures.push(`${agent.name} has ${mcpTools} McpTool components; expected ${mcpServers.length}`);
   }
   if (inlineSkills !== metadata.skills.length) {
     failures.push(`${agent.name} has ${inlineSkills} InlineAgentSkill components; expected ${metadata.skills.length}`);
@@ -42,7 +43,10 @@ for (const agent of agents) {
     failures.push(`${agent.name} has no InvokeServer MCP operation`);
   }
   if (!content.includes("__PDS_CONNECTION_ID__") || !content.includes("__PDS_CUSTOM_CONNECTOR_ID__")) {
-    failures.push(`${agent.name} is missing deployment placeholders`);
+    failures.push(`${agent.name} is missing project deployment placeholders`);
+  }
+  if (mcpServers.includes("sharepoint-workiq") && !content.includes("__PDS_SHAREPOINT_WORKIQ_CONNECTION_ID__")) {
+    failures.push(`${agent.name} is missing SharePoint Work IQ deployment placeholder`);
   }
   for (const skillName of metadata.skills) {
     if (!content.includes(`skillFolderName: ${skillName}`)) {

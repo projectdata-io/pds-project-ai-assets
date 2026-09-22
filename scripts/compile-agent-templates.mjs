@@ -76,6 +76,31 @@ ${indentBlock(skillSource(skillName), 8)}
 `;
 }
 
+function renderSharePointMcpComponent(agentSchema, agentName) {
+  const id = deterministicGuid(`${agentName}:mcp-tool:sharepoint-workiq`);
+  const sharePointConnectionId = process.env.PDS_SHAREPOINT_WORKIQ_CONNECTION_ID ?? "__PDS_SHAREPOINT_WORKIQ_CONNECTION_ID__";
+  const sharePointConnectorId =
+    process.env.PDS_SHAREPOINT_WORKIQ_CONNECTOR_ID ??
+    "/providers/Microsoft.PowerApps/apis/shared_workiqsharepointmcp";
+  const connectionReference = `${agentSchema}.cr.shared_workiqsharepointmcp.${sharePointConnectionId}`;
+  return `  - kind: DialogComponent
+    displayName: SharePoint
+    id: ${id}
+    shareContext:
+      kind: ContentShareContext
+    state: Active
+    status: Active
+    publisherUniqueName: pds
+    schemaName: ${agentSchema}.tool.SharePointWorkIQ
+    dialog:
+      kind: McpTool
+      authMode: Invoker
+      connectionReference: ${connectionReference}
+      connectorId: ${sharePointConnectorId}
+      operationId: mcp_SharePointRemoteServer
+`;
+}
+
 function renderTemplate(agent, metadata) {
   const agentSchema = `pds_${toPascalCase(agent.name)}Agent`;
   const displayName = `${metadata.title} (Agent)`;
@@ -86,10 +111,10 @@ function renderTemplate(agent, metadata) {
   const componentId = deterministicGuid(`${agent.name}:component`);
   const connectionReferenceId = deterministicGuid(`${agent.name}:connection-reference`);
   const skills = metadata.skills.map((skillName) => renderSkillComponent(agentSchema, agent.name, skillName)).join("");
-
-  return `kind: BotDefinition
-components:
-  - kind: DialogComponent
+  const mcpServers = metadata.mcpServers ?? ["project"];
+  const mcpComponents = mcpServers.map((server) => {
+    if (server === "project") {
+      return `  - kind: DialogComponent
     displayName: PDS Project Data AI
     id: ${mcpId}
     shareContext:
@@ -104,7 +129,25 @@ components:
       connectionReference: ${connectionReference}
       connectorId: ${connectorId}
       operationId: InvokeServer
-${skills}environmentVariables: []
+`;
+    }
+    if (server === "sharepoint-workiq") {
+      return renderSharePointMcpComponent(agentSchema, agent.name);
+    }
+    throw new Error(`Unsupported MCP server in ${agent.name}: ${server}`);
+  }).join("");
+
+  const sharePointConnectionId = process.env.PDS_SHAREPOINT_WORKIQ_CONNECTION_ID ?? "__PDS_SHAREPOINT_WORKIQ_CONNECTION_ID__";
+  const sharePointConnectorId =
+    process.env.PDS_SHAREPOINT_WORKIQ_CONNECTOR_ID ??
+    "/providers/Microsoft.PowerApps/apis/shared_workiqsharepointmcp";
+  const sharePointConnectionReference = `${agentSchema}.cr.shared_workiqsharepointmcp.${sharePointConnectionId}`;
+  const sharePointConnectionReferenceId = deterministicGuid(`${agent.name}:connection-reference:sharepoint-workiq`);
+  const hasSharePoint = mcpServers.includes("sharepoint-workiq");
+
+  return `kind: BotDefinition
+components:
+${mcpComponents}${skills}environmentVariables: []
 flows: []
 dataverseTableSearchs: []
 dataverseTableSearchGlossaryConfigurations: []
@@ -118,7 +161,14 @@ connectionReferences:
     connectorId: ${connectorId}
     connectionReferenceLogicalName: ${connectionReference}
     displayName: ${connectionReference}
-connectorDefinitions:
+${hasSharePoint ? `  - kind: ConnectionReference
+    id: ${sharePointConnectionReferenceId}
+    connectionId: ${sharePointConnectionId}
+    customConnectorId: ${sharePointConnectorId}
+    connectorId: ${sharePointConnectorId}
+    connectionReferenceLogicalName: ${sharePointConnectionReference}
+    displayName: ${sharePointConnectionReference}
+` : ""}connectorDefinitions:
   - kind: ConnectorDefinition
     connectorId: ${connectorId}
     displayName: PDS Project Data AI
@@ -173,7 +223,61 @@ connectorDefinitions:
         outputType:
           kind: String
         operationId: InvokeServer
-aIModelDefinitions: []
+${hasSharePoint ? `  - kind: ConnectorDefinition
+    connectorId: ${sharePointConnectorId}
+    displayName: SharePoint MCP (Work IQ)
+    description: Work IQ SharePoint MCP connector for configured portfolio-list maintenance.
+    isCustom: false
+    connectorType: Solution
+    hasPublicData: false
+    isSSOSupported: false
+    operations:
+      - kind: ConnectorOperation
+        displayName: SharePoint MCP (Work IQ)
+        description: Invoke the Work IQ SharePoint MCP connector.
+        inputType:
+          kind: Record
+          properties:
+            error:
+              kind: PropertyInfo
+              order: 6
+              type:
+                kind: Any
+            id:
+              kind: PropertyInfo
+              order: 2
+              type:
+                kind: String
+            jsonrpc:
+              kind: PropertyInfo
+              order: 1
+              type:
+                kind: String
+            Mcp-Session-Id:
+              kind: PropertyInfo
+              displayName: Session Id
+              order: 0
+              type:
+                kind: String
+            method:
+              kind: PropertyInfo
+              order: 3
+              type:
+                kind: String
+            params:
+              kind: PropertyInfo
+              order: 4
+              type:
+                kind: Any
+            result:
+              kind: PropertyInfo
+              order: 5
+              type:
+                kind: Any
+        outputType:
+          kind: String
+        operationId: mcp_SharePointRemoteServer
+` : ""}aIModelDefinitions: []
 aIPluginOperations: []
 connectedAgentDefinitions: []
 componentCollections: []

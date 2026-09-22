@@ -190,6 +190,16 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
       failures.push(`Agent metadata does not match catalog for ${agent.name}`);
       continue;
     }
+    if (
+      metadata.mcpServers !== undefined &&
+      (!Array.isArray(metadata.mcpServers) ||
+        metadata.mcpServers.length === 0 ||
+        new Set(metadata.mcpServers).size !== metadata.mcpServers.length ||
+        metadata.mcpServers.some((server) => typeof server !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(server)))
+    ) {
+      failures.push(`Agent ${agent.name} has invalid mcpServers metadata`);
+      continue;
+    }
     if (!existsSync(instructionsPath)) {
       failures.push(`Agent ${agent.name} is missing instructions.md`);
     }
