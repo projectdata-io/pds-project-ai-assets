@@ -56,4 +56,4 @@ See [Apply Generated Assets in Copilot Studio](copilot-studio/README.md) for the
 7. Require end-user confirmation for `commit_edit_draft` and any externally visible write.
 8. Test the agent with the matching cases in `examples/evaluations.json` before publishing.
 
-The compiled workflow files are portable authoring assets. Solution ZIPs are built from the canonical exported seed and include one workflow topic per mapped skill, the seed's single native MCP tool, the full workflow procedures embedded in the agent instructions, plus the PDS Project AI custom connector and agent binding.
+The compiled workflow files are portable authoring assets. Each catalog agent is packaged into a ZIP containing the agent instructions, manifest, full `SKILL.md` files, a manual setup guide, and — for agents targeting the **Agent** product — a `BotDefinition` YAML template with native inline skills and the MCP tool binding.

@@ -4,71 +4,51 @@ This release contains Microsoft Copilot Studio assets for working with Microsoft
 
 ## What Is Included
 
-### Ready-to-import Standard Agents
+### Agent packages
 
-Standard Agents are the Dataverse solution-friendly Copilot Studio assets. Use the unmanaged Power Platform solution ZIP files when you want an importable package for makers or administrators.
-
-Included solution ZIP assets:
+Each agent is delivered as a ZIP package containing everything needed to set it up in Copilot Studio:
 
 | File | Use case |
 | --- | --- |
-| `PDSProjectManagerAssistantStandard.zip` | Project status, risks, milestones, and delivery summaries |
-| `PDSScheduleQualityAnalystStandard.zip` | Schedule quality, critical path, constraints, and data checks |
-| `PDSPortfolioExecutiveAnalystStandard.zip` | Portfolio rollups, executive reporting, and cross-project analysis |
-| `PDSMppDataAuditorStandard.zip` | Read-only MPP data audit and custom-field review |
-| `PDSPortfolioListMaintainerStandard.zip` | MPP file-change analysis and portfolio list payload generation |
+| `PDSProjectManagerAssistant.zip` | Project status, risks, milestones, and delivery summaries |
+| `PDSScheduleQualityAnalyst.zip` | Schedule quality, critical path, constraints, and data checks |
+| `PDSResourceManager.zip` | Resource demand, capacity, and assignment reporting |
+| `PDSPortfolioExecutiveAnalyst.zip` | Portfolio rollups, executive reporting, and cross-project analysis |
+| `PDSProjectPlanEditor.zip` | Guarded draft and commit workflows |
+| `PDSProjectScheduleGenerator.zip` | Schedule generation and validation |
+| `PDSMppDataAuditor.zip` | Read-only MPP data audit and custom-field review |
+| `PDSPortfolioListMaintainer.zip` | MPP file-change analysis and portfolio list payload generation |
 
-Each solution includes the Copilot Studio agent package, the PDS Project AI MCP custom connector, connection-reference metadata, the full workflow procedures embedded in the agent instructions, and one workflow topic per mapped skill plus the single native MCP tool for that agent.
-
-### Agent templates
-
-Agents are handled through the YAML/BotDefinition authoring path. This release may also include template files for advanced administrator-managed deployment scenarios:
-
-- `project-manager-assistant.yaml`
-- `schedule-quality-analyst.yaml`
-- `resource-manager.yaml`
-- `portfolio-executive-analyst.yaml`
-- `project-plan-editor.yaml`
-- `project-schedule-generator.yaml`
-- `mpp-data-auditor.yaml`
-
-These templates are not directly importable through the Copilot Studio user interface. They are included for administrators who have a managed deployment process for Agents.
+Each package contains `instructions.md`, `manifest.json`, the full `SKILL.md` workflow files, a step-by-step `README.md`, and — where the agent supports it — an `agent.yaml` `BotDefinition` template with native inline skills and the MCP tool binding.
 
 ## Before You Start
 
 You need:
 
 1. Access to a Power Platform environment with Copilot Studio enabled.
-2. Permission to import unmanaged solutions.
+2. Permission to create agents and connections.
 3. Access to the deployed PDS Project AI MCP service.
 4. Permission to create or authorize a connector connection for the PDS Project AI MCP connector.
 
 Use read-only authorization for read-only agents. Use read/write authorization only for agents that intentionally perform guarded edit or commit operations.
 
-## Deploy a Standard Agent from a solution ZIP
+## Set up an agent
 
-1. Download the solution ZIP for the agent you want to use.
-2. In Power Apps or Power Platform admin tools, import the ZIP as an unmanaged solution.
-3. During or after import, create or select the connector connection for PDS Project AI.
-4. Open the imported agent in Copilot Studio.
-5. Confirm the connection reference is bound to the intended connection.
-6. Test the agent with a non-production `.mpp` file.
-7. Publish the agent when testing is complete.
+1. Download the ZIP package for the agent you want.
+2. Open the package and follow its `README.md`.
+3. Create a blank agent in Copilot Studio and paste the package's `instructions.md` into **Overview → Instructions**.
+4. Add the PDS Project AI server from **Tools → Add a tool → New tool → Model Context Protocol**, and authorize the connection.
+5. Use each `skills/<name>/SKILL.md` as the authoring specification for a skill, topic or prompt tool.
+6. Test the agent with a non-production `.mpp` file, then publish.
 
-After import, review the agent's tools and permissions before making it available to users.
-
-## Deploy an Agent from a template
-
-Agent templates require an administrator-managed deployment process before users can open and publish them in Copilot Studio.
-
-If you received this release as an end user, ask your Power Platform administrator or project AI platform owner to materialize the Agent templates in your environment. Once materialized, the Agents can be tested and published from Copilot Studio like other agents.
+For agents that include an `agent.yaml` `BotDefinition` template, an administrator can instead materialize the full agent (including native inline skills) into a development environment with `pac copilot create`.
 
 ## Verify the Download
 
 This release includes:
 
-- `VERSION.txt`: the release solution version.
-- `SHA256SUMS.txt`: checksums for the solution ZIP files.
+- `VERSION.txt`: the release version.
+- `SHA256SUMS.txt`: checksums for the agent package ZIP files.
 
 Use the checksums to confirm the downloaded ZIP files were not corrupted.
 

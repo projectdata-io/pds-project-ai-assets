@@ -285,25 +285,6 @@ if (!evaluations || !Array.isArray(evaluations.cases)) {
   }
 }
 
-const seedMetadata = loadJson("seeds/power-platform/seed.json");
-if (!seedMetadata || typeof seedMetadata.file !== "string" || typeof seedMetadata.sha256 !== "string" || typeof seedMetadata.size !== "number") {
-  failures.push("Canonical Power Platform seed metadata is invalid");
-} else {
-  const seedPath = join(rootPath, "seeds", "power-platform", seedMetadata.file);
-  if (!existsSync(seedPath)) {
-    failures.push(`Canonical Power Platform seed is missing: ${seedMetadata.file}`);
-  } else {
-    const seedBytes = readFileSync(seedPath);
-    const seedHash = createHash("sha256").update(seedBytes).digest("hex");
-    if (seedBytes.length !== seedMetadata.size) {
-      failures.push(`Canonical Power Platform seed size changed: ${seedBytes.length} != ${seedMetadata.size}`);
-    }
-    if (seedHash !== seedMetadata.sha256) {
-      failures.push(`Canonical Power Platform seed SHA-256 changed: ${seedHash}`);
-    }
-  }
-}
-
 for (const file of visitFiles(rootPath)) {
   const repositoryPath = relative(rootPath, file).replaceAll("\\", "/");
   const fileName = repositoryPath.split("/").at(-1) ?? repositoryPath;

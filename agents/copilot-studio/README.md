@@ -1,11 +1,8 @@
 # Apply Generated Assets in Copilot Studio
 
-The repository supports both Copilot Studio authoring products:
+The repository builds one **agent package** per catalog agent: a ZIP containing the agent's `instructions.md`, `manifest.json`, every mapped `SKILL.md`, a manual setup guide, and — for agents targeting the **Agent** product — a `BotDefinition` YAML template (`agent.yaml`) with native inline skills and the MCP tool binding.
 
-- **Standard Agent:** rule-based conversational agents with predefined topics and flows. These compile to offline unmanaged solution ZIP files.
-- **Agent:** skill-oriented agents for complex actions and human-facing interaction. These compile to `BotDefinition` YAML templates containing native inline skills and an MCP tool.
-
-The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions with the full workflow procedures embedded, the PDS Project AI MCP custom connector, its agent connection-reference binding, the single generic MCP tool, and one triggerable topic per mapped skill. The repository `SKILL.md` files remain source specifications; their compiled topics appear in Copilot Studio after import.
+Automated Dataverse solution generation has been removed. You create the agent and add the MCP tool manually, or deploy the BotDefinition template with `pac copilot create`. The repository `SKILL.md` files remain source specifications; Copilot Studio does not import them as native components on manually created agents.
 
 ## Prerequisites
 
@@ -13,7 +10,7 @@ The packaged agents are cloned from the audited canonical unmanaged seed in `see
 - A deployed PDS Project AI MCP endpoint.
 - An OAuth connection authorized for `Session.ReadOnly` or `Session.ReadWrite`, according to the selected agent.
 - Compiled bundles produced with `npm run compile` under ignored `build/copilot-studio/`.
-- Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, when building solution ZIP files.
+- Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, only when deploying Agent templates.
 
 ## Agent Target Matrix
 
@@ -40,47 +37,24 @@ It runs for pull requests and pushes to `main`, and it can also be started manua
 
 The workflow:
 
-1. Installs the pinned Power Platform CLI version.
-2. Validates source and generated assets.
-3. Sets solution version `1.0.<github.run_number>.<github.run_attempt>`.
-4. Builds four Standard Agent unmanaged solution ZIP files and six Agent templates.
-5. Verifies that every solution contains `Managed=0` and the expected version.
-6. Creates `SHA256SUMS.txt` and `VERSION.txt`.
-7. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
-8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing Standard Agent ZIPs, Agent templates, checksums, and version metadata.
+1. Validates source and generated assets.
+2. Builds one agent package ZIP per catalog agent under `dist/agent-packages/`.
+3. Verifies every package contains `manifest.json`, `instructions.md`, `README.md`, and at least one skill file.
+4. Stamps `VERSION.txt` as `1.0.<github.run_number>.<github.run_attempt>`.
+5. Uploads `pds-project-ai-agent-packages` as a workflow artifact retained for 14 days.
+6. On pushes to the repository's default branch, creates a GitHub Release tagged `agents-v<version>` containing the agent packages, checksums, and version metadata.
 
-Download the artifact from the workflow run's **Artifacts** section. Solution ZIP files are never committed to the repository.
+Download the artifact from the workflow run's **Artifacts** section. Package ZIP files are never committed to the repository.
 
-### Standard Agent local build
+### Local build
 
 Run:
 
 ```sh
-npm run compile:solutions
+npm run package:agents
 ```
 
-This local-only command:
-
-1. Regenerates the portable Copilot Studio bundles.
-2. Clones the audited exported seed into Standard Agent workspaces under `build/power-platform/`.
-3. Replaces seed identity and instructions, embeds the full workflow procedures from the compiled topic files into the agent instructions, then adds one triggerable topic per mapped skill. The seed's single MCP tool is kept as-is; duplicating it per skill registers duplicate MCP servers and breaks tool discovery after import.
-4. Packages four unmanaged solution ZIP files under `dist/solutions/` and validates them with PAC.
-
-The default output files are:
-
-- `PDSProjectManagerAssistantStandard.zip`
-- `PDSScheduleQualityAnalystStandard.zip`
-- `PDSPortfolioExecutiveAnalystStandard.zip`
-- `PDSMppDataAuditorStandard.zip`
-
-The command does not import, publish, push, or deploy an agent. It does not require an authenticated environment. Both output directories are ignored build artifacts and must not be committed.
-
-Local builds default to solution version `1.0.0.1`. Override it with a four-part numeric version:
-
-```powershell
-$env:PDS_POWER_PLATFORM_SOLUTION_VERSION = '1.0.123.2'
-npm run compile:solutions
-```
+This regenerates the Copilot Studio bundles and Agent templates, then packages every catalog agent into `dist/agent-packages/`. It does not import, publish, push, or deploy an agent and does not require an authenticated environment. Output directories are ignored build artifacts and must not be committed.
 
 ## 1. Choose an Agent Bundle
 
@@ -142,9 +116,7 @@ If individual MCP tools cannot be disabled, rely on OAuth scopes and server-side
 
 ### MCP ALM behavior
 
-The canonical seed was exported from a non-production environment after creating the solution-aware MCP custom connector and binding it to a Standard Agent. The compiler preserves those exported component IDs and dependency mappings while cloning the agent and adding workflow tools.
-
-After import, create or authorize the connector connection in the target environment. Credentials, OAuth consent, and connection instances aren't stored in the seed or generated ZIPs.
+Each agent connects to the PDS Project AI MCP server through a connection you create in the target environment. Credentials, OAuth consent, and connection instances are never stored in the packages or templates. After manual setup or template deployment, create or authorize the connector connection in the target environment.
 
 ## Agent templates
 

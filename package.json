@@ -8,7 +8,7 @@
     "compile": "node scripts/compile-copilot-studio.mjs",
     "compile:agents": "node scripts/compile-agent-templates.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",
-    "compile:solutions": "npm run compile && node scripts/compile-power-platform-solutions.mjs",
+    "package:agents": "npm run compile && npm run compile:agents && node scripts/package-agents.mjs",
     "check:generated": "node scripts/compile-copilot-studio.mjs --check",
     "check:agents": "node scripts/compile-agent-templates.mjs --check",
     "verify:agents": "node scripts/verify-agent-templates.mjs",

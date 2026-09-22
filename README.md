@@ -60,7 +60,7 @@ Requirements: Node.js 20 or newer.
 ```sh
 npm run compile
 npm run compile:agents
-npm run compile:solutions
+npm run package:agents
 npm test
 ```
 
@@ -68,9 +68,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before adding an asset.
 
 Run `npm run compile` to create transient Copilot Studio bundles under ignored `build/copilot-studio/`. `npm test` checks catalog coverage, MCP tool references, access boundaries, agent mappings, synthetic evaluation references, prohibited public artifacts, and compiled bundle consistency. Pull requests and pushes to `main` run the same validation in GitHub Actions.
 
-`npm run compile:solutions` builds offline unmanaged solution ZIPs for catalog agents targeted as **Standard Agent**. `npm run compile:agents` builds complete `BotDefinition` YAML templates for catalog agents targeted as **Agent**, with mapped `SKILL.md` files represented as native `InlineAgentSkill` components.
+`npm run compile:agents` builds complete `BotDefinition` YAML templates for catalog agents targeted as **Agent**, with mapped `SKILL.md` files represented as native `InlineAgentSkill` components. `npm run package:agents` packages every catalog agent into a ZIP under `dist/agent-packages/` containing the agent instructions, manifest, full skill files, a manual setup guide, and the `BotDefinition` template where applicable.
 
-The **Build agent assets** GitHub Actions workflow is the preferred packaging path. It versions Standard Agent solutions as `1.0.<github.run_number>.<github.run_attempt>`, uploads Standard Agent ZIPs and Agent templates as temporary artifacts, and creates a versioned GitHub Release on default-branch pushes. Build outputs are not stored in source control.
+The **Build agent assets** GitHub Actions workflow is the preferred packaging path. It versions packages as `1.0.<github.run_number>.<github.run_attempt>`, uploads the agent package ZIPs as temporary artifacts, and creates a versioned GitHub Release on default-branch pushes. Build outputs are not stored in source control.
 
 ## License
 
