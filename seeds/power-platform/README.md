@@ -9,7 +9,7 @@ It provides the canonical component structures that can't be invented safely by 
 - Agent connection reference and connector binding.
 - Known-good native MCP `TaskDialog` invoking `InvokeServer`.
 
-The compiler clones this seed for each catalog agent, replaces seed identity and instructions, and adds one native MCP TaskDialog per mapped workflow. PAC validates every generated solution by unpacking it after packaging.
+The compiler clones this seed for each catalog agent, replaces seed identity and instructions (embedding the full workflow procedures), and adds one triggerable topic and one native MCP TaskDialog tool per mapped skill. PAC validates every generated solution by unpacking it after packaging.
 
 The seed contains no credentials, tokens, current connection values, tenant IDs, user identities, or customer data. It references the public production MCP endpoint. Connections and OAuth consent must be created in each target environment after import.
 

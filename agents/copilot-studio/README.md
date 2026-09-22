@@ -5,7 +5,7 @@ The repository supports both Copilot Studio authoring products:
 - **Standard Agent:** rule-based conversational agents with predefined topics and flows. These compile to offline unmanaged solution ZIP files.
 - **Agent:** skill-oriented agents for complex actions and human-facing interaction. These compile to `BotDefinition` YAML templates containing native inline skills and an MCP tool.
 
-The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions, the PDS Project AI MCP custom connector, its agent connection-reference binding, the generic MCP tool, and one native MCP TaskDialog for every mapped workflow. The repository `SKILL.md` files remain source specifications; their compiled TaskDialogs appear as tools in Copilot Studio.
+The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions with the full workflow procedures embedded, the PDS Project AI MCP custom connector, its agent connection-reference binding, the generic MCP tool, one triggerable topic per mapped skill, and one native MCP TaskDialog tool per mapped skill. The repository `SKILL.md` files remain source specifications; their compiled topics and tools appear in Copilot Studio after import.
 
 ## Prerequisites
 
@@ -63,7 +63,7 @@ This local-only command:
 
 1. Regenerates the portable Copilot Studio bundles.
 2. Clones the audited exported seed into Standard Agent workspaces under `build/power-platform/`.
-3. Replaces seed identity and instructions, then adds one native MCP TaskDialog per mapped workflow.
+3. Replaces seed identity and instructions, embeds the full workflow procedures from the compiled topic files into the agent instructions, then adds one triggerable topic and one native MCP TaskDialog tool per mapped skill.
 4. Packages four unmanaged solution ZIP files under `dist/solutions/` and validates them with PAC.
 
 The default output files are:

@@ -91,24 +91,86 @@ function renameSchemaPaths(directory, from, to) {
   }
 }
 
-function skillTitle(skillName) {
-  const source = readFileSync(join(rootPath, "skills", skillName, "SKILL.md"), "utf8");
-  return source.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? toPascalCase(skillName);
+function yamlQuote(value) {
+  return JSON.stringify(value);
 }
 
-function skillDescription(skillName) {
-  const source = readFileSync(join(rootPath, "skills", skillName, "SKILL.md"), "utf8");
-  const value = source.match(/^description:\s*(.+)$/m)?.[1]?.trim();
-  if (!value) {
-    throw new Error(`Skill ${skillName} has no description`);
+function stripQuotedScalar(value) {
+  const trimmed = value.trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1);
   }
-  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-    return value.slice(1, -1);
-  }
-  return value;
+  return trimmed;
 }
 
-function addWorkflowTools(unpackedPath, agentSchema, metadata) {
+function parseSkill(skillName) {
+  const sourcePath = join(rootPath, "skills", skillName, "SKILL.md");
+  const source = readFileSync(sourcePath, "utf8").replaceAll("\r\n", "\n");
+  const frontmatterMatch = source.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!frontmatterMatch) {
+    throw new Error(`skills/${skillName}/SKILL.md has no frontmatter`);
+  }
+  const descriptionLine = frontmatterMatch[1].match(/^description:\s*(.+)$/m)?.[1];
+  if (!descriptionLine) {
+    throw new Error(`skills/${skillName}/SKILL.md has no description`);
+  }
+  const body = source.slice(frontmatterMatch[0].length);
+  const title = body.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? toPascalCase(skillName);
+  const sections = new Map();
+  const headings = [...body.matchAll(/^##\s+(.+)$/gm)];
+  for (let index = 0; index < headings.length; index += 1) {
+    const heading = headings[index];
+    const start = (heading.index ?? 0) + heading[0].length;
+    const end = headings[index + 1]?.index ?? body.length;
+    sections.set(heading[1].trim(), body.slice(start, end).trim());
+  }
+  return { name: skillName, title, description: stripQuotedScalar(descriptionLine), sections };
+}
+
+function skillTriggerQueries(skill) {
+  const useWhen = skill.sections.get("Use When") ?? "";
+  const bullets = useWhen
+    .split("\n")
+    .map((line) => line.replace(/^\s*-\s*/, "").trim().replace(/[.;]+\s*$/, ""))
+    .filter((line) => line.length > 0 && !line.startsWith("#"));
+  const queries = [];
+  for (const candidate of [skill.title, ...bullets]) {
+    if (candidate.length === 0 || candidate.length > 200 || queries.includes(candidate)) {
+      continue;
+    }
+    queries.push(candidate);
+    if (queries.length === 8) {
+      break;
+    }
+  }
+  return queries;
+}
+
+function renderSkillTopicData(toolSchema, skill) {
+  const componentName = toPascalCase(skill.name);
+  const triggerQueries = skillTriggerQueries(skill).map((query) => `      - ${yamlQuote(query)}`).join("\n");
+  return `kind: AdaptiveDialog
+beginDialog:
+  kind: OnRecognizedIntent
+  id: main
+  intent:
+    displayName: ${yamlQuote(skill.title)}
+    description: ${yamlQuote(skill.description)}
+    includeInOnSelectIntent: true
+    triggerQueries:
+${triggerQueries}
+
+  actions:
+    - kind: BeginDialog
+      id: invoke${componentName}
+      dialog: ${toolSchema}
+
+    - kind: EndDialog
+      id: end${componentName}
+`;
+}
+
+function addSkillComponents(unpackedPath, agentSchema, metadata) {
   const genericToolDataPath = join(
     unpackedPath,
     "botcomponents",
@@ -126,24 +188,20 @@ function addWorkflowTools(unpackedPath, agentSchema, metadata) {
   const mappingEntries = [];
 
   for (const skillName of metadata.skills) {
-    const skill = catalog.skills.find((item) => item.name === skillName);
-    if (!skill) {
-      throw new Error(`Agent ${metadata.name} references unknown skill ${skillName}`);
-    }
-    const title = skillTitle(skillName);
-    const description = skillDescription(skillName);
+    const skill = parseSkill(skillName);
     const componentName = toPascalCase(skillName);
-    const componentSchema = `${agentSchema}.topic.${componentName}`;
-    const componentDirectory = join(unpackedPath, "botcomponents", componentSchema);
-    mkdirSync(componentDirectory, { recursive: true });
+    const toolSchema = `${agentSchema}.tool.${componentName}`;
+    const topicSchema = `${agentSchema}.topic.${componentName}`;
 
+    const toolDirectory = join(unpackedPath, "botcomponents", toolSchema);
+    mkdirSync(toolDirectory, { recursive: true });
     writeFileSync(
-      join(componentDirectory, "botcomponent.xml"),
-      `<botcomponent schemaname="${xmlEscape(componentSchema)}">\n` +
+      join(toolDirectory, "botcomponent.xml"),
+      `<botcomponent schemaname="${xmlEscape(toolSchema)}">\n` +
         `  <componenttype>9</componenttype>\n` +
-        `  <description>${xmlEscape(description)}</description>\n` +
+        `  <description>${xmlEscape(skill.description)}</description>\n` +
         `  <iscustomizable>1</iscustomizable>\n` +
-        `  <name>${xmlEscape(title)}</name>\n` +
+        `  <name>${xmlEscape(skill.title)} tool</name>\n` +
         `  <parentbotid>\n` +
         `    <schemaname>${xmlEscape(agentSchema)}</schemaname>\n` +
         `  </parentbotid>\n` +
@@ -153,10 +211,10 @@ function addWorkflowTools(unpackedPath, agentSchema, metadata) {
       "utf8"
     );
     writeFileSync(
-      join(componentDirectory, "data"),
+      join(toolDirectory, "data"),
       `kind: TaskDialog\n` +
-        `modelDisplayName: ${JSON.stringify(title)}\n` +
-        `modelDescription: ${JSON.stringify(description)}\n` +
+        `modelDisplayName: ${JSON.stringify(skill.title)}\n` +
+        `modelDescription: ${JSON.stringify(skill.description)}\n` +
         `action:\n` +
         `  kind: InvokeExternalAgentTaskAction\n` +
         `  connectionReference: ${connectionReference}\n` +
@@ -168,10 +226,29 @@ function addWorkflowTools(unpackedPath, agentSchema, metadata) {
       "utf8"
     );
     mappingEntries.push(
-      `  <botcomponent_connectionreference botcomponentid.schemaname="${xmlEscape(componentSchema)}" connectionreferenceid.connectionreferencelogicalname="${xmlEscape(connectionReference)}">\n` +
+      `  <botcomponent_connectionreference botcomponentid.schemaname="${xmlEscape(toolSchema)}" connectionreferenceid.connectionreferencelogicalname="${xmlEscape(connectionReference)}">\n` +
         `    <iscustomizable>1</iscustomizable>\n` +
         `  </botcomponent_connectionreference>`
     );
+
+    const topicDirectory = join(unpackedPath, "botcomponents", topicSchema);
+    mkdirSync(topicDirectory, { recursive: true });
+    writeFileSync(
+      join(topicDirectory, "botcomponent.xml"),
+      `<botcomponent schemaname="${xmlEscape(topicSchema)}">\n` +
+        `  <componenttype>9</componenttype>\n` +
+        `  <description>${xmlEscape(skill.description)}</description>\n` +
+        `  <iscustomizable>1</iscustomizable>\n` +
+        `  <name>${xmlEscape(skill.title)}</name>\n` +
+        `  <parentbotid>\n` +
+        `    <schemaname>${xmlEscape(agentSchema)}</schemaname>\n` +
+        `  </parentbotid>\n` +
+        `  <statecode>0</statecode>\n` +
+        `  <statuscode>1</statuscode>\n` +
+        `</botcomponent>\n`,
+      "utf8"
+    );
+    writeFileSync(join(topicDirectory, "data"), renderSkillTopicData(toolSchema, skill), "utf8");
   }
 
   mapping = mapping.replace(
@@ -206,7 +283,15 @@ for (const agent of standardAgents) {
     throw new Error(`Missing generated instructions for ${agent.name}; run npm run compile first`);
   }
 
-  const instructions = readFileSync(instructionsPath, "utf8").trim();
+  const baseInstructions = readFileSync(instructionsPath, "utf8").trim();
+  const workflowDocs = metadata.skills.map((skillName) => {
+    const topicPath = join(rootPath, "build", "copilot-studio", agent.name, "topics", `${skillName}.md`);
+    if (!existsSync(topicPath)) {
+      throw new Error(`Missing generated workflow instructions for ${agent.name}/${skillName}; run npm run compile first`);
+    }
+    return readFileSync(topicPath, "utf8").trim();
+  });
+  const instructions = `${baseInstructions}\n\n## Workflow Procedures\n\n${workflowDocs.join("\n\n")}`;
   const basePascalName = toPascalCase(agent.name);
   const pascalName = `${basePascalName}Standard`;
   const schemaName = `${publisherPrefix}_${pascalName}`;
@@ -233,7 +318,7 @@ for (const agent of standardAgents) {
     "utf8"
   );
 
-  addWorkflowTools(workspacePath, schemaName, metadata);
+  addSkillComponents(workspacePath, schemaName, metadata);
 
   const solutionXmlPath = join(workspacePath, "solution.xml");
   let solutionXml = readFileSync(solutionXmlPath, "utf8");
