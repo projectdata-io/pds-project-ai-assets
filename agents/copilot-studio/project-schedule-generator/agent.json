@@ -1,0 +1,13 @@
+{
+  "name": "project-schedule-generator",
+  "title": "Project Schedule Generator",
+  "description": "Interactive schedule-generation agent that turns explicit user requirements into a previewed, validated, and confirmed Microsoft Project plan.",
+  "access": "commit",
+  "skills": [
+    "mpp-create-project",
+    "mpp-schedule-editor",
+    "mpp-resource-editor",
+    "mpp-draft-repair",
+    "mpp-safe-commit"
+  ]
+}

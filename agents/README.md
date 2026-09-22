@@ -22,6 +22,7 @@ The `skills` arrays in `agent.json` are repository routing metadata. They are no
 | `resource-manager` | Read-only | No | Yes |
 | `portfolio-executive-analyst` | Read-only | Yes | Yes |
 | `project-plan-editor` | Commit after preview, validation, and confirmation | No | Yes |
+| `project-schedule-generator` | Commit after preview, validation, and confirmation | No | Yes |
 | `mpp-data-auditor` | Read-only | Yes | Yes |
 
 ## Generate Copilot Studio bundles
@@ -49,7 +50,7 @@ See [Apply Generated Assets in Copilot Studio](copilot-studio/README.md) for the
 2. Paste the generated `instructions.md` into **Overview → Instructions**.
 3. Add the PDS Project AI server from **Tools → Add a tool → New tool → Model Context Protocol**.
 4. Use the manifest's `tools` array as the allowlist. Disable unrelated MCP tools when the environment supports per-tool controls.
-5. Grant `Session.ReadOnly` to read-only agents and `Session.ReadWrite` only to the Project Plan Editor.
+5. Grant `Session.ReadOnly` to read-only agents and `Session.ReadWrite` only to the Project Plan Editor or Project Schedule Generator.
 6. For each generated topic file, create the corresponding Copilot Studio topic or prompt workflow and use its Markdown as the authoring specification. Reference configured MCP tools with the Copilot Studio slash menu where appropriate.
 7. Require end-user confirmation for `commit_edit_draft` and any externally visible write.
 8. Test the agent with the matching cases in `examples/evaluations.json` before publishing.

@@ -28,6 +28,7 @@ Agents are handled through the YAML/BotDefinition authoring path. This release m
 - `resource-manager.yaml`
 - `portfolio-executive-analyst.yaml`
 - `project-plan-editor.yaml`
+- `project-schedule-generator.yaml`
 - `mpp-data-auditor.yaml`
 
 These templates are not directly importable through the Copilot Studio user interface. They are included for administrators who have a managed deployment process for Agents.
@@ -72,7 +73,7 @@ Use the checksums to confirm the downloaded ZIP files were not corrupted.
 
 ## Security Notes
 
-- Do not grant read/write access to read-only agents.
+- Do not grant read/write access to read-only agents. Reserve read/write access for guarded editing or schedule-generation agents.
 - Test imported agents in a non-production environment before publishing.
 - Do not upload customer `.mpp` files to environments that are not approved for that data.
 - Review connector connections and user consent before broad rollout.

@@ -44,7 +44,7 @@
       "category": "editing",
       "access": "commit",
       "tools": ["create_session_from_reference", "create_session_from_onedrive", "create_new_project_session", "get_edit_capabilities", "get_project", "list_tasks", "list_resources", "list_assignments", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "close_session"],
-      "agents": ["project-plan-editor"]
+      "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {
       "name": "mpp-milestone-review",
@@ -142,7 +142,7 @@
       "category": "editing",
       "access": "draft-only",
       "tools": ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "preview_edit_draft", "validate_edit_draft", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
-      "agents": ["project-plan-editor"]
+      "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {
       "name": "mpp-progress-editor",
@@ -156,21 +156,21 @@
       "category": "editing",
       "access": "draft-only",
       "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_edit_capabilities", "list_tasks", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "close_session"],
-      "agents": ["project-plan-editor"]
+      "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {
       "name": "mpp-resource-editor",
       "category": "editing",
       "access": "draft-only",
       "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_edit_capabilities", "list_tasks", "list_resources", "list_assignments", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "close_session"],
-      "agents": ["project-plan-editor"]
+      "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {
       "name": "mpp-draft-repair",
       "category": "editing",
       "access": "draft-only",
       "tools": ["get_edit_capabilities", "get_project", "list_tasks", "list_resources", "list_assignments", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft"],
-      "agents": ["project-plan-editor"]
+      "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {
       "name": "mpp-dependency-audit",
@@ -221,6 +221,7 @@
     { "name": "resource-manager", "access": "read-only", "path": "agents/copilot-studio/resource-manager", "authoringTargets": ["agent"] },
     { "name": "portfolio-executive-analyst", "access": "read-only", "path": "agents/copilot-studio/portfolio-executive-analyst", "authoringTargets": ["standard-agent", "agent"] },
     { "name": "project-plan-editor", "access": "commit", "path": "agents/copilot-studio/project-plan-editor", "authoringTargets": ["agent"] },
+    { "name": "project-schedule-generator", "access": "commit", "path": "agents/copilot-studio/project-schedule-generator", "authoringTargets": ["agent"] },
     { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent"] }
   ]
 }
