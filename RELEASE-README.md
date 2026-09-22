@@ -18,7 +18,7 @@ Included solution ZIP assets:
 | `PDSMppDataAuditorStandard.zip` | Read-only MPP data audit and custom-field review |
 | `PDSPortfolioListMaintainerStandard.zip` | MPP file-change analysis and portfolio list payload generation |
 
-Each solution includes the Copilot Studio agent package, the PDS Project AI MCP custom connector, connection-reference metadata, the full workflow procedures embedded in the agent instructions, and one workflow topic plus one native MCP tool per mapped skill for that agent.
+Each solution includes the Copilot Studio agent package, the PDS Project AI MCP custom connector, connection-reference metadata, the full workflow procedures embedded in the agent instructions, and one workflow topic per mapped skill plus the single native MCP tool for that agent.
 
 ### Agent templates
 

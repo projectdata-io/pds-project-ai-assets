@@ -127,6 +127,33 @@ function parseSkill(skillName) {
   return { name: skillName, title, description: stripQuotedScalar(descriptionLine), sections };
 }
 
+function renderSkillWorkflow(skill) {
+  const sectionOrder = [
+    "When to use",
+    "When not to use",
+    "Procedure",
+    "Workflow",
+    "Guardrails",
+    "Confirmation format",
+    "Response format",
+    "Output Format",
+    "Failure handling",
+    "Error Handling"
+  ];
+  const parts = [];
+  for (const heading of sectionOrder) {
+    if (skill.sections.has(heading)) {
+      parts.push(`## ${heading}\n\n${skill.sections.get(heading)}`);
+    }
+  }
+  if (parts.length === 0) {
+    for (const [heading, content] of skill.sections) {
+      parts.push(`## ${heading}\n\n${content}`);
+    }
+  }
+  return parts.join("\n\n");
+}
+
 function skillTriggerQueries(skill) {
   const useWhen = skill.sections.get("Use When") ?? "";
   const bullets = useWhen
@@ -146,9 +173,14 @@ function skillTriggerQueries(skill) {
   return queries;
 }
 
-function renderSkillTopicData(toolSchema, skill) {
+function renderSkillTopicData(skill, workflowMarkdown) {
   const componentName = toPascalCase(skill.name);
   const triggerQueries = skillTriggerQueries(skill).map((query) => `      - ${yamlQuote(query)}`).join("\n");
+  const body = `${skill.description}\n\n${workflowMarkdown.trim()}`;
+  const messageLines = body
+    .split("\n")
+    .map((line) => `          - ${yamlQuote(line)}`)
+    .join("\n");
   return `kind: AdaptiveDialog
 beginDialog:
   kind: OnRecognizedIntent
@@ -161,9 +193,11 @@ beginDialog:
 ${triggerQueries}
 
   actions:
-    - kind: BeginDialog
-      id: invoke${componentName}
-      dialog: ${toolSchema}
+    - kind: SendActivity
+      id: run${componentName}
+      activity:
+        text:
+${messageLines}
 
     - kind: EndDialog
       id: end${componentName}
@@ -171,6 +205,8 @@ ${triggerQueries}
 }
 
 function addSkillComponents(unpackedPath, agentSchema, metadata) {
+  // The seed's single MCP TaskDialog already exposes the whole server; cloning it per skill
+  // registers duplicate MCP servers on the agent and breaks tool discovery after import.
   const genericToolDataPath = join(
     unpackedPath,
     "botcomponents",
@@ -178,58 +214,14 @@ function addSkillComponents(unpackedPath, agentSchema, metadata) {
     "data"
   );
   const genericToolData = readFileSync(genericToolDataPath, "utf8");
-  const connectionReference = genericToolData.match(/^\s*connectionReference:\s*(.+)$/m)?.[1]?.trim();
-  if (!connectionReference) {
+  if (!/^\s*connectionReference:\s*\S+/m.test(genericToolData)) {
     throw new Error(`Seed MCP tool for ${metadata.name} has no connectionReference`);
   }
-
-  const mappingPath = join(unpackedPath, "Assets", "botcomponent_connectionreferenceset.xml");
-  let mapping = readFileSync(mappingPath, "utf8");
-  const mappingEntries = [];
 
   for (const skillName of metadata.skills) {
     const skill = parseSkill(skillName);
     const componentName = toPascalCase(skillName);
-    const toolSchema = `${agentSchema}.tool.${componentName}`;
     const topicSchema = `${agentSchema}.topic.${componentName}`;
-
-    const toolDirectory = join(unpackedPath, "botcomponents", toolSchema);
-    mkdirSync(toolDirectory, { recursive: true });
-    writeFileSync(
-      join(toolDirectory, "botcomponent.xml"),
-      `<botcomponent schemaname="${xmlEscape(toolSchema)}">\n` +
-        `  <componenttype>9</componenttype>\n` +
-        `  <description>${xmlEscape(skill.description)}</description>\n` +
-        `  <iscustomizable>1</iscustomizable>\n` +
-        `  <name>${xmlEscape(skill.title)} tool</name>\n` +
-        `  <parentbotid>\n` +
-        `    <schemaname>${xmlEscape(agentSchema)}</schemaname>\n` +
-        `  </parentbotid>\n` +
-        `  <statecode>0</statecode>\n` +
-        `  <statuscode>1</statuscode>\n` +
-        `</botcomponent>\n`,
-      "utf8"
-    );
-    writeFileSync(
-      join(toolDirectory, "data"),
-      `kind: TaskDialog\n` +
-        `modelDisplayName: ${JSON.stringify(skill.title)}\n` +
-        `modelDescription: ${JSON.stringify(skill.description)}\n` +
-        `action:\n` +
-        `  kind: InvokeExternalAgentTaskAction\n` +
-        `  connectionReference: ${connectionReference}\n` +
-        `  connectionProperties:\n` +
-        `    mode: Invoker\n\n` +
-        `  operationDetails:\n` +
-        `    kind: ModelContextProtocolMetadata\n` +
-        `    operationId: InvokeServer\n`,
-      "utf8"
-    );
-    mappingEntries.push(
-      `  <botcomponent_connectionreference botcomponentid.schemaname="${xmlEscape(toolSchema)}" connectionreferenceid.connectionreferencelogicalname="${xmlEscape(connectionReference)}">\n` +
-        `    <iscustomizable>1</iscustomizable>\n` +
-        `  </botcomponent_connectionreference>`
-    );
 
     const topicDirectory = join(unpackedPath, "botcomponents", topicSchema);
     mkdirSync(topicDirectory, { recursive: true });
@@ -248,14 +240,8 @@ function addSkillComponents(unpackedPath, agentSchema, metadata) {
         `</botcomponent>\n`,
       "utf8"
     );
-    writeFileSync(join(topicDirectory, "data"), renderSkillTopicData(toolSchema, skill), "utf8");
+    writeFileSync(join(topicDirectory, "data"), renderSkillTopicData(skill, renderSkillWorkflow(skill)), "utf8");
   }
-
-  mapping = mapping.replace(
-    "</botcomponent_connectionreferenceset>",
-    `${mappingEntries.join("\n")}\n</botcomponent_connectionreferenceset>`
-  );
-  writeFileSync(mappingPath, mapping, "utf8");
 }
 
 if (publisherPrefix !== "pds") {
@@ -296,7 +282,7 @@ for (const agent of standardAgents) {
   const pascalName = `${basePascalName}Standard`;
   const schemaName = `${publisherPrefix}_${pascalName}`;
   const solutionName = `${publisherPrefix.toUpperCase()}${pascalName}`;
-  const displayName = `${metadata.title} (Standard)`;
+  const displayName = metadata.title;
   const workspacePath = join(buildRoot, agent.name);
   mkdirSync(workspacePath, { recursive: true });
   runCommand("tar", ["-xf", seedPath, "-C", workspacePath]);

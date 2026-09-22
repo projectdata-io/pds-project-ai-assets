@@ -73,9 +73,8 @@ foreach ($agent in $agents) {
         $taskDialogs += $entryName
       }
     }
-    $expectedTaskDialogs = $metadata.skills.Count + 1
-    if ($taskDialogs.Count -ne $expectedTaskDialogs) {
-      throw "$($agent.name) has $($taskDialogs.Count) MCP TaskDialogs; expected $expectedTaskDialogs."
+    if ($taskDialogs.Count -ne 1) {
+      throw "$($agent.name) has $($taskDialogs.Count) MCP TaskDialogs; expected exactly 1."
     }
 
     foreach ($taskDialog in $taskDialogs) {
