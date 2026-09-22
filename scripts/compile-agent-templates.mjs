@@ -4,14 +4,14 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
-const outputRoot = join(rootPath, "build", "agent-flow-templates");
+const outputRoot = join(rootPath, "build", "agent-templates");
 const checkOnly = process.argv.includes("--check");
 const catalog = JSON.parse(readFileSync(join(rootPath, "catalog.json"), "utf8"));
 const connectorId =
-  process.env.PDS_AGENT_FLOW_CONNECTOR_ID ??
+  process.env.PDS_AGENT_CONNECTOR_ID ??
   "/providers/Microsoft.PowerApps/apis/shared_pds-5fpds-20project-20data-20ai-5f716d2307fe043200";
-const connectionId = process.env.PDS_AGENT_FLOW_CONNECTION_ID ?? "__PDS_CONNECTION_ID__";
-const customConnectorId = process.env.PDS_AGENT_FLOW_CUSTOM_CONNECTOR_ID ?? "__PDS_CUSTOM_CONNECTOR_ID__";
+const connectionId = process.env.PDS_AGENT_CONNECTION_ID ?? "__PDS_CONNECTION_ID__";
+const customConnectorId = process.env.PDS_AGENT_CUSTOM_CONNECTOR_ID ?? "__PDS_CUSTOM_CONNECTOR_ID__";
 
 function toPascalCase(value) {
   return value
@@ -77,8 +77,8 @@ ${indentBlock(skillSource(skillName), 8)}
 }
 
 function renderTemplate(agent, metadata) {
-  const agentSchema = `pds_${toPascalCase(agent.name)}AgentFlow`;
-  const displayName = `${metadata.title} (Agent flow)`;
+  const agentSchema = `pds_${toPascalCase(agent.name)}Agent`;
+  const displayName = `${metadata.title} (Agent)`;
   const connectionReference = `${agentSchema}.cr.shared_pds_project_data_ai.${connectionId}`;
   const instructions = readFileSync(join(rootPath, agent.path, "instructions.md"), "utf8").replaceAll("\r\n", "\n").trim();
   const mcpId = deterministicGuid(`${agent.name}:mcp-tool`);
@@ -235,9 +235,9 @@ function collectFiles(directory) {
 }
 
 const expectedFiles = new Map();
-for (const agent of catalog.agents.filter((item) => item.authoringTargets.includes("agent-flow"))) {
+for (const agent of catalog.agents.filter((item) => item.authoringTargets.includes("agent"))) {
   const metadata = JSON.parse(readFileSync(join(rootPath, agent.path, "agent.json"), "utf8"));
-  expectedFiles.set(join("build", "agent-flow-templates", `${agent.name}.yaml`), renderTemplate(agent, metadata));
+  expectedFiles.set(join("build", "agent-templates", `${agent.name}.yaml`), renderTemplate(agent, metadata));
 }
 
 if (checkOnly) {
@@ -251,11 +251,11 @@ if (checkOnly) {
   }
   const unexpected = actualFiles.filter((path) => !expectedFiles.has(path));
   if (stale.length || unexpected.length) {
-    stale.forEach((path) => console.error(`Missing or stale Agent flow template: ${path}`));
-    unexpected.forEach((path) => console.error(`Unexpected Agent flow template: ${path.replaceAll("\\", "/")}`));
+    stale.forEach((path) => console.error(`Missing or stale Agent template: ${path}`));
+    unexpected.forEach((path) => console.error(`Unexpected Agent template: ${path.replaceAll("\\", "/")}`));
     process.exitCode = 1;
   } else {
-    console.log(`Agent flow templates are current (${expectedFiles.size} agents).`);
+    console.log(`Agent templates are current (${expectedFiles.size} agents).`);
   }
 } else {
   rmSync(outputRoot, { recursive: true, force: true });
@@ -263,5 +263,5 @@ if (checkOnly) {
   for (const [repositoryPath, content] of expectedFiles) {
     writeFileSync(join(rootPath, repositoryPath), content, "utf8");
   }
-  console.log(`Compiled Agent flow templates for ${expectedFiles.size} agents.`);
+  console.log(`Compiled Agent templates for ${expectedFiles.size} agents.`);
 }

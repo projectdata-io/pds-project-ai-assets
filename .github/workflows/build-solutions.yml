@@ -40,8 +40,8 @@ jobs:
       - name: Build unmanaged solution ZIPs
         run: npm run compile:solutions
 
-      - name: Verify Agent flow templates
-        run: npm run verify:agent-flows
+      - name: Verify Agent templates
+        run: npm run verify:agents
 
       - name: Verify unmanaged packages and create checksums
         shell: pwsh
@@ -91,6 +91,7 @@ jobs:
           $checksumLines | Set-Content -LiteralPath 'dist/solutions/SHA256SUMS.txt' -Encoding ascii
           $env:PDS_POWER_PLATFORM_SOLUTION_VERSION |
             Set-Content -LiteralPath 'dist/solutions/VERSION.txt' -Encoding ascii
+          Copy-Item -LiteralPath 'RELEASE-README.md' -Destination 'dist/solutions/README.md'
 
       - name: Upload unmanaged solutions
         uses: actions/upload-artifact@v4
@@ -100,11 +101,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload Agent flow templates
+      - name: Upload Agent templates
         uses: actions/upload-artifact@v4
         with:
-          name: pds-project-ai-agent-flow-templates
-          path: build/agent-flow-templates/
+          name: pds-project-ai-agent-templates
+          path: build/agent-templates/
           if-no-files-found: error
           retention-days: 14
 
@@ -121,11 +122,11 @@ jobs:
           name: pds-project-ai-unmanaged-solutions
           path: dist/solutions
 
-      - name: Download Agent flow templates
+      - name: Download Agent templates
         uses: actions/download-artifact@v4
         with:
-          name: pds-project-ai-agent-flow-templates
-          path: dist/agent-flow-templates
+          name: pds-project-ai-agent-templates
+          path: dist/agent-templates
 
       - name: Create GitHub Release
         shell: pwsh
@@ -139,4 +140,4 @@ jobs:
           gh release create $tag @assets `
             --target $env:GITHUB_SHA `
             --title "PDS Project AI agent assets v$version" `
-            --notes "Automated Copilot Studio build from commit $env:GITHUB_SHA. Includes Standard Agent unmanaged solutions and Agent flow BotDefinition templates. Solution version: $version."
+            --notes "Automated Copilot Studio build from commit $env:GITHUB_SHA. Includes Standard Agent unmanaged solutions and Agent BotDefinition templates. Solution version: $version."

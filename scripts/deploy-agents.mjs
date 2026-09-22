@@ -9,12 +9,12 @@ const args = process.argv.slice(2);
 const confirmed = args.includes("--confirm");
 const selectedAgent = args.includes("--agent") ? args[args.indexOf("--agent") + 1] : undefined;
 const environment = process.env.PDS_POWER_PLATFORM_ENVIRONMENT;
-const solution = process.env.PDS_POWER_PLATFORM_AGENT_FLOW_SOLUTION;
-const connectionId = process.env.PDS_AGENT_FLOW_CONNECTION_ID;
-const customConnectorId = process.env.PDS_AGENT_FLOW_CUSTOM_CONNECTOR_ID;
+const solution = process.env.PDS_POWER_PLATFORM_AGENT_SOLUTION;
+const connectionId = process.env.PDS_AGENT_CONNECTION_ID;
+const customConnectorId = process.env.PDS_AGENT_CUSTOM_CONNECTOR_ID;
 const pacCommand = process.env.PAC_CLI_PATH ?? "pac";
-const templateRoot = join(rootPath, "build", "agent-flow-templates");
-const deployRoot = join(rootPath, "build", "agent-flow-deploy");
+const templateRoot = join(rootPath, "build", "agent-templates");
+const deployRoot = join(rootPath, "build", "agent-deploy");
 
 function runPac(commandArgs) {
   const result = spawnSync(pacCommand, commandArgs, {
@@ -32,24 +32,24 @@ function runPac(commandArgs) {
 }
 
 if (!confirmed) {
-  throw new Error("Agent flow deployment mutates a Power Platform environment; pass --confirm to proceed");
+  throw new Error("Agent deployment mutates a Power Platform environment; pass --confirm to proceed");
 }
 for (const [name, value] of Object.entries({
   PDS_POWER_PLATFORM_ENVIRONMENT: environment,
-  PDS_POWER_PLATFORM_AGENT_FLOW_SOLUTION: solution,
-  PDS_AGENT_FLOW_CONNECTION_ID: connectionId,
-  PDS_AGENT_FLOW_CUSTOM_CONNECTOR_ID: customConnectorId
+  PDS_POWER_PLATFORM_AGENT_SOLUTION: solution,
+  PDS_AGENT_CONNECTION_ID: connectionId,
+  PDS_AGENT_CUSTOM_CONNECTOR_ID: customConnectorId
 })) {
   if (!value) {
     throw new Error(`${name} is required`);
   }
 }
 
-let agents = catalog.agents.filter((agent) => agent.authoringTargets.includes("agent-flow"));
+let agents = catalog.agents.filter((agent) => agent.authoringTargets.includes("agent"));
 if (selectedAgent) {
   agents = agents.filter((agent) => agent.name === selectedAgent);
   if (agents.length !== 1) {
-    throw new Error(`Unknown or non-Agent-flow catalog agent: ${selectedAgent}`);
+    throw new Error(`Unknown or non-Agent catalog agent: ${selectedAgent}`);
   }
 }
 
@@ -59,7 +59,7 @@ for (const agent of agents) {
   const metadata = JSON.parse(readFileSync(join(rootPath, agent.path, "agent.json"), "utf8"));
   const sourcePath = join(templateRoot, `${agent.name}.yaml`);
   if (!existsSync(sourcePath)) {
-    throw new Error(`Missing template ${sourcePath}; run npm run compile:agent-flows first`);
+    throw new Error(`Missing template ${sourcePath}; run npm run compile:agents first`);
   }
   const materialized = readFileSync(sourcePath, "utf8")
     .replaceAll("__PDS_CONNECTION_ID__", connectionId)
@@ -69,12 +69,12 @@ for (const agent of agents) {
   }
   const deployPath = join(deployRoot, `${agent.name}.yaml`);
   writeFileSync(deployPath, materialized, "utf8");
-  const schemaName = `pds_${agent.name.split("-").map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join("")}AgentFlow`;
+  const schemaName = `pds_${agent.name.split("-").map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join("")}Agent`;
   runPac([
     "copilot",
     "create",
     "--displayName",
-    `${metadata.title} (Agent flow)`,
+    `${metadata.title} (Agent)`,
     "--schemaName",
     schemaName,
     "--solution",
@@ -86,4 +86,4 @@ for (const agent of agents) {
   ]);
 }
 
-console.log(`Created ${agents.length} Agent flow agents in ${environment}.`);
+console.log(`Created ${agents.length} Agents in ${environment}.`);

@@ -216,11 +216,11 @@
     }
   ],
   "agents": [
-    { "name": "project-manager-assistant", "access": "read-only", "path": "agents/copilot-studio/project-manager-assistant", "authoringTargets": ["standard-agent", "agent-flow"] },
-    { "name": "schedule-quality-analyst", "access": "read-only", "path": "agents/copilot-studio/schedule-quality-analyst", "authoringTargets": ["standard-agent", "agent-flow"] },
-    { "name": "resource-manager", "access": "read-only", "path": "agents/copilot-studio/resource-manager", "authoringTargets": ["agent-flow"] },
-    { "name": "portfolio-executive-analyst", "access": "read-only", "path": "agents/copilot-studio/portfolio-executive-analyst", "authoringTargets": ["standard-agent", "agent-flow"] },
-    { "name": "project-plan-editor", "access": "commit", "path": "agents/copilot-studio/project-plan-editor", "authoringTargets": ["agent-flow"] },
-    { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent-flow"] }
+    { "name": "project-manager-assistant", "access": "read-only", "path": "agents/copilot-studio/project-manager-assistant", "authoringTargets": ["standard-agent", "agent"] },
+    { "name": "schedule-quality-analyst", "access": "read-only", "path": "agents/copilot-studio/schedule-quality-analyst", "authoringTargets": ["standard-agent", "agent"] },
+    { "name": "resource-manager", "access": "read-only", "path": "agents/copilot-studio/resource-manager", "authoringTargets": ["agent"] },
+    { "name": "portfolio-executive-analyst", "access": "read-only", "path": "agents/copilot-studio/portfolio-executive-analyst", "authoringTargets": ["standard-agent", "agent"] },
+    { "name": "project-plan-editor", "access": "commit", "path": "agents/copilot-studio/project-plan-editor", "authoringTargets": ["agent"] },
+    { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent"] }
   ]
 }

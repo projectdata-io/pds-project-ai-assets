@@ -15,7 +15,7 @@ These files intentionally do not contain tenant, environment, connection, deploy
 
 The `skills` arrays in `agent.json` are repository routing metadata. They are not Copilot Studio native skill components.
 
-| Package | Access | Standard Agent | Agent flow |
+| Package | Access | Standard Agent | Agent |
 | --- | --- | --- | --- |
 | `project-manager-assistant` | Read-only | Yes | Yes |
 | `schedule-quality-analyst` | Read-only | Yes | Yes |
@@ -30,7 +30,7 @@ Run:
 
 ```sh
 npm run compile
-npm run compile:agent-flows
+npm run compile:agents
 ```
 
 Each directory under ignored `build/copilot-studio/` contains:

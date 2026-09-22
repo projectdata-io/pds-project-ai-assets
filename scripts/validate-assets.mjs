@@ -13,7 +13,7 @@ const prohibitedFileNames = [/^\.env(?:\..+)?$/i, /^credentials.*\.json$/i, /^se
 const skillCategories = new Set(["analysis", "audit", "editing", "portfolio", "reporting"]);
 const skillAccessLevels = new Set(["read-only", "draft-only", "commit"]);
 const agentAccessLevels = new Set(["read-only", "commit"]);
-const authoringTargets = new Set(["standard-agent", "agent-flow"]);
+const authoringTargets = new Set(["standard-agent", "agent"]);
 const prohibitedContent = [
   { pattern: /\b[A-Za-z]:\\(?:Users|Documents and Settings)\\/i, reason: "local Windows path" },
   { pattern: /\/(?:Users|home)\/[^/\s]+\//, reason: "local Unix path" },

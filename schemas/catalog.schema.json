@@ -43,7 +43,7 @@
           "path": { "type": "string", "pattern": "^agents/copilot-studio/" },
           "authoringTargets": {
             "type": "array",
-            "items": { "enum": ["standard-agent", "agent-flow"] },
+            "items": { "enum": ["standard-agent", "agent"] },
             "minItems": 1,
             "uniqueItems": true
           }

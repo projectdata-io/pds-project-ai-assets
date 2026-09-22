@@ -3,7 +3,7 @@
 The repository supports both Copilot Studio authoring products:
 
 - **Standard Agent:** rule-based conversational agents with predefined topics and flows. These compile to offline unmanaged solution ZIP files.
-- **Agent flow:** skill-oriented agents for complex actions and human-facing interaction. These compile to `BotDefinition` YAML templates containing native inline skills and an MCP tool.
+- **Agent:** skill-oriented agents for complex actions and human-facing interaction. These compile to `BotDefinition` YAML templates containing native inline skills and an MCP tool.
 
 The packaged agents are cloned from the audited canonical unmanaged seed in `seeds/power-platform/`. Each package includes the generated main instructions, the PDS Project AI MCP custom connector, its agent connection-reference binding, the generic MCP tool, and one native MCP TaskDialog for every mapped workflow. The repository `SKILL.md` files remain source specifications; their compiled TaskDialogs appear as tools in Copilot Studio.
 
@@ -17,7 +17,7 @@ The packaged agents are cloned from the audited canonical unmanaged seed in `see
 
 ## Agent Target Matrix
 
-| Agent | Standard Agent | Agent flow |
+| Agent | Standard Agent | Agent |
 | --- | --- | --- |
 | Project Manager Assistant | Yes | Yes |
 | Schedule Quality Analyst | Yes | Yes |
@@ -41,11 +41,11 @@ The workflow:
 1. Installs the pinned Power Platform CLI version.
 2. Validates source and generated assets.
 3. Sets solution version `1.0.<github.run_number>.<github.run_attempt>`.
-4. Builds four Standard Agent unmanaged solution ZIP files and six Agent flow templates.
+4. Builds four Standard Agent unmanaged solution ZIP files and six Agent templates.
 5. Verifies that every solution contains `Managed=0` and the expected version.
 6. Creates `SHA256SUMS.txt` and `VERSION.txt`.
 7. Uploads `pds-project-ai-unmanaged-solutions` as a workflow artifact retained for 14 days.
-8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing Standard Agent ZIPs, Agent flow templates, checksums, and version metadata.
+8. On pushes to the repository's default branch, creates a GitHub Release tagged `solutions-v<version>` containing Standard Agent ZIPs, Agent templates, checksums, and version metadata.
 
 Download the artifact from the workflow run's **Artifacts** section. Solution ZIP files are never committed to the repository.
 
@@ -144,9 +144,9 @@ The canonical seed was exported from a non-production environment after creating
 
 After import, create or authorize the connector connection in the target environment. Credentials, OAuth consent, and connection instances aren't stored in the seed or generated ZIPs.
 
-## Agent flow templates
+## Agent templates
 
-Agent flows use PAC's internal `cli-copilot` authoring model. A normal unmanaged solution export can omit their inline skills and MCP tool binding, so the compiler emits complete `BotDefinition` YAML templates instead.
+Agents use PAC's internal `cli-copilot` authoring model. A normal unmanaged solution export can omit their inline skills and MCP tool binding, so the compiler emits complete `BotDefinition` YAML templates instead.
 
 The extracted template includes the portable authoring model required to recreate the agent:
 
@@ -158,26 +158,26 @@ The extracted template includes the portable authoring model required to recreat
 Generate templates locally:
 
 ```sh
-npm run compile:agent-flows
-npm run verify:agent-flows
+npm run compile:agents
+npm run verify:agents
 ```
 
-Templates are written to ignored `build/agent-flow-templates/`. Each contains sanitized generated IDs, one native `McpTool`, and all mapped `SKILL.md` files as `InlineAgentSkill` components. Connection and custom-connector IDs remain deployment placeholders.
+Templates are written to ignored `build/agent-templates/`. Each contains sanitized generated IDs, one native `McpTool`, and all mapped `SKILL.md` files as `InlineAgentSkill` components. Connection and custom-connector IDs remain deployment placeholders.
 
-To create an Agent flow in a designated non-production environment, set the required deployment values and run the guarded helper:
+To create an Agent in a designated non-production environment, set the required deployment values and run the guarded helper:
 
 ```powershell
 $env:PDS_POWER_PLATFORM_ENVIRONMENT = 'https://your-dev-environment.crm.dynamics.com'
-$env:PDS_POWER_PLATFORM_AGENT_FLOW_SOLUTION = 'PDSGeneratedAgents'
-$env:PDS_AGENT_FLOW_CONNECTION_ID = '<target-environment-connection-id>'
-$env:PDS_AGENT_FLOW_CUSTOM_CONNECTOR_ID = '<target-environment-custom-connector-id>'
+$env:PDS_POWER_PLATFORM_AGENT_SOLUTION = 'PDSGeneratedAgents'
+$env:PDS_AGENT_CONNECTION_ID = '<target-environment-connection-id>'
+$env:PDS_AGENT_CUSTOM_CONNECTOR_ID = '<target-environment-custom-connector-id>'
 
-npm run deploy:agent-flows -- --confirm --agent mpp-data-auditor
+npm run deploy:agents -- --confirm --agent mpp-data-auditor
 ```
 
 After creation, export the unmanaged solution with `pac solution export`. This workflow requires authentication and mutates the selected development environment; unlike `pac copilot pack`, it isn't an offline build.
 
-Omit `--agent` to create every catalog Agent flow. This command mutates the target environment and refuses to run without `--confirm`.
+Omit `--agent` to create every catalog Agent. This command mutates the target environment and refuses to run without `--confirm`.
 
 Raw extracted templates can contain environment-specific IDs, audit identities, synchronization data, and concrete connection IDs. They remain ignored. Generated templates remove those fields and require target-environment connector values at deployment time.
 
@@ -194,7 +194,7 @@ For each topic listed in `manifest.json`:
 5. Apply **Guardrails**, **Response format**, and **Failure handling** to the topic or prompt instructions.
 6. Keep the generated workflow name so evaluation cases remain traceable.
 
-For workflows that use several MCP calls, require pagination, or include cleanup, prefer a topic or agent flow over a single prompt tool.
+For workflows that use several MCP calls, require pagination, or include cleanup, prefer a topic or Agent over a single prompt tool.
 
 ## 6. Configure Editing Safety
 

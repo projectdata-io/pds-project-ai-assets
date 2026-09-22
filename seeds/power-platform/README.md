@@ -15,9 +15,9 @@ The seed contains no credentials, tokens, current connection values, tenant IDs,
 
 Do not edit seed archive components manually. To update the seed, configure and export a replacement unmanaged solution from a non-production environment, audit it for sensitive values, replace the ZIP, and rerun the full build and verification suite.
 
-## Agent flow template source
+## Agent template source
 
-For Agent flows, use `pac copilot extract-template` in addition to the unmanaged solution export. PAC represents this product internally as `CliCopilot`. The extracted `BotDefinition` is the authoritative source for inline skills and MCP tool components because those components might not appear in the ordinary solution ZIP.
+For Agents, use `pac copilot extract-template` in addition to the unmanaged solution export. PAC represents this product internally as `CliCopilot`. The extracted `BotDefinition` is the authoritative source for inline skills and MCP tool components because those components might not appear in the ordinary solution ZIP.
 
 Raw extracted templates are environment-specific and must remain outside source control until sanitized. Retain these structures during sanitization:
 
