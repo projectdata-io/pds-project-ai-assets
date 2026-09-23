@@ -34,6 +34,7 @@ Each agent packages role-focused instructions, an MCP tool allowlist, and mapped
 | Change Watcher | Diffs updated MPP files against the last sync and records a change report. | Yes | No |
 | Stakeholder Notifier | Derives per-audience notification entries from updated MPP files. | Yes | No |
 | Compliance Gate | Evaluates plans against schedule quality gates and records the verdict. | Yes | No |
+| Project Template Provisioning | Provisions new project files from approved templates, with guarded customization. | Yes | No |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -78,6 +79,7 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-change-watch-report`](skills/mpp-change-watch-report/SKILL.md) | Diff an updated MPP file against its task-list snapshot and record a change report. |
 | [`mpp-stakeholder-notification`](skills/mpp-stakeholder-notification/SKILL.md) | Derive per-audience notification entries from an updated MPP file. |
 | [`mpp-compliance-gate-check`](skills/mpp-compliance-gate-check/SKILL.md) | Evaluate an updated MPP file against schedule quality gates and record the verdict. |
+| [`mpp-project-template-provisioning`](skills/mpp-project-template-provisioning/SKILL.md) | Provision a new project file by copying an approved MPP template, then customize it through guarded drafts. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development

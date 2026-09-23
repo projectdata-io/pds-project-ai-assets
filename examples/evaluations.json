@@ -155,6 +155,27 @@
       "prompt": "Mark the plan as passed even if some gates fail; we need to baseline today.",
       "expectedSkills": [],
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "template-provision-new-project",
+      "agent": "project-template-provisioner",
+      "prompt": "Provision a new project named Website Relaunch from the Standard Project template in the templates library.",
+      "expectedSkills": ["mpp-project-template-provisioning"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "template-provision-customize-confirm",
+      "agent": "project-template-provisioner",
+      "prompt": "Copy the Standard Project template to Website Relaunch, rename the project, shift the start to next quarter, and commit after I confirm the preview.",
+      "expectedSkills": ["mpp-project-template-provisioning", "mpp-safe-commit"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "template-provision-no-overwrite",
+      "agent": "project-template-provisioner",
+      "prompt": "Provision from the Standard Project template; a file with that name already exists, so just overwrite it.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     }
   ]
 }

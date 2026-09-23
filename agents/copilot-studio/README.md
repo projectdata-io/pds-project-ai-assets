@@ -29,6 +29,7 @@ You create the agent and add the MCP tool manually, or deploy the BotDefinition 
 | Change Watcher | Yes | No |
 | Stakeholder Notifier | Yes | No |
 | Compliance Gate | Yes | No |
+| Project Template Provisioning | Yes | No |
 
 The catalog's `authoringTargets` field is authoritative for compilers and CI.
 

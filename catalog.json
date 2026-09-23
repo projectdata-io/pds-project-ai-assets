@@ -44,7 +44,7 @@
       "category": "editing",
       "access": "commit",
       "tools": ["create_session_from_reference", "create_session_from_onedrive", "create_new_project_session", "get_edit_capabilities", "get_project", "list_tasks", "list_resources", "list_assignments", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "close_session"],
-      "agents": ["project-plan-editor", "project-schedule-generator"]
+      "agents": ["project-plan-editor", "project-schedule-generator", "project-template-provisioner"]
     },
     {
       "name": "mpp-milestone-review",
@@ -250,6 +250,13 @@
       "agents": ["compliance-gate"]
     },
     {
+      "name": "mpp-project-template-provisioning",
+      "category": "portfolio",
+      "access": "commit",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["project-template-provisioner"]
+    },
+    {
       "name": "mpp-schedule-realism-review",
       "category": "audit",
       "access": "read-only",
@@ -270,6 +277,7 @@
     { "name": "project-intake-triage", "access": "read-only", "path": "agents/copilot-studio/project-intake-triage", "authoringTargets": ["standard-agent"] },
     { "name": "change-watcher", "access": "read-only", "path": "agents/copilot-studio/change-watcher", "authoringTargets": ["standard-agent"] },
     { "name": "stakeholder-notifier", "access": "read-only", "path": "agents/copilot-studio/stakeholder-notifier", "authoringTargets": ["standard-agent"] },
-    { "name": "compliance-gate", "access": "read-only", "path": "agents/copilot-studio/compliance-gate", "authoringTargets": ["standard-agent"] }
+    { "name": "compliance-gate", "access": "read-only", "path": "agents/copilot-studio/compliance-gate", "authoringTargets": ["standard-agent"] },
+    { "name": "project-template-provisioner", "access": "commit", "path": "agents/copilot-studio/project-template-provisioner", "authoringTargets": ["standard-agent"] }
   ]
 }

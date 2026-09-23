@@ -1,0 +1,11 @@
+{
+  "name": "project-template-provisioner",
+  "title": "Project Template Provisioning",
+  "description": "Trigger-oriented Standard Agent that provisions a new Microsoft Project file by copying an approved MPP template through the Work IQ SharePoint MCP connector, customizing it through the guarded PDS Project AI draft lifecycle, and recording the result in a configured SharePoint list.",
+  "access": "commit",
+  "skills": [
+    "mpp-project-template-provisioning",
+    "mpp-safe-commit"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}
