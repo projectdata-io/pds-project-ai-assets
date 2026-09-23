@@ -174,7 +174,7 @@ The five read-only agents must not receive `Session.ReadWrite` authorization.
 
 ## 7. Test Before Publishing
 
-Use the Copilot Studio test pane with the cases in `examples/evaluations.json`.
+Use the Copilot Studio test pane with the cases in `examples/evaluations.json` from this repository. Each agent package ZIP also carries its own cases compiled into the `README.md` test section.
 
 For every applicable case, verify:
 

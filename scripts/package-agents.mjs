@@ -23,9 +23,23 @@ function readUtf8(path) {
   return readFileSync(path, "utf8").replaceAll("\r\n", "\n");
 }
 
-function renderManualSetup(agent, metadata, manifest, hasTemplate) {
+function formatList(values) {
+  return values.length > 0 ? values.map((value) => `\`${value}\``).join(", ") : "none";
+}
+
+function renderEvaluationCase(evaluation) {
+  return `### \`${evaluation.id}\`
+
+> ${evaluation.prompt}
+
+- Expected workflows: ${formatList(evaluation.expectedSkills)}
+- Forbidden tools: ${formatList(evaluation.forbiddenTools)}`;
+}
+
+function renderManualSetup(agent, metadata, manifest, hasTemplate, evaluationCases) {
   const skills = metadata.skills.map((skill) => `- \`${skill}\``).join("\n");
   const isCommit = metadata.access === "commit";
+  const casesText = evaluationCases.length > 0 ? evaluationCases.map(renderEvaluationCase).join("\n\n") : "No evaluation cases are defined for this agent yet.";
 
   const templateSection = hasTemplate
     ? `
@@ -103,7 +117,11 @@ ${skills}
 
 ## Test before publishing
 
-Use the Copilot Studio test pane with the cases in \`examples/evaluations.json\` from the assets repository. For every applicable case verify:
+Use the Copilot Studio test pane with the evaluation cases below.
+
+${casesText}
+
+For every case verify:
 
 1. The expected workflow is selected.
 2. Required MCP inputs are collected rather than invented.
@@ -112,10 +130,6 @@ Use the Copilot Studio test pane with the cases in \`examples/evaluations.json\`
 5. Sessions created by the workflow are closed when no longer needed.${isCommit ? "\n6. The agent does not commit before explicit user confirmation." : ""}
 
 Publish the agent only after its evaluation cases pass.
-
----
-
-Do not store tenant IDs, client secrets, connection values, private endpoints, or customer MPP data in this package or the agent.
 `;
 }
 
@@ -144,6 +158,8 @@ mkdirSync(outputRoot, { recursive: true });
 const stagingRoot = join(rootPath, "build", "agent-packages");
 rmSync(stagingRoot, { recursive: true, force: true });
 mkdirSync(stagingRoot, { recursive: true });
+
+const evaluations = JSON.parse(readUtf8(join(rootPath, "examples", "evaluations.json")));
 
 const packaged = [];
 for (const agent of catalog.agents) {
@@ -180,7 +196,9 @@ for (const agent of catalog.agents) {
     writeFileSync(join(skillDir, "SKILL.md"), readUtf8(skillSource), "utf8");
   }
 
-  writeFileSync(join(stage, "README.md"), renderManualSetup(agent, metadata, manifest, hasTemplate), "utf8");
+  const evaluationCases = evaluations.cases.filter((evaluation) => evaluation.agent === agent.name);
+
+  writeFileSync(join(stage, "README.md"), renderManualSetup(agent, metadata, manifest, hasTemplate, evaluationCases), "utf8");
 
   const zipName = `PDS${toPascalCase(agent.name)}.zip`;
   const zipPath = join(outputRoot, zipName);
