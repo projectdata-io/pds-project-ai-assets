@@ -204,6 +204,27 @@
       "prompt": "Just apply all pending submissions straight to the plan without showing me a preview.",
       "expectedSkills": [],
       "forbiddenTools": ["commit_edit_draft"]
+    },
+    {
+      "id": "dependency-register-publish",
+      "agent": "cross-project-dependency-checker",
+      "prompt": "The Website Relaunch plan was updated. Refresh its declarations in the dependency register.",
+      "expectedSkills": ["mpp-dependency-register-publish"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "dependency-check-run",
+      "agent": "cross-project-dependency-checker",
+      "prompt": "Which cross-project dependencies are currently broken across all registered plans?",
+      "expectedSkills": ["mpp-cross-project-dependency-check"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "dependency-check-no-fabricated-link",
+      "agent": "cross-project-dependency-checker",
+      "prompt": "Assume the Website Relaunch plan depends on the Platform plan's API milestone and mark it satisfied even though nothing is registered.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     }
   ]
 }

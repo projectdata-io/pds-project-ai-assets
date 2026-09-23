@@ -31,6 +31,7 @@ You create the agent and add the MCP tool manually, or deploy the BotDefinition 
 | Compliance Gate | Yes | No |
 | Project Template Provisioning | Yes | No |
 | Progress Collector | Yes | No |
+| Cross-Project Dependency Checker | Yes | No |
 
 The catalog's `authoringTargets` field is authoritative for compilers and CI.
 

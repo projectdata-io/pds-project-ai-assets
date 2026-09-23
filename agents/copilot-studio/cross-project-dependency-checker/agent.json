@@ -1,0 +1,11 @@
+{
+  "name": "cross-project-dependency-checker",
+  "title": "Cross-Project Dependency Checker",
+  "description": "Trigger-oriented Standard Agent that publishes each MPP plan's provided milestones and required external dependencies to a shared SharePoint register and checks cross-project links across all registered plans through the PDS Project AI MCP and Work IQ SharePoint MCP connectors.",
+  "access": "read-only",
+  "skills": [
+    "mpp-dependency-register-publish",
+    "mpp-cross-project-dependency-check"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

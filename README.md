@@ -36,6 +36,7 @@ Each agent packages role-focused instructions, an MCP tool allowlist, and mapped
 | Compliance Gate | Evaluates plans against schedule quality gates and records the verdict. | Yes | No |
 | Project Template Provisioning | Provisions new project files from approved templates, with guarded customization. | Yes | No |
 | Progress Collector | Seeds SharePoint progress requests from a plan, then applies the submissions back in one confirmed batch. | Yes | No |
+| Cross-Project Dependency Checker | Keeps a shared dependency register and reports broken cross-project links. | Yes | No |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -83,6 +84,8 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-project-template-provisioning`](skills/mpp-project-template-provisioning/SKILL.md) | Provision a new project file by copying an approved MPP template, then customize it through guarded drafts. |
 | [`mpp-progress-collection`](skills/mpp-progress-collection/SKILL.md) | Collect team-reported progress from a SharePoint intake list and apply it to the source plan in one confirmed batch. |
 | [`mpp-progress-request`](skills/mpp-progress-request/SKILL.md) | Seed a SharePoint intake list with per-resource progress request rows from a plan's active assignments. |
+| [`mpp-dependency-register-publish`](skills/mpp-dependency-register-publish/SKILL.md) | Publish a plan's provided milestones and required external dependencies to a shared register. |
+| [`mpp-cross-project-dependency-check`](skills/mpp-cross-project-dependency-check/SKILL.md) | Evaluate cross-project requirements against the shared dependency register and record the verdict. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development
