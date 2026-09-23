@@ -1,0 +1,10 @@
+{
+  "name": "task-list-synchronizer",
+  "title": "Task List Synchronizer",
+  "description": "Trigger-oriented Standard Agent that extracts the task schedule from a created or updated MPP file through the PDS Project AI MCP connector and synchronizes task rows in a configured SharePoint list through the Work IQ SharePoint MCP connector.",
+  "access": "read-only",
+  "skills": [
+    "mpp-task-list-sync"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

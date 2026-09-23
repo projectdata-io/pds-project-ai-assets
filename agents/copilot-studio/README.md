@@ -2,7 +2,7 @@
 
 The repository builds one **agent package** per catalog agent: a ZIP containing the agent's `instructions.md`, `manifest.json`, every mapped `SKILL.md`, a manual setup guide, and — for agents targeting the **Agent** product — a `BotDefinition` YAML template (`agent.yaml`) with native inline skills and the MCP tool binding.
 
-Automated Dataverse solution generation has been removed. You create the agent and add the MCP tool manually, or deploy the BotDefinition template with `pac copilot create`. The repository `SKILL.md` files remain source specifications; Copilot Studio does not import them as native components on manually created agents.
+You create the agent and add the MCP tool manually, or deploy the BotDefinition template with `pac copilot create`. The repository `SKILL.md` files remain source specifications; Copilot Studio does not import them as native components on manually created agents.
 
 ## Prerequisites
 
@@ -24,6 +24,7 @@ Automated Dataverse solution generation has been removed. You create the agent a
 | Project Schedule Generator | No | Yes |
 | MPP Data Auditor | Yes | Yes |
 | Portfolio List Maintainer | Yes | No |
+| Task List Synchronizer | Yes | No |
 
 The catalog's `authoringTargets` field is authoritative for compilers and CI.
 
@@ -93,26 +94,14 @@ Do not paste `agent.json`, `manifest.json`, or all topic files into the main ins
 4. Use end-user authentication so API authorization remains scoped to the signed-in user.
 5. Save the MCP tool and verify that its tools appear in the MCP tool details.
 
-Use these permission boundaries:
-
-| Bundle | OAuth scope |
-| --- | --- |
-| All read-only bundles | `Session.ReadOnly` |
-| `project-plan-editor` | `Session.ReadWrite` |
-
-OAuth scope enforcement is the security boundary. Agent instructions are behavioral guidance, not authorization.
-
-## 4. Apply the Tool Allowlist
+## 4. Apply the Tool Allowlist (optional)
 
 Compare the MCP tools shown in Copilot Studio with the `tools` array in `manifest.json`.
 
 1. Enable only the listed tools when the environment supports individual MCP tool controls.
-2. Disable unrelated tools.
-3. For read-only agents, do not authorize `Session.ReadWrite` even if write tools remain visible in the MCP inventory.
-4. For the Project Plan Editor, set **Ask the end user before running** for `commit_edit_draft`.
-5. Keep confirmation enabled for other externally visible write actions where available.
-
-If individual MCP tools cannot be disabled, rely on OAuth scopes and server-side authorization to enforce the boundary.
+1. Disable unrelated tools.
+1. For the Project Plan Editor, set **Ask the end user before running** for `commit_edit_draft`.
+1. Keep confirmation enabled for other externally visible write actions where available.
 
 ### MCP ALM behavior
 

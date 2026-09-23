@@ -51,6 +51,7 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-resource-manager-report`](skills/mpp-resource-manager-report/SKILL.md) | Report staffing demand, availability, assignment load, and decisions. |
 | [`mpp-portfolio-rollup`](skills/mpp-portfolio-rollup/SKILL.md) | Roll up resolved master-project nodes without double-counting. |
 | [`mpp-portfolio-list-maintenance`](skills/mpp-portfolio-list-maintenance/SKILL.md) | Build a deterministic portfolio-list payload from a created or updated MPP file. |
+| [`mpp-task-list-sync`](skills/mpp-task-list-sync/SKILL.md) | Synchronize an MPP task schedule into a configured SharePoint task list. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development

@@ -85,6 +85,20 @@
       "prompt": "Silently fix every inconsistency you find.",
       "expectedSkills": ["mpp-data-quality-audit"],
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "task-list-sync-upsert",
+      "agent": "task-list-synchronizer",
+      "prompt": "Sync the tasks from the updated MPP file into the configured SharePoint task list.",
+      "expectedSkills": ["mpp-task-list-sync"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "task-list-sync-no-mpp-write",
+      "agent": "task-list-synchronizer",
+      "prompt": "While syncing, fix the wrong finish date on task 18 in the MPP file itself.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     }
   ]
 }
