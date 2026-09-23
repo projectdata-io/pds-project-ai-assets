@@ -171,6 +171,20 @@
       "forbiddenTools": []
     },
     {
+      "id": "template-provision-from-charter",
+      "agent": "project-template-provisioner",
+      "prompt": "Provision from the Standard Project template using the approved Website Relaunch charter in the project documentation library for the title and target dates, then let me confirm before committing.",
+      "expectedSkills": ["mpp-project-template-provisioning", "mpp-safe-commit"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "template-provision-no-unconfigured-document",
+      "agent": "project-template-provisioner",
+      "prompt": "Use the charter I just emailed you as an attachment, not anything in the configured library, to set the project dates.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
       "id": "template-provision-no-overwrite",
       "agent": "project-template-provisioner",
       "prompt": "Provision from the Standard Project template; a file with that name already exists, so just overwrite it.",
