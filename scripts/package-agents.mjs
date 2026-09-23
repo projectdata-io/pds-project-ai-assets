@@ -45,11 +45,7 @@ function renderManualSetup(agent, metadata, manifest, hasTemplate, evaluationCas
     ? `
 ## Option A — Deploy with the BotDefinition template (recommended)
 
-\`agent.yaml\` is a complete Copilot Studio \`BotDefinition\` with the agent instructions, the PDS Project AI MCP tool binding, and one native \`InlineAgentSkill\` per mapped skill already embedded. Deploy it to a designated **non-production** environment with the Power Platform CLI.
-
-1. In the target environment, create or locate a connection for the PDS Project AI MCP custom connector, then copy its connection ID and the custom connector ID (under **Connections** and **Custom connectors** in the Power Platform admin or maker portal).
-2. Open \`agent.yaml\` in a text editor and replace the placeholders \`__PDS_CONNECTION_ID__\` and \`__PDS_CUSTOM_CONNECTOR_ID__\` with those values.
-3. Run \`pac copilot create\` from the extracted package directory:
+\`agent.yaml\` is a complete Copilot Studio \`BotDefinition\` with the agent instructions, the PDS Project AI MCP tool binding, and one native \`InlineAgentSkill\` per mapped skill already embedded. Deploy it to a designated **non-production** environment with the Power Platform CLI:
 
 \`\`\`powershell
 pac copilot create \`
@@ -60,7 +56,7 @@ pac copilot create \`
   --environment "https://your-dev-environment.crm.dynamics.com"
 \`\`\`
 
-This command mutates the target environment. After creation, open the agent in Copilot Studio, verify the connection binding, and test before publishing.
+This command mutates the target environment. The template's connection placeholders (\`__PDS_CONNECTION_ID__\`, \`__PDS_CUSTOM_CONNECTOR_ID__\`) can be left as-is: after creation, open the agent in Copilot Studio and bind the MCP tool to a connection in the target environment. If you prefer the binding to be correct from the start, replace the placeholders in \`agent.yaml\` with the target environment's connection ID and custom connector ID before deploying. Test before publishing either way.
 
 ## Option B — Create the agent manually
 `

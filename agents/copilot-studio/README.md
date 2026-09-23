@@ -127,7 +127,7 @@ npm run verify:agents
 
 Templates are written to ignored `build/agent-templates/`. Each contains sanitized generated IDs, one native `McpTool`, and all mapped `SKILL.md` files as `InlineAgentSkill` components. Connection and custom-connector IDs remain deployment placeholders.
 
-To create an Agent in a designated non-production environment, set the required deployment values and run the guarded helper:
+The placeholders are optional: you can deploy a template as-is and bind the connection afterwards in Copilot Studio. Supplying real values at deployment time just makes the binding correct from the start. To create an Agent in a designated non-production environment with values substituted, set the deployment variables and run the guarded helper:
 
 ```powershell
 $env:PDS_POWER_PLATFORM_ENVIRONMENT = 'https://your-dev-environment.crm.dynamics.com'
@@ -142,7 +142,7 @@ After creation, export the unmanaged solution with `pac solution export`. This w
 
 Omit `--agent` to create every catalog Agent. This command mutates the target environment and refuses to run without `--confirm`.
 
-Raw extracted templates can contain environment-specific IDs, audit identities, synchronization data, and concrete connection IDs. They remain ignored. Generated templates remove those fields and require target-environment connector values at deployment time.
+Raw extracted templates can contain environment-specific IDs, audit identities, synchronization data, and concrete connection IDs. They remain ignored. Generated templates remove those fields and leave deployment placeholders in their place.
 
 ## 5. Apply Workflow Topics
 
