@@ -45,18 +45,22 @@ function renderManualSetup(agent, metadata, manifest, hasTemplate, evaluationCas
     ? `
 ## Option A — Deploy with the BotDefinition template (recommended)
 
-\`agent.yaml\` is a complete Copilot Studio \`BotDefinition\` with the agent instructions, the PDS Project AI MCP tool binding, and one native \`InlineAgentSkill\` per mapped skill already embedded. Deploy it to a designated **non-production** environment with the Power Platform CLI:
+\`agent.yaml\` is a complete Copilot Studio \`BotDefinition\` with the agent instructions, the PDS Project AI MCP tool binding, and one native \`InlineAgentSkill\` per mapped skill already embedded. Deploy it to a designated **non-production** environment with the Power Platform CLI.
+
+1. In the target environment, create or locate a connection for the PDS Project AI MCP custom connector, then copy its connection ID and the custom connector ID (under **Connections** and **Custom connectors** in the Power Platform admin or maker portal).
+2. Open \`agent.yaml\` in a text editor and replace the placeholders \`__PDS_CONNECTION_ID__\` and \`__PDS_CUSTOM_CONNECTOR_ID__\` with those values.
+3. Run \`pac copilot create\` from the extracted package directory:
 
 \`\`\`powershell
-$env:PDS_POWER_PLATFORM_ENVIRONMENT = 'https://your-dev-environment.crm.dynamics.com'
-$env:PDS_POWER_PLATFORM_AGENT_SOLUTION = 'PDSGeneratedAgents'
-$env:PDS_AGENT_CONNECTION_ID = '<target-environment-connection-id>'
-$env:PDS_AGENT_CUSTOM_CONNECTOR_ID = '<target-environment-custom-connector-id>'
-
-npm run deploy:agents -- --confirm --agent ${agent.name}
+pac copilot create \`
+  --displayName "${metadata.title} (Agent)" \`
+  --schemaName "pds_${toPascalCase(agent.name)}Agent" \`
+  --solution "PDSGeneratedAgents" \`
+  --templateFileName "agent.yaml" \`
+  --environment "https://your-dev-environment.crm.dynamics.com"
 \`\`\`
 
-The helper substitutes the connection placeholders in \`agent.yaml\` and calls \`pac copilot create\`. This command mutates the target environment and refuses to run without \`--confirm\`. After creation, open the agent in Copilot Studio, bind the connection, and test before publishing.
+This command mutates the target environment. After creation, open the agent in Copilot Studio, verify the connection binding, and test before publishing.
 
 ## Option B — Create the agent manually
 `
