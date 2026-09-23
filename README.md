@@ -15,6 +15,24 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 
 This repository's top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
 
+## Available agents
+
+Each agent packages role-focused instructions, an MCP tool allowlist, and mapped workflows for Copilot Studio. Standard Agents are created manually; Agents can also be deployed from a generated `BotDefinition` template.
+
+| Agent | What it does | Standard Agent | Agent |
+| --- | --- | --- | --- |
+| Project Manager Assistant | Status, milestones, lookahead, dependencies, and near-term attention. | Yes | Yes |
+| Schedule Quality Analyst | Schedule logic, constraints, realism, and data-quality assurance. | Yes | Yes |
+| Resource Manager | Resource demand, capacity, and assignment reporting. | No | Yes |
+| Portfolio and Executive Analyst | Executive status, master-project rollup, and variance reporting. | Yes | Yes |
+| Project Plan Editor | Guarded MPP edits: draft, preview, validate, confirm, commit. | No | Yes |
+| Project Schedule Generator | Generate new project schedules through guarded drafts. | No | Yes |
+| MPP Data Auditor | Read-only entity, hierarchy, and custom-field assurance. | Yes | Yes |
+| Portfolio List Maintainer | Keeps a SharePoint portfolio list in sync from changed MPP files. | Yes | No |
+| Task List Synchronizer | Syncs MPP tasks into a SharePoint task list, including deletions. | Yes | No |
+
+Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
+
 ## Available workflow specifications
 
 These `SKILL.md` files are reusable workflow specifications. Copilot Studio agents using the standard harness do not import them as native skills, topics, or tools.
