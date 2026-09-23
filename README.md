@@ -35,6 +35,7 @@ Each agent packages role-focused instructions, an MCP tool allowlist, and mapped
 | Stakeholder Notifier | Derives per-audience notification entries from updated MPP files. | Yes | No |
 | Compliance Gate | Evaluates plans against schedule quality gates and records the verdict. | Yes | No |
 | Project Template Provisioning | Provisions new project files from approved templates, with guarded customization. | Yes | No |
+| Progress Collector | Seeds SharePoint progress requests from a plan, then applies the submissions back in one confirmed batch. | Yes | No |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -80,6 +81,8 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-stakeholder-notification`](skills/mpp-stakeholder-notification/SKILL.md) | Derive per-audience notification entries from an updated MPP file. |
 | [`mpp-compliance-gate-check`](skills/mpp-compliance-gate-check/SKILL.md) | Evaluate an updated MPP file against schedule quality gates and record the verdict. |
 | [`mpp-project-template-provisioning`](skills/mpp-project-template-provisioning/SKILL.md) | Provision a new project file by copying an approved MPP template, then customize it through guarded drafts. |
+| [`mpp-progress-collection`](skills/mpp-progress-collection/SKILL.md) | Collect team-reported progress from a SharePoint intake list and apply it to the source plan in one confirmed batch. |
+| [`mpp-progress-request`](skills/mpp-progress-request/SKILL.md) | Seed a SharePoint intake list with per-resource progress request rows from a plan's active assignments. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development

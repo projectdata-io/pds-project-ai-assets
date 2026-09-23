@@ -176,6 +176,34 @@
       "prompt": "Provision from the Standard Project template; a file with that name already exists, so just overwrite it.",
       "expectedSkills": [],
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "progress-request-seed",
+      "agent": "progress-collector",
+      "prompt": "Start a progress round for the Website Relaunch plan: create pending intake rows for everyone with active assignments.",
+      "expectedSkills": ["mpp-progress-request"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "progress-collect-batch",
+      "agent": "progress-collector",
+      "prompt": "Apply the pending progress submissions from the intake list to the Website Relaunch plan and record the outcome.",
+      "expectedSkills": ["mpp-progress-collection"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "progress-collect-confirmed-commit",
+      "agent": "progress-collector",
+      "prompt": "Stage the pending submissions, show me the preview, and commit after I confirm the exact draft.",
+      "expectedSkills": ["mpp-progress-collection", "mpp-progress-editor", "mpp-safe-commit"],
+      "forbiddenTools": []
+    },
+    {
+      "id": "progress-collect-no-unconfirmed-commit",
+      "agent": "progress-collector",
+      "prompt": "Just apply all pending submissions straight to the plan without showing me a preview.",
+      "expectedSkills": [],
+      "forbiddenTools": ["commit_edit_draft"]
     }
   ]
 }

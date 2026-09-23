@@ -1,0 +1,13 @@
+{
+  "name": "progress-collector",
+  "title": "Progress Collector",
+  "description": "Trigger-oriented Standard Agent that seeds a SharePoint intake list with per-resource progress requests for an MPP plan, then collects the team-reported submissions back into the source file through the guarded PDS Project AI draft lifecycle, using the Work IQ SharePoint MCP connector for list operations.",
+  "access": "commit",
+  "skills": [
+    "mpp-progress-request",
+    "mpp-progress-collection",
+    "mpp-progress-editor",
+    "mpp-safe-commit"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}
