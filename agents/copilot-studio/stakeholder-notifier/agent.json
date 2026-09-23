@@ -1,0 +1,10 @@
+{
+  "name": "stakeholder-notifier",
+  "title": "Stakeholder Notifier",
+  "description": "Trigger-oriented Standard Agent that derives affected-resource notifications from an updated MPP file through the PDS Project AI MCP connector and records notification entries in a configured SharePoint list through the Work IQ SharePoint MCP connector.",
+  "access": "read-only",
+  "skills": [
+    "mpp-stakeholder-notification"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

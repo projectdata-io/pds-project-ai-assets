@@ -222,6 +222,34 @@
       "agents": ["task-list-synchronizer"]
     },
     {
+      "name": "mpp-project-intake-triage",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["project-intake-triage"]
+    },
+    {
+      "name": "mpp-change-watch-report",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["change-watcher"]
+    },
+    {
+      "name": "mpp-stakeholder-notification",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["stakeholder-notifier"]
+    },
+    {
+      "name": "mpp-compliance-gate-check",
+      "category": "audit",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "agents": ["compliance-gate"]
+    },
+    {
       "name": "mpp-schedule-realism-review",
       "category": "audit",
       "access": "read-only",
@@ -238,6 +266,10 @@
     { "name": "project-schedule-generator", "access": "commit", "path": "agents/copilot-studio/project-schedule-generator", "authoringTargets": ["agent"] },
     { "name": "mpp-data-auditor", "access": "read-only", "path": "agents/copilot-studio/mpp-data-auditor", "authoringTargets": ["standard-agent", "agent"] },
     { "name": "portfolio-list-maintainer", "access": "read-only", "path": "agents/copilot-studio/portfolio-list-maintainer", "authoringTargets": ["standard-agent"] },
-    { "name": "task-list-synchronizer", "access": "read-only", "path": "agents/copilot-studio/task-list-synchronizer", "authoringTargets": ["standard-agent"] }
+    { "name": "task-list-synchronizer", "access": "read-only", "path": "agents/copilot-studio/task-list-synchronizer", "authoringTargets": ["standard-agent"] },
+    { "name": "project-intake-triage", "access": "read-only", "path": "agents/copilot-studio/project-intake-triage", "authoringTargets": ["standard-agent"] },
+    { "name": "change-watcher", "access": "read-only", "path": "agents/copilot-studio/change-watcher", "authoringTargets": ["standard-agent"] },
+    { "name": "stakeholder-notifier", "access": "read-only", "path": "agents/copilot-studio/stakeholder-notifier", "authoringTargets": ["standard-agent"] },
+    { "name": "compliance-gate", "access": "read-only", "path": "agents/copilot-studio/compliance-gate", "authoringTargets": ["standard-agent"] }
   ]
 }

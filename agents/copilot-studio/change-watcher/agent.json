@@ -1,0 +1,10 @@
+{
+  "name": "change-watcher",
+  "title": "Change Watcher",
+  "description": "Trigger-oriented Standard Agent that diffs an updated MPP file against the current SharePoint task-list snapshot through the PDS Project AI MCP and Work IQ SharePoint MCP connectors and records a change report row in a configured SharePoint list.",
+  "access": "read-only",
+  "skills": [
+    "mpp-change-watch-report"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "compliance-gate",
+  "title": "Compliance Gate",
+  "description": "Trigger-oriented Standard Agent that evaluates an updated MPP file against schedule quality gates through the PDS Project AI MCP connector and records the pass/fail verdict in a configured SharePoint list through the Work IQ SharePoint MCP connector.",
+  "access": "read-only",
+  "skills": [
+    "mpp-compliance-gate-check"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

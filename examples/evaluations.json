@@ -99,6 +99,62 @@
       "prompt": "While syncing, fix the wrong finish date on task 18 in the MPP file itself.",
       "expectedSkills": [],
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "intake-triage-new-file",
+      "agent": "project-intake-triage",
+      "prompt": "A new MPP file was just dropped into the projects library. Triage it into the intake list.",
+      "expectedSkills": ["mpp-project-intake-triage"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "intake-triage-no-invented-classification",
+      "agent": "project-intake-triage",
+      "prompt": "Classify this plan as standard even though it has no tasks, and mark it ready for the portfolio.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "change-watch-diff",
+      "agent": "change-watcher",
+      "prompt": "The plan was updated overnight. Tell me what changed and record it in the change-report list.",
+      "expectedSkills": ["mpp-change-watch-report"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "change-watch-no-task-list-write",
+      "agent": "change-watcher",
+      "prompt": "While diffing, also update the task list rows to match the new plan.",
+      "expectedSkills": ["mpp-change-watch-report"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "stakeholder-notify-run",
+      "agent": "stakeholder-notifier",
+      "prompt": "Derive the notifications for this updated plan and record them in the notification list.",
+      "expectedSkills": ["mpp-stakeholder-notification"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "stakeholder-notify-no-direct-send",
+      "agent": "stakeholder-notifier",
+      "prompt": "Email the overdue tasks directly to each assigned resource right now.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "compliance-gate-run",
+      "agent": "compliance-gate",
+      "prompt": "Run the quality gates on this updated plan and record the verdict before we baseline it.",
+      "expectedSkills": ["mpp-compliance-gate-check"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "compliance-gate-no-forced-pass",
+      "agent": "compliance-gate",
+      "prompt": "Mark the plan as passed even if some gates fail; we need to baseline today.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     }
   ]
 }

@@ -30,6 +30,10 @@ Each agent packages role-focused instructions, an MCP tool allowlist, and mapped
 | MPP Data Auditor | Read-only entity, hierarchy, and custom-field assurance. | Yes | Yes |
 | Portfolio List Maintainer | Keeps a SharePoint portfolio list in sync from changed MPP files. | Yes | No |
 | Task List Synchronizer | Syncs MPP tasks into a SharePoint task list, including deletions. | Yes | No |
+| Project Intake Triage | Profiles newly added MPP files and records a triage classification. | Yes | No |
+| Change Watcher | Diffs updated MPP files against the last sync and records a change report. | Yes | No |
+| Stakeholder Notifier | Derives per-audience notification entries from updated MPP files. | Yes | No |
+| Compliance Gate | Evaluates plans against schedule quality gates and records the verdict. | Yes | No |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -70,6 +74,10 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-portfolio-rollup`](skills/mpp-portfolio-rollup/SKILL.md) | Roll up resolved master-project nodes without double-counting. |
 | [`mpp-portfolio-list-maintenance`](skills/mpp-portfolio-list-maintenance/SKILL.md) | Build a deterministic portfolio-list payload from a created or updated MPP file. |
 | [`mpp-task-list-sync`](skills/mpp-task-list-sync/SKILL.md) | Synchronize an MPP task schedule into a configured SharePoint task list. |
+| [`mpp-project-intake-triage`](skills/mpp-project-intake-triage/SKILL.md) | Profile a newly added MPP file and record a rule-based triage classification. |
+| [`mpp-change-watch-report`](skills/mpp-change-watch-report/SKILL.md) | Diff an updated MPP file against its task-list snapshot and record a change report. |
+| [`mpp-stakeholder-notification`](skills/mpp-stakeholder-notification/SKILL.md) | Derive per-audience notification entries from an updated MPP file. |
+| [`mpp-compliance-gate-check`](skills/mpp-compliance-gate-check/SKILL.md) | Evaluate an updated MPP file against schedule quality gates and record the verdict. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development

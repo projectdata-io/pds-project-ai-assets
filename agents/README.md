@@ -26,6 +26,10 @@ The `skills` arrays in `agent.json` are repository routing metadata. They are no
 | `mpp-data-auditor` | Read-only | Yes | Yes |
 | `portfolio-list-maintainer` | Read-only; caller writes SharePoint list rows | Yes | No |
 | `task-list-synchronizer` | Read-only; caller writes SharePoint list rows | Yes | No |
+| `project-intake-triage` | Read-only; caller writes SharePoint list rows | Yes | No |
+| `change-watcher` | Read-only; caller writes SharePoint list rows | Yes | No |
+| `stakeholder-notifier` | Read-only; caller writes SharePoint list rows | Yes | No |
+| `compliance-gate` | Read-only; caller writes SharePoint list rows | Yes | No |
 
 ## Generate Copilot Studio bundles
 

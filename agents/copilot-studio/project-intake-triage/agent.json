@@ -1,0 +1,10 @@
+{
+  "name": "project-intake-triage",
+  "title": "Project Intake Triage",
+  "description": "Trigger-oriented Standard Agent that profiles a newly added MPP file through the PDS Project AI MCP connector and records the triage outcome in a configured SharePoint list through the Work IQ SharePoint MCP connector.",
+  "access": "read-only",
+  "skills": [
+    "mpp-project-intake-triage"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

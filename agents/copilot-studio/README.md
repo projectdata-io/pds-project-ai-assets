@@ -25,6 +25,10 @@ You create the agent and add the MCP tool manually, or deploy the BotDefinition 
 | MPP Data Auditor | Yes | Yes |
 | Portfolio List Maintainer | Yes | No |
 | Task List Synchronizer | Yes | No |
+| Project Intake Triage | Yes | No |
+| Change Watcher | Yes | No |
+| Stakeholder Notifier | Yes | No |
+| Compliance Gate | Yes | No |
 
 The catalog's `authoringTargets` field is authoritative for compilers and CI.
 
