@@ -1,0 +1,11 @@
+{
+  "name": "deliverable-link-checker",
+  "title": "Deliverable Link Checker",
+  "description": "Trigger-oriented Standard Agent that publishes each MPP plan's declared deliverable keys to a shared SharePoint deliverable register and checks soft cross-project deliverable dependencies across all registered plans, independent of Project Server/Online-only native deliverable fields, through the PDS Project AI MCP and Work IQ SharePoint MCP connectors.",
+  "access": "read-only",
+  "skills": [
+    "mpp-deliverable-register-publish",
+    "mpp-deliverable-link-check"
+  ],
+  "mcpServers": ["project", "sharepoint-workiq"]
+}

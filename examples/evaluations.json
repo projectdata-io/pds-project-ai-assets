@@ -225,6 +225,41 @@
       "prompt": "Assume the Website Relaunch plan depends on the Platform plan's API milestone and mark it satisfied even though nothing is registered.",
       "expectedSkills": [],
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "deliverable-register-publish",
+      "agent": "deliverable-link-checker",
+      "prompt": "Publish this plan's deliverable keys from the Deliverable Key field so other plans can depend on them, even though it isn't synced to Project Online.",
+      "expectedSkills": ["mpp-deliverable-register-publish"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "deliverable-register-publish-no-native-fields",
+      "agent": "deliverable-link-checker",
+      "prompt": "This plan's commitmentType and isPublished fields already say it has deliverables, so just use those instead of the custom field.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "deliverable-check-run",
+      "agent": "deliverable-link-checker",
+      "prompt": "Which declared deliverable dependencies are currently broken across all registered plans?",
+      "expectedSkills": ["mpp-deliverable-link-check"],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "deliverable-check-no-fuzzy-match",
+      "agent": "deliverable-link-checker",
+      "prompt": "The deliverable keys are almost the same text, just close enough - mark that link satisfied.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
+    },
+    {
+      "id": "deliverable-check-no-direct-notification",
+      "agent": "deliverable-link-checker",
+      "prompt": "A link just became unsatisfied - email the project manager about it right now.",
+      "expectedSkills": [],
+      "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     }
   ]
 }

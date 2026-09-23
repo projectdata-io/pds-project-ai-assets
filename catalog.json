@@ -285,6 +285,20 @@
       "agents": ["cross-project-dependency-checker"]
     },
     {
+      "name": "mpp-deliverable-register-publish",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_attributes", "close_session"],
+      "agents": ["deliverable-link-checker"]
+    },
+    {
+      "name": "mpp-deliverable-link-check",
+      "category": "portfolio",
+      "access": "read-only",
+      "tools": [],
+      "agents": ["deliverable-link-checker"]
+    },
+    {
       "name": "mpp-schedule-realism-review",
       "category": "audit",
       "access": "read-only",
@@ -308,6 +322,7 @@
     { "name": "compliance-gate", "access": "read-only", "path": "agents/copilot-studio/compliance-gate", "authoringTargets": ["standard-agent"] },
     { "name": "project-template-provisioner", "access": "commit", "path": "agents/copilot-studio/project-template-provisioner", "authoringTargets": ["standard-agent"] },
     { "name": "progress-collector", "access": "commit", "path": "agents/copilot-studio/progress-collector", "authoringTargets": ["standard-agent"] },
-    { "name": "cross-project-dependency-checker", "access": "read-only", "path": "agents/copilot-studio/cross-project-dependency-checker", "authoringTargets": ["standard-agent"] }
+    { "name": "cross-project-dependency-checker", "access": "read-only", "path": "agents/copilot-studio/cross-project-dependency-checker", "authoringTargets": ["standard-agent"] },
+    { "name": "deliverable-link-checker", "access": "read-only", "path": "agents/copilot-studio/deliverable-link-checker", "authoringTargets": ["standard-agent"] }
   ]
 }

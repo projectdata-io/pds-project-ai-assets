@@ -33,6 +33,7 @@ The `skills` arrays in `agent.json` are repository routing metadata. They are no
 | `project-template-provisioner` | Commit after preview, validation, and confirmation; caller copies files and writes SharePoint list rows | Yes | No |
 | `progress-collector` | Commit after preview, validation, and confirmation; caller writes SharePoint list rows | Yes | No |
 | `cross-project-dependency-checker` | Read-only; caller writes SharePoint register and outcome rows | Yes | No |
+| `deliverable-link-checker` | Read-only; caller writes SharePoint register and outcome rows | Yes | No |
 
 ## Generate Copilot Studio bundles
 

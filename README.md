@@ -37,6 +37,7 @@ Each agent packages role-focused instructions, an MCP tool allowlist, and mapped
 | Project Template Provisioning | Provisions new project files from approved templates, with guarded customization. | Yes | No |
 | Progress Collector | Seeds SharePoint progress requests from a plan, then applies the submissions back in one confirmed batch. | Yes | No |
 | Cross-Project Dependency Checker | Keeps a shared dependency register and reports broken cross-project links. | Yes | No |
+| Deliverable Link Checker | Keeps a shared deliverable-key register and reports broken soft cross-project links. | Yes | No |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -86,6 +87,8 @@ These `SKILL.md` files are reusable workflow specifications. Copilot Studio agen
 | [`mpp-progress-request`](skills/mpp-progress-request/SKILL.md) | Seed a SharePoint intake list with per-resource progress request rows from a plan's active assignments. |
 | [`mpp-dependency-register-publish`](skills/mpp-dependency-register-publish/SKILL.md) | Publish a plan's provided milestones and required external dependencies to a shared register. |
 | [`mpp-cross-project-dependency-check`](skills/mpp-cross-project-dependency-check/SKILL.md) | Evaluate cross-project requirements against the shared dependency register and record the verdict. |
+| [`mpp-deliverable-register-publish`](skills/mpp-deliverable-register-publish/SKILL.md) | Publish a plan's declared deliverable keys to a shared deliverable register, independent of native Project Server fields. |
+| [`mpp-deliverable-link-check`](skills/mpp-deliverable-link-check/SKILL.md) | Evaluate declared deliverable-key links against the shared register and record the verdict. |
 | [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
 
 ## Development
