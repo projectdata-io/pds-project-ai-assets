@@ -30,8 +30,6 @@ You need:
 3. Access to the deployed PDS Project AI MCP service.
 4. Permission to create or authorize a connector connection for the PDS Project AI MCP connector.
 
-Use read-only authorization for read-only agents. Use read/write authorization only for agents that intentionally perform guarded edit or commit operations.
-
 ## Set up an agent
 
 1. Download the ZIP package for the agent you want.
@@ -54,7 +52,7 @@ Use the checksums to confirm the downloaded ZIP files were not corrupted.
 
 ## Security Notes
 
-- Do not grant read/write access to read-only agents. Reserve read/write access for guarded editing or schedule-generation agents.
+- Require explicit user confirmation before any guarded edit or schedule-generation agent commits a change.
 - Test imported agents in a non-production environment before publishing.
 - Do not upload customer `.mpp` files to environments that are not approved for that data.
 - Review connector connections and user consent before broad rollout.

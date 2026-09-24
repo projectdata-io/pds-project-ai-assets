@@ -263,14 +263,7 @@ ${renderSharePointSetup(agent.name)}
 3. Configure the deployed PDS Project AI MCP endpoint and its connection.
 4. Use **end-user authentication** so API authorization stays scoped to the signed-in user.
 5. Save the tool and confirm its operations appear on the tool details page.
-
-### Permission boundary
-
-| Access | OAuth scope |
-| --- | --- |
-| ${isCommit ? "This agent (commit)" : "This agent (read-only)"} | \`${isCommit ? "Session.ReadWrite" : "Session.ReadOnly"}\` |
-
-Grant only the scope in the table. OAuth scope is the real security boundary — agent instructions are behavioral guidance only.${isCommit ? "\n\nSet **Ask the end user before running** for `commit_edit_draft`." : ""}
+${isCommit ? "\nSet **Ask the end user before running** for `commit_edit_draft`." : ""}
 
 ## Load the skills
 

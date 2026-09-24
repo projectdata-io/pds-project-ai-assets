@@ -8,7 +8,6 @@ You create the agent and add the MCP tool manually, or deploy the BotDefinition 
 
 - Access to Microsoft Copilot Studio and permission to create agents and connections.
 - A deployed PDS Project AI MCP endpoint.
-- An OAuth connection authorized for `Session.ReadOnly` or `Session.ReadWrite`, according to the selected agent.
 - Compiled bundles produced with `npm run compile` under ignored `build/copilot-studio/`.
 - Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, only when deploying Agent templates.
 
@@ -403,8 +402,6 @@ For `project-plan-editor`:
 4. Run `commit_edit_draft` only after that confirmation.
 5. Preserve the same idempotency key during a retry.
 6. Stop on an ETag or concurrency conflict instead of overwriting newer content.
-
-The five read-only agents must not receive `Session.ReadWrite` authorization.
 
 ## 7. Test Before Publishing
 

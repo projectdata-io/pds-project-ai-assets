@@ -175,7 +175,7 @@
     <ol>
       <li><span>01</span><div><strong>Choose and download</strong><p>Select the agent closest to the operational role and download its latest ZIP package.</p></div></li>
       <li><span>02</span><div><strong>Configure in development</strong><p>Use the included BotDefinition where available, or follow the manual Copilot Studio setup guide.</p></div></li>
-      <li><span>03</span><div><strong>Bind least privilege</strong><p>Connect the PDS Project AI MCP tool with read-only or read/write scope matching the agent.</p></div></li>
+      <li><span>03</span><div><strong>Connect the MCP tool</strong><p>Add the PDS Project AI endpoint, use end-user authentication, and confirm its operations are available.</p></div></li>
       <li><span>04</span><div><strong>Test, then publish</strong><p>Run the packaged evaluation cases against non-production MPP files before publishing.</p></div></li>
     </ol>
   </section>
@@ -190,7 +190,7 @@
         <button class="icon-button" onclick={() => selected = null} aria-label="Close deployment details" title="Close"><X size={20} /></button>
       </header>
       <div class="drawer-meta">
-        <span>{agent.access === "commit" ? "Session.ReadWrite" : "Session.ReadOnly"}</span>
+        <span>{agent.access === "commit" ? "Guarded commit workflows" : "Read-only workflows"}</span>
         <span>{agent.skills.length} workflows</span>
         <span>{agent.authoringTargets.join(" + ")}</span>
       </div>
