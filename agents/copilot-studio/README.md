@@ -12,6 +12,232 @@ You create the agent and add the MCP tool manually, or deploy the BotDefinition 
 - Compiled bundles produced with `npm run compile` under ignored `build/copilot-studio/`.
 - Power Platform CLI 2.12.1 or newer on `PATH`, or `PAC_CLI_PATH` set to the CLI executable, only when deploying Agent templates.
 
+## SharePoint List and Library Setup for Trigger Agents
+
+Every agent that also uses the Work IQ SharePoint MCP connector (Portfolio List Maintainer, Task List Synchronizer, Project Intake Triage, Change Watcher, Stakeholder Notifier, Compliance Gate, Project Template Provisioning, Progress Collector, Cross-Project Dependency Checker, Deliverable Link Checker) reads from and writes to specific SharePoint lists or libraries. Create and configure these before connecting the agent; the packages do not provision SharePoint content.
+
+General steps, in order:
+
+1. Create the list (or document library) in the target SharePoint site, or identify an existing one to reuse.
+2. Add one column per row in the field-mapping table below for that agent, using the suggested SharePoint column type. Add only the columns you intend to populate; the agent omits unconfigured fields rather than inventing values for them.
+3. Add the listed match-key column(s) as **Single line of text** (or **Number** where noted) and mark them required. If the platform supports enforcing uniqueness on a single-column key, enable it. SharePoint cannot natively enforce uniqueness across a composite (multi-column) key, so multi-column keys rely on the agent's own reconciliation logic; still index each key column for query performance.
+4. Grant the environment's Work IQ SharePoint MCP connection the access level shown for each list/library: **Read** for lists or libraries the agent only reads, or **Contribute** for lists the agent creates, updates, or deletes rows in. Never grant **Full Control**; no agent needs it.
+5. Record the site URL and list/library name (or GUID) where the deployed agent's configuration expects them. These values are never stored in the packaged assets or committed to source control; supply them when configuring the connection or the agent's runtime configuration.
+6. For libraries that hold reference documents (project charters, meeting minutes, company standards) rather than list rows, confirm the documents are in a format the connector's file-content read capability supports, and that access is scoped to only that library.
+
+Re-run this setup whenever an agent adds a new field to its field-mapping table or a new value to a Choice column.
+
+### Portfolio List Maintainer
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Portfolio list | Contribute (create/update rows) | Project file reference (Single line of text, required, unique) |
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project file name | Single line of text |
+| Project file link | Hyperlink |
+| Project title | Single line of text |
+| Start date | Date and Time |
+| Finish date | Date and Time |
+| Status date | Date and Time |
+| Overall % complete | Number (Percentage format) |
+| Next milestone | Single line of text |
+| Next milestone date | Date and Time |
+
+### Task List Synchronizer
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Task list | Contribute (create/update/delete rows) | Project file reference + Task UID (composite; add both as required columns) |
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Task UID | Number |
+| Project title | Single line of text |
+| Task name | Single line of text |
+| Outline level or WBS | Single line of text |
+| Start date | Date and Time |
+| Finish date | Date and Time |
+| Duration | Single line of text (or Number, in minutes) |
+| % complete | Number (Percentage format) |
+| Milestone flag | Yes/No |
+| Predecessors | Multiple lines of text (plain text) |
+| Assigned resources | Multiple lines of text (plain text); use Person or Group only if resource names map to organizational users |
+| Deadline | Date and Time |
+| Constraint | Single line of text |
+
+### Project Intake Triage
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Intake list | Contribute (create/update rows) | Project file reference (Single line of text, required, unique) |
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project file name | Single line of text |
+| Project title | Single line of text |
+| Start date | Date and Time |
+| Finish date | Date and Time |
+| Task count | Number |
+| Milestone count | Number |
+| Resource count | Number |
+| Assignment count | Number |
+| Triage classification | Choice with exactly the values `attention`, `oversized`, `incomplete`, `standard` |
+| Triage date | Date and Time |
+
+### Change Watcher
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Task list (snapshot) | Read only — this agent never writes to it | Project file reference + Task UID (composite; the same list Task List Synchronizer maintains, if deployed) |
+| Change-report list | Contribute (create rows only; this agent never updates or deletes existing rows) | none (append-only log) |
+
+Change-report list fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project title | Single line of text |
+| Change date | Date and Time |
+| Change kind | Choice with exactly the values `initial`, `changed`, `unchanged` |
+| Added count | Number |
+| Removed count | Number |
+| Changed count | Number |
+| Change summary | Multiple lines of text (plain text, large enough for a bounded list of changes) |
+
+### Stakeholder Notifier
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Notification list | Contribute (create/update rows) | Project file reference + Audience + Notification date (composite; add all three as required columns) |
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project title | Single line of text |
+| Audience | Single line of text (holds a resource name or the literal `project-manager`) |
+| Notification date | Date and Time |
+| Notification body | Multiple lines of text (plain text) |
+| Item count | Number |
+
+### Compliance Gate
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Gate-results list | Contribute (create/update rows) | Project file reference (Single line of text, required, unique) |
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project title | Single line of text |
+| Verdict | Choice with exactly the values `passed`, `attention`, `failed` |
+| Evaluation date | Date and Time |
+| Failed gates | Multiple lines of text (plain text; one gate name per line) |
+| Evidence summary | Multiple lines of text (plain text, large enough for a bounded summary) |
+
+### Project Template Provisioning
+
+| List/Library | Access | Notes |
+| --- | --- | --- |
+| Template library | Read | Source of approved MPP templates; the agent copies from here but never writes to it |
+| Target library | Contribute (create files) | Destination for provisioned project files |
+| Projects list | Contribute (create/update rows) | Match key: Project file reference (Single line of text, required, unique) |
+| Project-documentation library | Read (optional) | Only needed when requests reference a charter or meeting-minutes document; scope narrowly, since its contents are read as evidence, never edited |
+| Company-documents library | Read (optional) | Only needed when methodology/standards documents inform customization; organization-wide, not scoped to one project |
+
+Projects list fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Project file reference | Single line of text |
+| Project file name | Single line of text |
+| Project file link | Hyperlink |
+| Project title | Single line of text |
+| Start date | Date and Time |
+| Finish date | Date and Time |
+| Template used | Single line of text |
+| Provisioning date | Date and Time |
+| Charter/meeting-minutes reference | Single line of text |
+| Company standards reference | Single line of text |
+
+The project-documentation and company-documents libraries hold ordinary Word, PDF, or plain-text files; no special columns are required on them beyond what the library template provides.
+
+### Progress Collector
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Intake list | Contribute (create rows at request time, update at collection time) | Submission project file reference + Task UID + Submission assignee (composite; add all as required columns) |
+| Outcome list | Contribute (create rows only) | none (append-only log) |
+
+Intake list fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Submission project file reference | Single line of text |
+| Submission task reference | Number (task UID); add a Single line of text fallback for task name |
+| Submission assignee | Single line of text (or Person or Group if resource names map to organizational users) |
+| Submission progress values | Number (percentComplete), Single line of text or Number (remainingDuration), Date and Time (actualFinish), Multiple lines of text (notes) |
+| Submission status | Choice with exactly the values `pending`, `applied`, `rejected`, `skipped` |
+
+Outcome list fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Outcome project file reference | Single line of text |
+| Outcome run date | Date and Time |
+| Outcome counts | Number (one column each for applied/rejected/skipped, or a single summary text column) |
+| Outcome detail | Multiple lines of text (plain text, large enough for a bounded summary) |
+
+### Cross-Project Dependency Checker
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Dependency register | Contribute (create/update/delete rows, scoped per plan on re-publish) | Plan file reference + Declaration kind + Task or milestone UID (composite; add all as required columns) |
+| Outcome list | Contribute (create rows only) | none (append-only log) |
+
+Dependency register fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Plan file reference | Single line of text |
+| Plan title | Single line of text |
+| Declaration kind | Choice with exactly the values `provides`, `requires` |
+| Task or milestone UID | Number |
+| Name | Single line of text |
+| Date | Date and Time |
+| Referenced provider milestone | Single line of text (recommend storing as `providerFile::providerTaskUid`, or split into two columns) |
+| Declaration updated | Date and Time |
+
+Suggested outcome list columns, derived from this agent's response style: Check date (Date and Time), Overall status (Choice: `healthy`, `at-risk`, `broken`), Satisfied/Unsatisfied/At-risk counts (Number), Findings summary citing both endpoint identities (Multiple lines of text), Coverage gaps (Multiple lines of text).
+
+### Deliverable Link Checker
+
+| List | Access | Match key |
+| --- | --- | --- |
+| Deliverable register | Contribute (create/update/delete rows, scoped per plan on re-publish) | Plan file reference + Declaration kind + Deliverable key (composite; add all as required columns) |
+| Outcome list | Contribute (create rows only); a Power Automate flow or SharePoint alert on this list is how a project manager learns of a change | none (append-only log) |
+
+Deliverable register fields:
+
+| Field | Suggested SharePoint column type |
+| --- | --- |
+| Plan file reference | Single line of text |
+| Plan title | Single line of text |
+| Declaration kind | Choice with exactly the values `deliverable-provides`, `deliverable-requires` |
+| Task UID | Number |
+| Task name | Single line of text |
+| Deliverable key | Single line of text (must be the same custom field alias across every registered plan) |
+| Task date | Date and Time |
+| Declaration updated | Date and Time |
+| Previous classification | Single line of text or Choice with exactly `satisfied`, `unsatisfied`, `at-risk` |
+| Changed since last check | Yes/No |
+
+Suggested outcome list columns, derived from this agent's response style: Check date (Date and Time), Overall status (Choice: `healthy`, `at-risk`, `broken`), Satisfied/Unsatisfied/At-risk counts (Number), Changed requirements summary citing consuming plan identity and deliverable key (Multiple lines of text), Coverage gaps (Multiple lines of text). If you configure a SharePoint alert on `Changed since last check`, set it on this outcome list, not the register.
+
 ## Agent Target Matrix
 
 | Agent | Standard Agent | Agent |

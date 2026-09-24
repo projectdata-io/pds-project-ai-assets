@@ -11,6 +11,7 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 - `schemas/`: machine-readable schemas for asset metadata and validation.
 - `templates/`: starting points for new assets.
 - `scripts/`: repository validation utilities.
+- `site/`: generated SvelteKit catalog published to GitHub Pages.
 - `catalog.json`: machine-readable skill, tool, access, and agent mappings.
 
 This repository's top-level folders are intentionally not VS Code workspace discovery locations. Consumers should install or copy selected assets into the location required by their agent platform.
@@ -99,6 +100,7 @@ Requirements: Node.js 20 or newer.
 npm run compile
 npm run compile:agents
 npm run package:agents
+npm run site:build
 npm test
 ```
 
@@ -109,6 +111,8 @@ Run `npm run compile` to create transient Copilot Studio bundles under ignored `
 `npm run compile:agents` builds complete `BotDefinition` YAML templates for catalog agents targeted as **Agent**, with mapped `SKILL.md` files represented as native `InlineAgentSkill` components. `npm run package:agents` packages every catalog agent into a ZIP under `dist/agent-packages/` containing the agent instructions, manifest, full skill files, a manual setup guide, and the `BotDefinition` template where applicable.
 
 The **Build agent assets** GitHub Actions workflow is the preferred packaging path. It versions packages as `1.0.<github.run_number>.<github.run_attempt>`, uploads the agent package ZIPs as temporary artifacts, and creates a versioned GitHub Release on default-branch pushes. Build outputs are not stored in source control.
+
+The same workflow builds and deploys the static agent catalog to GitHub Pages on every default-branch push. Run `npm install --prefix site` once before using `npm run site:dev`, `npm run site:check`, or `npm run site:build` locally.
 
 ## License
 

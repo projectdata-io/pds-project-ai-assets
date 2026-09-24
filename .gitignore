@@ -4,6 +4,8 @@ coverage/
 generated/
 dist/
 build/
+site/.svelte-kit/
+site/src/lib/generated/
 *.log
 
 # Local environment and credentials

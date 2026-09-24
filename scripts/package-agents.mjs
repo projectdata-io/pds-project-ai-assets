@@ -36,6 +36,177 @@ function renderEvaluationCase(evaluation) {
 - Forbidden tools: ${formatList(evaluation.forbiddenTools)}`;
 }
 
+const sharePointSetup = {
+  "portfolio-list-maintainer": `### Minimal configuration
+
+Create one **Portfolio list** with **Contribute** access for the Work IQ SharePoint connection.
+
+| Column | Type | Required |
+| --- | --- | --- |
+| Project file reference | Single line of text | Yes; unique when supported |
+| Project file name | Single line of text | No |
+| Project file link | Hyperlink | No |
+| Project title | Single line of text | No |
+| Start date, Finish date, Status date | Date and Time | No |
+| Overall % complete | Number | No |
+| Next milestone | Single line of text | No |
+| Next milestone date | Date and Time | No |
+
+### Recommended configuration
+
+Add indexed Project file reference and preserve any manually maintained columns. The agent updates only mapped evidence-backed fields and leaves unrelated columns unchanged.`,
+  "task-list-synchronizer": `### Minimal configuration
+
+Create one **Task list** with **Contribute** access for the Work IQ SharePoint connection.
+
+| Column | Type | Required |
+| --- | --- | --- |
+| Project file reference | Single line of text | Yes |
+| Task UID | Number | Yes |
+| Project title, Task name, WBS | Single line of text | No |
+| Start date, Finish date, Deadline | Date and Time | No |
+| Duration | Single line of text | No |
+| % complete | Number | No |
+| Milestone flag | Yes/No | No |
+| Predecessors, Assigned resources | Multiple lines of text | No |
+| Constraint | Single line of text | No |
+
+The match key is the composite Project file reference + Task UID; index both columns. The agent creates, updates, and deletes rows only for the triggering file.
+
+### Recommended configuration
+
+Add views filtered by project file reference and preserve manually maintained columns. Do not rely on a SharePoint composite uniqueness constraint; the agent enforces the composite key during reconciliation.`,
+  "project-intake-triage": `### Minimal configuration
+
+Create one **Intake list** with **Contribute** access for the Work IQ SharePoint connection.
+
+| Column | Type | Required |
+| --- | --- | --- |
+| Project file reference | Single line of text | Yes; unique when supported |
+| Project file name, Project title | Single line of text | No |
+| Start date, Finish date, Triage date | Date and Time | No |
+| Task count, Milestone count, Resource count, Assignment count | Number | No |
+| Triage classification | Choice: attention, oversized, incomplete, standard | No |
+
+### Recommended configuration
+
+Index Project file reference, add a view grouped by Triage classification, and keep the configured oversized threshold documented with the list configuration.`,
+  "change-watcher": `### Minimal configuration
+
+Create or reuse two resources:
+
+| List | Access | Key/configuration |
+| --- | --- | --- |
+| Task list snapshot | Read | Same project file reference + Task UID rows maintained by Task List Synchronizer |
+| Change-report list | Contribute, append-only | No unique key required |
+
+For the **Change-report list**, add: Project file reference (Single line of text), Project title (Single line of text), Change date (Date and Time), Change kind (Choice: initial, changed, unchanged), Added count (Number), Removed count (Number), Changed count (Number), and Change summary (Multiple lines of text).
+
+### Recommended configuration
+
+Index the snapshot key columns, make the change-report list append-only for this connection, and add a Power Automate flow or SharePoint alert for Change kind = changed.`,
+  "stakeholder-notifier": `### Minimal configuration
+
+Create one **Notification list** with **Contribute** access for the Work IQ SharePoint connection.
+
+| Column | Type | Required |
+| --- | --- | --- |
+| Project file reference | Single line of text | Yes |
+| Project title, Audience | Single line of text | No |
+| Notification date | Date and Time | Yes |
+| Notification body | Multiple lines of text | No |
+| Item count | Number | No |
+
+The match key is Project file reference + Audience + Notification date; index all three columns.
+
+### Recommended configuration
+
+Add a Power Automate flow that delivers entries to the configured audience. This agent records entries only; it does not send email or Teams messages.`,
+  "compliance-gate": `### Minimal configuration
+
+Create one **Gate-results list** with **Contribute** access for the Work IQ SharePoint connection.
+
+| Column | Type | Required |
+| --- | --- | --- |
+| Project file reference | Single line of text | Yes; unique when supported |
+| Project title | Single line of text | No |
+| Verdict | Choice: passed, attention, failed | Yes |
+| Evaluation date | Date and Time | Yes |
+| Failed gates | Multiple lines of text | No |
+| Evidence summary | Multiple lines of text | No |
+
+### Recommended configuration
+
+Index Project file reference, retain prior evaluation history in a separate audit list or view, and alert on Verdict != passed.`,
+  "project-template-provisioner": `### Minimal configuration
+
+Configure these SharePoint resources for the Work IQ connection:
+
+| Resource | Access | Purpose |
+| --- | --- | --- |
+| Template library | Read | Approved MPP templates only |
+| Target library | Contribute | Destination for copied project files |
+| Projects list | Contribute | Registration row; Project file reference is required and unique when supported |
+
+### Recommended configuration
+
+Add two read-only libraries when document-informed customization is needed:
+
+| Resource | Access | Purpose |
+| --- | --- | --- |
+| Project-documentation library | Read | Referenced project charters and meeting minutes |
+| Company-documents library | Read | Methodology recommendations and standards |
+
+For the **Projects list**, add Project file reference (Single line of text), Project file name (Single line of text), Project file link (Hyperlink), Project title (Single line of text), Start date and Finish date (Date and Time), Template used (Single line of text), Provisioning date (Date and Time), Charter/meeting-minutes reference (Single line of text), and Company standards reference (Single line of text). The agent never writes to the reference libraries.`,
+  "progress-collector": `### Minimal configuration
+
+Create two lists with **Contribute** access for the Work IQ SharePoint connection:
+
+| List | Purpose | Key/configuration |
+| --- | --- | --- |
+| Progress intake list | Pending requests and team submissions | Project file reference + Task UID + Assignee |
+| Progress outcome list | Append-only processing results | No unique key required |
+
+For the intake list, add Project file reference (Single line of text), Task UID (Number), Assignee (Single line of text or Person), Percent complete (Number), Remaining duration (Single line of text), Actual finish (Date and Time), Notes (Multiple lines of text), and Status (Choice: pending, applied, rejected, skipped).
+
+### Recommended configuration
+
+Index the composite intake key, make assignee and status visible in team views, and make the outcome list append-only. Do not allow users to delete intake rows; status transitions preserve the audit trail.`,
+  "cross-project-dependency-checker": `### Minimal configuration
+
+Create two lists with **Contribute** access for the Work IQ SharePoint connection:
+
+| List | Purpose | Key/configuration |
+| --- | --- | --- |
+| Dependency register | Per-plan provides and requires declarations | Plan file reference + Declaration kind + Task/milestone UID |
+| Dependency outcome list | Check results | Append-only; no unique key required |
+
+For the register, add Plan file reference (Single line of text), Plan title (Single line of text), Declaration kind (Choice: provides, requires), Task/milestone UID (Number), Name (Single line of text), Date (Date and Time), Referenced provider milestone (Single line of text), and Declaration updated (Date and Time).
+
+### Recommended configuration
+
+Index all register key columns, keep declaration rows scoped to one source file, and add a flow or alert for outcome rows with broken or at-risk status.`,
+  "deliverable-link-checker": `### Minimal configuration
+
+Create two lists with **Contribute** access for the Work IQ SharePoint connection:
+
+| List | Purpose | Key/configuration |
+| --- | --- | --- |
+| Deliverable register | Per-plan soft-link declarations | Plan file reference + Declaration kind + Deliverable key |
+| Deliverable outcome list | Status and change results | Append-only; no unique key required |
+
+For the register, add Plan file reference (Single line of text), Plan title (Single line of text), Declaration kind (Choice: deliverable-provides, deliverable-requires), Task UID (Number), Task name (Single line of text), Deliverable key (Single line of text), Task date (Date and Time), Declaration updated (Date and Time), Previous classification (Choice: satisfied, unsatisfied, at-risk), and Changed since last check (Yes/No).
+
+### Recommended configuration
+
+Use the same custom-field alias for the deliverable key across every plan, index all register key columns, and configure a Power Automate flow or SharePoint alert on the **outcome list** for changed, broken, or at-risk results. This agent records change evidence; it does not notify project managers directly.`
+};
+
+function renderSharePointSetup(agentName) {
+  const setup = sharePointSetup[agentName];
+  return setup ? `\n## SharePoint Setup\n\n${setup}\n` : "";
+}
+
 function renderManualSetup(agent, metadata, manifest, hasTemplate, evaluationCases) {
   const skills = metadata.skills.map((skill) => `- \`${skill}\``).join("\n");
   const isCommit = metadata.access === "commit";
@@ -84,6 +255,7 @@ ${templateSection}
 7. Paste the entire contents of \`instructions.md\`.
 8. Save the agent.
 
+${renderSharePointSetup(agent.name)}
 ## Add the PDS Project AI MCP tool
 
 1. In the agent, open **Tools**.
@@ -135,7 +307,7 @@ Publish the agent only after its evaluation cases pass.
 
 function packDirectory(sourceDirectory, destinationZip) {
   const result = spawnSync(
-    "powershell",
+    process.platform === "win32" ? "powershell" : "pwsh",
     ["-NoProfile", "-File", packScript, "-SourceDirectory", sourceDirectory, "-DestinationZip", destinationZip],
     { cwd: rootPath, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
   );
