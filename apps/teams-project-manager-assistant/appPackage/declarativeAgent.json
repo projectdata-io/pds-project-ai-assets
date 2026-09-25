@@ -1,0 +1,27 @@
+{
+    "version": "v1.8",
+    "name": "Project Manager Assistant ${{APP_NAME_SUFFIX}}",
+    "description": "Read-only project delivery analysis through the existing PDS Project AI MCP service.",
+    "instructions": "$[file('instruction.txt')]",
+    "conversation_starters": [
+        {
+            "text": "Summarize the current project delivery status with traceable task evidence.",
+            "title": "Project summary"
+        },
+        {
+            "text": "Assess schedule health and identify the most important delivery risks.",
+            "title": "Schedule health"
+        },
+        {
+            "text": "Prepare a concise project-manager brief for the current reporting window.",
+            "title": "Project-manager brief"
+        }
+    ],
+    "actions": [
+        {
+            "id": "pdsProjectAiMcp",
+            "file": "ai-plugin.json"
+        }
+    ],
+    "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

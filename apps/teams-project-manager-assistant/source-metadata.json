@@ -1,0 +1,17 @@
+{
+  "source": "agents/copilot-studio/project-manager-assistant/agent.json",
+  "name": "project-manager-assistant",
+  "title": "Project Manager Assistant",
+  "description": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention.",
+  "access": "read-only",
+  "workflows": [
+    "mpp-project-summary",
+    "mpp-schedule-health",
+    "mpp-critical-path-analysis",
+    "mpp-milestone-review",
+    "mpp-lookahead-report",
+    "mpp-dependency-audit",
+    "mpp-constraint-review",
+    "mpp-project-manager-brief"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "PDS Project AI MPP Schedule Analyzer",
+  "description_for_human": "Read-only MS Project MPP schedule analysis.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "pdsprojectai",
+  "functions": [],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "spec": {
+        "url": "https://mcp.projectdata.ai"
+      },
+      "run_for_functions": [
+        "close_session",
+        "create_session_from_onedrive",
+        "create_session_from_reference",
+        "get_entity_schema",
+        "get_project",
+        "list_assignments",
+        "list_resources",
+        "list_tasks"
+      ],
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{MCP_DA_AUTH_ID_PDSPROJECTAI}}"
+      }
+    }
+  ]
+}
