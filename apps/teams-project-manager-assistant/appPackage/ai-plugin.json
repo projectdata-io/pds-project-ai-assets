@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
   "schema_version": "v2.4",
-  "name_for_human": "PDS Project AI MPP Schedule Analyzer",
+  "name_for_human": "PDS Project AI",
   "description_for_human": "Read-only MS Project MPP schedule analysis.",
   "contact_email": "support@projectdata.io",
   "namespace": "pdsprojectai",
@@ -14,6 +14,10 @@
       },
       "run_for_functions": [
         "close_session",
+        "open_project_plan_picker",
+        "list_project_plan_picker_containers",
+        "list_project_plan_picker_children",
+        "select_project_plan_picker_file",
         "create_session_from_onedrive",
         "create_session_from_reference",
         "get_entity_schema",

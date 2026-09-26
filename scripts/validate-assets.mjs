@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,6 +36,18 @@ function visitFiles(directory) {
     }
   }
   return files;
+}
+
+function isGitIgnored(repositoryPath) {
+  try {
+    execFileSync("git", ["check-ignore", "-q", "--", repositoryPath], {
+      cwd: rootPath,
+      stdio: "ignore"
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function loadJson(repositoryPath) {
@@ -287,6 +300,10 @@ if (!evaluations || !Array.isArray(evaluations.cases)) {
 
 for (const file of visitFiles(rootPath)) {
   const repositoryPath = relative(rootPath, file).replaceAll("\\", "/");
+  if (isGitIgnored(repositoryPath)) {
+    continue;
+  }
+
   const fileName = repositoryPath.split("/").at(-1) ?? repositoryPath;
   if (prohibitedExtensions.has(extname(fileName).toLowerCase()) || prohibitedFileNames.some((pattern) => pattern.test(fileName))) {
     failures.push(`Prohibited public artifact: ${repositoryPath}`);

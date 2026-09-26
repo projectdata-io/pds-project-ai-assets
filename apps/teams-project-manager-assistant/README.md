@@ -6,6 +6,8 @@ Microsoft 365 declarative agent scaffold for read-only project analysis through 
 
 The agent supports project summary, schedule health, critical path, milestone review, lookahead, dependency audit, constraint review, and project-manager briefs. It does not edit, commit, upload, provision, deploy, or manage projects or external resources.
 
+When a user needs to choose a project plan, the agent opens the embedded PDS MCP Apps picker. The picker returns only a confirmed OneDrive or SharePoint `{ driveId, itemId, fileName }` reference, which the agent passes to `create_session_from_onedrive`. Copilot Chat does not accept `.mpp` file attachments.
+
 ## Configure the Existing MCP Connection
 
 1. Create the ignored local file `env/.env.dev` for Toolkit provisioning:
@@ -21,6 +23,16 @@ The agent supports project summary, schedule health, critical path, milestone re
 4. Keep `declarativeAgent.json` pointing at `ai-plugin.json`.
 
 The committed `ai-plugin.json` reserves an OAuth Plugin Vault binding for the public PDS MCP endpoint and limits the agent to the existing Project Manager Assistant tool allowlist. The asset repository intentionally does not keep `.env` example files.
+
+## Generated Workflows
+
+`appPackage/instruction.txt` is generated from the canonical Project Manager Assistant instructions and the mapped skills' descriptions and trigger cues. Microsoft 365 limits declarative-agent instructions to 8,000 characters, so the full `SKILL.md` procedures remain canonical source material rather than being copied verbatim. Generate the compact workflow router with:
+
+```powershell
+npm run generate:teams-project-manager
+```
+
+Do not edit the generated instruction file directly. `npm test` regenerates it and verifies it is current.
 
 ## Local Validation
 

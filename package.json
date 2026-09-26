@@ -7,6 +7,7 @@
   "scripts": {
     "compile": "node scripts/compile-copilot-studio.mjs",
     "compile:agents": "node scripts/compile-agent-templates.mjs",
+    "generate:teams-project-manager": "node scripts/generate-teams-project-manager-instructions.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",
     "package:agents": "npm run compile && npm run compile:agents && node scripts/package-agents.mjs",
     "site:data": "node scripts/generate-site-data.mjs",
@@ -15,8 +16,9 @@
     "site:build": "npm run package:agents && npm run site:data && npm --prefix site run build",
     "check:generated": "node scripts/compile-copilot-studio.mjs --check",
     "check:agents": "node scripts/compile-agent-templates.mjs --check",
+    "check:teams-project-manager": "node scripts/generate-teams-project-manager-instructions.mjs --check",
     "verify:agents": "node scripts/verify-agent-templates.mjs",
-    "test": "node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run check:generated && npm run check:agents && npm run verify:agents"
+    "test": "node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run generate:teams-project-manager && npm run check:generated && npm run check:agents && npm run check:teams-project-manager && npm run verify:agents"
   },
   "engines": {
     "node": ">=20"
