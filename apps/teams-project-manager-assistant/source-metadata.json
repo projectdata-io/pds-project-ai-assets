@@ -1,17 +1,15 @@
 {
-  "source": "agents/copilot-studio/project-manager-assistant/agent.json",
-  "name": "project-manager-assistant",
-  "title": "Project Manager Assistant",
-  "description": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention.",
-  "access": "read-only",
-  "workflows": [
-    "mpp-project-summary",
-    "mpp-schedule-health",
-    "mpp-critical-path-analysis",
-    "mpp-milestone-review",
-    "mpp-lookahead-report",
-    "mpp-dependency-audit",
-    "mpp-constraint-review",
-    "mpp-project-manager-brief"
+  "packageSlug": "teams-project-manager-assistant",
+  "role": "project-manager-assistant",
+  "title": "ProjectData AI Essentials: Project Manager Assistant",
+  "shortName": "PDS Project Manager",
+  "shortDescription": "Read-only delivery analysis for Microsoft Project plans.",
+  "version": "2.0.2",
+  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
+  "conversationStarters": [
+    "Summarize the current project delivery status with traceable task evidence.",
+    "Assess schedule health and identify the most important delivery risks.",
+    "Prepare a concise project-manager brief for the current reporting window."
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "version": "v1.8",
+  "name": "Resource Manager ${{APP_NAME_SUFFIX}}",
+  "description": "Read-only resource planning agent for assignment demand, overallocations, availability, cost, and near-term staffing pressure.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Report staffing pressure, overallocations, and near-term demand.",
+      "title": "Report staffing pressure, overallocations, and near-term demand"
+    },
+    {
+      "text": "Review resource assignments and availability conflicts with evidence.",
+      "title": "Review resource assignments and availability conflicts with evidence"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

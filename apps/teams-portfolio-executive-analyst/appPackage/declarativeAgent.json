@@ -1,0 +1,23 @@
+{
+  "version": "v1.8",
+  "name": "Portfolio and Executive Analyst ${{APP_NAME_SUFFIX}}",
+  "description": "Read-only leadership reporting agent for executive status, master-project rollups, milestones, cost, earned value, and plan comparison.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Prepare an executive delivery outlook with material risks and decisions.",
+      "title": "Prepare an executive delivery outlook with material risks and decisions"
+    },
+    {
+      "text": "Summarize portfolio milestones, baseline variance, and earned-value evidence.",
+      "title": "Summarize portfolio milestones, baseline variance, and earned-value evidence"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

@@ -1,0 +1,10 @@
+{
+  "name": "@pds-project-ai/teams-resource-manager",
+  "version": "2.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-instructions.mjs",
+    "validate": "node scripts/validate-package.mjs"
+  }
+}

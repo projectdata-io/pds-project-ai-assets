@@ -1,0 +1,23 @@
+{
+  "version": "v1.8",
+  "name": "Schedule Quality Analyst ${{APP_NAME_SUFFIX}}",
+  "description": "Read-only schedule assurance agent for logic, critical path, constraints, baselines, progress quality, calendars, WBS, and realism.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Audit schedule logic and identify the highest-impact quality findings.",
+      "title": "Audit schedule logic and identify the highest-impact quality findings"
+    },
+    {
+      "text": "Review constraints, calendars, and critical-path risks with evidence.",
+      "title": "Review constraints, calendars, and critical-path risks with evidence"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

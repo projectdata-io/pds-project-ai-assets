@@ -1,0 +1,14 @@
+{
+  "packageSlug": "teams-mpp-data-auditor",
+  "role": "mpp-data-auditor",
+  "title": "ProjectData AI Essentials: MPP Data Auditor",
+  "shortName": "PDS Data Auditor",
+  "shortDescription": "Read-only Microsoft Project data assurance analysis.",
+  "version": "2.0.2",
+  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_MPP_DATA_AUDITOR",
+  "conversationStarters": [
+    "Audit MPP data quality, hierarchy, and progress consistency.",
+    "Review custom fields and structural defects with supporting evidence."
+  ]
+}

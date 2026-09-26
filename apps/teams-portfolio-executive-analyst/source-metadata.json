@@ -1,0 +1,14 @@
+{
+  "packageSlug": "teams-portfolio-executive-analyst",
+  "role": "portfolio-executive-analyst",
+  "title": "ProjectData AI Essentials: Portfolio and Executive Analyst",
+  "shortName": "PDS Portfolio Analyst",
+  "shortDescription": "Read-only portfolio and executive project analysis.",
+  "version": "2.0.2",
+  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PORTFOLIO_EXECUTIVE_ANALYST",
+  "conversationStarters": [
+    "Prepare an executive delivery outlook with material risks and decisions.",
+    "Summarize portfolio milestones, baseline variance, and earned-value evidence."
+  ]
+}

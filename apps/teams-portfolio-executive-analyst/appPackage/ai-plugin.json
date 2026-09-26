@@ -2,9 +2,9 @@
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
   "schema_version": "v2.4",
   "name_for_human": "PDS Project AI",
-  "description_for_human": "Project Manager Assistant read-only MPP analysis.",
+  "description_for_human": "Portfolio and Executive Analyst read-only MPP analysis.",
   "contact_email": "support@projectdata.io",
-  "namespace": "pdsprojectaiprojectmanagerassistant",
+  "namespace": "pdsprojectaiportfolioexecutiveanalyst",
   "functions": [],
   "runtimes": [
     {
@@ -17,8 +17,11 @@
         "create_session_from_onedrive",
         "create_session_from_reference",
         "get_entity_schema",
+        "get_master_project_graph",
+        "get_master_project_node",
         "get_project",
         "list_assignments",
+        "list_master_project_node_entities",
         "list_project_plan_picker_children",
         "list_project_plan_picker_containers",
         "list_resources",
@@ -28,7 +31,7 @@
       ],
       "auth": {
         "type": "OAuthPluginVault",
-        "reference_id": "${{MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT}}"
+        "reference_id": "${{MCP_DA_AUTH_ID_PORTFOLIO_EXECUTIVE_ANALYST}}"
       }
     }
   ]

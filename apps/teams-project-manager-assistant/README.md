@@ -1,45 +1,17 @@
-# Teams Project Manager Assistant
+# ProjectData AI Essentials: Project Manager Assistant
 
-Microsoft 365 declarative agent scaffold for read-only project analysis through the existing PDS Project AI MCP service.
+This is one independently deployable, read-only Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT` binding.
 
-## Scope
+The package uses a role-specific variant of the shared User UI icon, the PDS MCP endpoint, and the metadata-only MCP Apps project-plan picker. It does not expose Project Plan Editor, Project Schedule Generator, or any draft, edit, validation, commit, upload, create, update, or delete tool.
 
-The agent supports project summary, schedule health, critical path, milestone review, lookahead, dependency audit, constraint review, and project-manager briefs. It does not edit, commit, upload, provision, deploy, or manage projects or external resources.
+## Generate and Validate
 
-When a user needs to choose a project plan, the agent opens the embedded PDS MCP Apps picker. The picker returns only a confirmed OneDrive or SharePoint `{ driveId, itemId, fileName }` reference, which the agent passes to `create_session_from_onedrive`. Copilot Chat does not accept `.mpp` file attachments.
+Run `npm run generate` and `npm run validate` from this directory. These commands only regenerate and structurally validate local source artifacts; they do not provision, deploy, publish, install, or alter tenant resources.
 
-## Configure the Existing MCP Connection
+## Development Lifecycle
 
-1. Create the ignored local file `env/.env.dev` for Toolkit provisioning:
+Keep `env/.env.*` local and package-specific. Do not copy `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT` from another package. From the asset repository, use the [batch lifecycle runbook](../../README.md#development-provisioning-and-organization-submission) to dry-run, provision in a non-production tenant, personally install the dev package, test, then choose tenant-wide sharing or submission for admin review. Tenant sharing grants access but does not preinstall; administrators can optionally preinstall after approval. The coordinator requires `--execute` for tenant changes. Do not run `all --env dev --execute` if testing must happen between provisioning and submission.
 
-	```ini
-	TEAMSFX_ENV=dev
-	APP_NAME_SUFFIX=dev
-	```
+## Migration
 
-    Do not commit the local file. Remove the local `.env` file before running this repository's `npm test`, which rejects all `.env` artifacts.
-2. Do not manually set `TEAMS_APP_ID`, `MCP_DA_AUTH_ID_PDSPROJECTAI`, OAuth credentials, client IDs, secrets, or scopes. The Microsoft 365 Agents Toolkit provisioning flow creates the Teams app and DCR authentication configuration, then writes their generated identifiers.
-3. Keep `appPackage/ai-plugin.json` restricted to the read-only PDS functions listed there. Do not add draft, validation, or commit functions to this agent.
-4. Keep `declarativeAgent.json` pointing at `ai-plugin.json`.
-
-The committed `ai-plugin.json` reserves an OAuth Plugin Vault binding for the public PDS MCP endpoint and limits the agent to the existing Project Manager Assistant tool allowlist. The asset repository intentionally does not keep `.env` example files.
-
-## Generated Workflows
-
-`appPackage/instruction.txt` is generated from the canonical Project Manager Assistant instructions and the mapped skills' descriptions and trigger cues. Microsoft 365 limits declarative-agent instructions to 8,000 characters, so the full `SKILL.md` procedures remain canonical source material rather than being copied verbatim. Generate the compact workflow router with:
-
-```powershell
-npm run generate:teams-project-manager
-```
-
-Do not edit the generated instruction file directly. `npm test` regenerates it and verifies it is current.
-
-## Local Validation
-
-```powershell
-$env:ATK_CLI_SKILL = 'true'
-atk package --env dev -i false
-atk validate --env dev -i false
-```
-
-These commands package and validate local project configuration only. Run Toolkit provisioning from an authenticated development tenant when ready to create the Teams app and DCR authentication configuration; do not use production tenant credentials for development validation.
+This package replaces one role from the retired invalid multi-agent suite. Install it as its own Microsoft 365 app. It does not reuse the retired suite's generated Teams app ID or DCR identifier.

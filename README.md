@@ -114,6 +114,59 @@ The **Build agent assets** GitHub Actions workflow is the preferred packaging pa
 
 The same workflow builds and deploys the static agent catalog to GitHub Pages on every default-branch push. Run `npm install --prefix site` once before using `npm run site:dev`, `npm run site:check`, or `npm run site:build` locally.
 
+## Microsoft 365 Declarative-Agent Packages
+
+`apps/` contains five independently deployable `ProjectData AI Essentials` packages:
+
+- `teams-project-manager-assistant`
+- `teams-schedule-quality-analyst`
+- `teams-portfolio-executive-analyst`
+- `teams-resource-manager`
+- `teams-mpp-data-auditor`
+
+Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, role-specific generated instructions, and a minimal read-only PDS MCP allowlist. All five retain the shared User UI icon's white mark with distinct role badges, and reuse the PDS MCP endpoint and metadata-only project-plan picker. They do not contain write agents, write skills, or write tools.
+
+On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the five Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
+
+The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint and picker result `{ driveId, itemId, fileName }` remain unchanged.
+
+### Safe local package checks
+
+Run these commands from the asset repository to regenerate and verify local package source only. They do not access a tenant or mutate Microsoft 365 resources:
+
+```powershell
+npm run generate:teams-packages
+npm run check:teams-packages
+npm run validate:teams-packages
+```
+
+### Development provisioning and organization submission
+
+Run from this asset repository in PowerShell, signed in to Microsoft 365 Agents Toolkit for a **non-production tenant**. Custom app upload must be enabled and the account must have permission to create and submit apps. Keep each package's ignored `env/.env.dev` local with `TEAMSFX_ENV=dev` and `APP_NAME_SUFFIX=dev`; Toolkit writes that package's `TEAMS_APP_ID`, `M365_APP_ID`, and `MCP_DA_AUTH_ID_*` during provisioning. Never copy generated IDs between packages or commit local env files. Do not clear existing IDs when retrying a partially successful run.
+
+The coordinator targets only `--env dev`. Without `--execute` it prints the planned work and does not contact the tenant. With `--execute` it runs each package sequentially and stops at the first Toolkit failure; it does not roll back packages that already succeeded.
+
+```powershell
+npm run generate:teams-packages
+npm test
+npm run manage:teams-packages -- all --env dev
+npm run manage:teams-packages -- provision --env dev --execute
+# After provisioning, install the five dev agents for your signed-in account:
+npm run manage:teams-packages -- install --env dev
+npm run manage:teams-packages -- install --env dev --execute
+# To make the five provisioned dev agents available across the tenant:
+npm run manage:teams-packages -- share-tenant --env dev
+npm run manage:teams-packages -- share-tenant --env dev --execute
+# Only after testing all five agents and approving submission for admin review:
+npm run manage:teams-packages -- publish --env dev --execute
+```
+
+`provision` creates or updates five separate dev Teams apps and DCR configurations and extends each to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. `share-tenant` grants access to the five provisioned agents across the tenant, but does not preinstall them. Both modes require `--execute` to change tenant state. `all` still means **provision and publish**, not install or share. Test every agent in Copilot, including per-user PDS sign-in, MPP selection, and read-only behavior, before sharing or publishing. For a small test group, run Toolkit's `share --env dev --scope users --email 'person@tenant.example' -i false` from each package directory instead.
+
+For managed rollout or automatic installation for selected users, use `publish`: it rebuilds and validates each package, then submits it to the Teams admin center for organization review. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. `all --env dev --execute` runs provisioning **and submission** in one go; avoid it when a human testing gate is required between those stages. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
+
+If a batch stops, inspect the failed package's Toolkit output and local `env/.env.dev`, fix the cause, and rerun only the failed stage. Repeating a successful stage uses its existing package-local IDs; do not delete or replace them to force a retry. A partial `publish` run may already have submitted earlier packages for approval; check the Teams admin center before resubmitting. The coordinator does not run in CI.
+
 ## License
 
 Released under the [MIT License](LICENSE).

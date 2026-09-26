@@ -7,7 +7,8 @@
   "scripts": {
     "compile": "node scripts/compile-copilot-studio.mjs",
     "compile:agents": "node scripts/compile-agent-templates.mjs",
-    "generate:teams-project-manager": "node scripts/generate-teams-project-manager-instructions.mjs",
+    "generate:teams-packages": "node scripts/generate-teams-packages.mjs",
+    "manage:teams-packages": "node scripts/manage-teams-packages.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",
     "package:agents": "npm run compile && npm run compile:agents && node scripts/package-agents.mjs",
     "site:data": "node scripts/generate-site-data.mjs",
@@ -17,8 +18,10 @@
     "check:generated": "node scripts/compile-copilot-studio.mjs --check",
     "check:agents": "node scripts/compile-agent-templates.mjs --check",
     "check:teams-project-manager": "node scripts/generate-teams-project-manager-instructions.mjs --check",
+    "check:teams-packages": "node scripts/generate-teams-packages.mjs --check",
+    "validate:teams-packages": "node scripts/validate-teams-packages.mjs",
     "verify:agents": "node scripts/verify-agent-templates.mjs",
-    "test": "node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run generate:teams-project-manager && npm run check:generated && npm run check:agents && npm run check:teams-project-manager && npm run verify:agents"
+    "test": "node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run generate:teams-packages && npm run check:generated && npm run check:agents && npm run check:teams-packages && npm run validate:teams-packages && npm run verify:agents"
   },
   "engines": {
     "node": ">=20"

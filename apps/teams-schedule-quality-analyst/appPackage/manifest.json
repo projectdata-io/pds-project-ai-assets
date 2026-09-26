@@ -14,12 +14,12 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "PDS Project Manager ${{APP_NAME_SUFFIX}}",
-    "full": "ProjectData AI Essentials: Project Manager Assistant"
+    "short": "PDS Schedule Quality ${{APP_NAME_SUFFIX}}",
+    "full": "ProjectData AI Essentials: Schedule Quality Analyst"
   },
   "description": {
-    "short": "Read-only delivery analysis for Microsoft Project plans.",
-    "full": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention. Uses the existing PDS Project AI service and its metadata-only MPP picker."
+    "short": "Read-only schedule quality analysis for Microsoft Project plans.",
+    "full": "Read-only schedule assurance agent for logic, critical path, constraints, baselines, progress quality, calendars, WBS, and realism. Uses the existing PDS Project AI service and its metadata-only MPP picker."
   },
   "accentColor": "#FFFFFF",
   "supportsChannelFeatures": "tier1",
@@ -27,7 +27,7 @@
   "copilotAgents": {
     "declarativeAgents": [
       {
-        "id": "project-manager-assistant",
+        "id": "schedule-quality-analyst",
         "file": "declarativeAgent.json"
       }
     ]

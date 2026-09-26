@@ -1,0 +1,23 @@
+{
+  "version": "v1.8",
+  "name": "MPP Data Auditor ${{APP_NAME_SUFFIX}}",
+  "description": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Audit MPP data quality, hierarchy, and progress consistency.",
+      "title": "Audit MPP data quality, hierarchy, and progress consistency"
+    },
+    {
+      "text": "Review custom fields and structural defects with supporting evidence.",
+      "title": "Review custom fields and structural defects with supporting evidence"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

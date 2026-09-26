@@ -14,12 +14,12 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "PDS Project Manager ${{APP_NAME_SUFFIX}}",
-    "full": "ProjectData AI Essentials: Project Manager Assistant"
+    "short": "PDS Data Auditor ${{APP_NAME_SUFFIX}}",
+    "full": "ProjectData AI Essentials: MPP Data Auditor"
   },
   "description": {
-    "short": "Read-only delivery analysis for Microsoft Project plans.",
-    "full": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention. Uses the existing PDS Project AI service and its metadata-only MPP picker."
+    "short": "Read-only Microsoft Project data assurance analysis.",
+    "full": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison. Uses the existing PDS Project AI service and its metadata-only MPP picker."
   },
   "accentColor": "#FFFFFF",
   "supportsChannelFeatures": "tier1",
@@ -27,7 +27,7 @@
   "copilotAgents": {
     "declarativeAgents": [
       {
-        "id": "project-manager-assistant",
+        "id": "mpp-data-auditor",
         "file": "declarativeAgent.json"
       }
     ]
