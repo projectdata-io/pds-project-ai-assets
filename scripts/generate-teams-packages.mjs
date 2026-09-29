@@ -147,7 +147,7 @@ for (const packageSlug of packageSlugs) {
     contact_email: "support@projectdata.io",
     namespace: `pdsprojectai${metadata.name.replaceAll("-", "")}`,
     functions: [],
-    runtimes: [{ type: "RemoteMCPServer", spec: { url: packageMetadata.mcpEndpoint }, run_for_functions: tools, auth: { type: "OAuthPluginVault", reference_id: dcrReference } }]
+    runtimes: [{ type: "RemoteMCPServer", spec: { url: packageMetadata.mcpEndpoint }, run_for_functions: ["*"], auth: { type: "OAuthPluginVault", reference_id: dcrReference } }]
   }, null, 2)}\n`;
   const packageJson = `${JSON.stringify({
     name: `@pds-project-ai/${packageSlug}`,
@@ -214,4 +214,4 @@ This package replaces one role from the retired invalid multi-agent suite. Insta
   }
 }
 
-console.log(`${checkOnly ? "Checked" : "Generated"} ${packageSlugs.length} independently deployable ProjectData AI Essentials packages.`);
+console.log(`${checkOnly ? "Checked" : "Generated"} ${packageSlugs.length} independently deployable PDS Project AI packages.`);

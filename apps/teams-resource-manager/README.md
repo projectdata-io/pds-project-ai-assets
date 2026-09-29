@@ -1,4 +1,4 @@
-# ProjectData AI Essentials: Resource Manager
+# PDS Project AI: Resource Manager
 
 This is one independently deployable, read-only Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_RESOURCE_MANAGER` binding.
 

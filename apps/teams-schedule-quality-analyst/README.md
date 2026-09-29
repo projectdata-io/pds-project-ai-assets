@@ -1,4 +1,4 @@
-# ProjectData AI Essentials: Schedule Quality Analyst
+# PDS Project AI: Schedule Quality Analyst
 
 This is one independently deployable, read-only Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_SCHEDULE_QUALITY_ANALYST` binding.
 

@@ -1,4 +1,4 @@
-# ProjectData AI Essentials: Project Manager Assistant
+# PDS Project AI: Project Manager Assistant
 
 This is one independently deployable, read-only Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT` binding.
 

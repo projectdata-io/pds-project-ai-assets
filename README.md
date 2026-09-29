@@ -116,7 +116,7 @@ The same workflow builds and deploys the static agent catalog to GitHub Pages on
 
 ## Microsoft 365 Declarative-Agent Packages
 
-`apps/` contains five independently deployable `ProjectData AI Essentials` packages:
+`apps/` contains five independently deployable `PDS Project AI` packages:
 
 - `teams-project-manager-assistant`
 - `teams-schedule-quality-analyst`
@@ -144,6 +144,8 @@ npm run validate:teams-packages
 
 Run from this asset repository in PowerShell, signed in to Microsoft 365 Agents Toolkit for a **non-production tenant**. Custom app upload must be enabled and the account must have permission to create and submit apps. Keep each package's ignored `env/.env.dev` local with `TEAMSFX_ENV=dev` and `APP_NAME_SUFFIX=dev`; Toolkit writes that package's `TEAMS_APP_ID`, `M365_APP_ID`, and `MCP_DA_AUTH_ID_*` during provisioning. Never copy generated IDs between packages or commit local env files. Do not clear existing IDs when retrying a partially successful run.
 
+The Microsoft 365 title service requires every extension to use a manifest version higher than the existing title. When changing a provisioned package, bump the `version` in every package's `source-metadata.json` and `package.json` in lockstep, then run `npm run generate:teams-packages` before retrying the failed stage. Keep the existing package-local IDs; provisioning updates the existing Teams app and acquires the higher-version title.
+
 The coordinator targets only `--env dev`. Without `--execute` it prints the planned work and does not contact the tenant. With `--execute` it runs each package sequentially and stops at the first Toolkit failure; it does not roll back packages that already succeeded.
 
 ```powershell
@@ -154,18 +156,34 @@ npm run manage:teams-packages -- provision --env dev --execute
 # After provisioning, install the five dev agents for your signed-in account:
 npm run manage:teams-packages -- install --env dev
 npm run manage:teams-packages -- install --env dev --execute
-# To make the five provisioned dev agents available across the tenant:
-npm run manage:teams-packages -- share-tenant --env dev
-npm run manage:teams-packages -- share-tenant --env dev --execute
 # Only after testing all five agents and approving submission for admin review:
+npm run manage:teams-packages -- publish --env dev
 npm run manage:teams-packages -- publish --env dev --execute
 ```
 
-`provision` creates or updates five separate dev Teams apps and DCR configurations and extends each to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. `share-tenant` grants access to the five provisioned agents across the tenant, but does not preinstall them. Both modes require `--execute` to change tenant state. `all` still means **provision and publish**, not install or share. Test every agent in Copilot, including per-user PDS sign-in, MPP selection, and read-only behavior, before sharing or publishing. For a small test group, run Toolkit's `share --env dev --scope users --email 'person@tenant.example' -i false` from each package directory instead.
+`provision` creates or updates five separate dev Teams apps and DCR configurations and extends each to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. Test every agent in Copilot, including per-user PDS sign-in, MPP selection, and read-only behavior, before submitting it for organization review. `all` still means **provision and publish**, not install or share.
 
-For managed rollout or automatic installation for selected users, use `publish`: it rebuilds and validates each package, then submits it to the Teams admin center for organization review. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. `all --env dev --execute` runs provisioning **and submission** in one go; avoid it when a human testing gate is required between those stages. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
+For managed rollout or automatic installation for selected users, use `publish`: it rebuilds and validates each package, then submits it to the Teams admin center for organization review. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. Check **Teams admin center > Teams apps > Manage apps** for any previously submitted app by its Teams app ID before running the five-package batch; a successful `atk publish` may already have submitted one package even if its local `TEAMS_APP_PUBLISHED_APP_ID` is absent. If one has already been submitted, run `atk publish --env dev --interactive false` only from each remaining package directory after testing it. `all --env dev --execute` runs provisioning **and submission** in one go; avoid it when a human testing gate is required between those stages. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
+
+The optional `share-tenant` coordinator calls Toolkit `share --scope tenant` on each title; it does **not** submit an app for admin review or preinstall it. In this dev tenant, Toolkit's title-service `POST /allowed` returned HTTP 403 (`Title ... is not allowed to be modify`) for both tenant-wide and single-user shares of fresh titles. The batch stops on the first denial, leaving later packages untouched. Do not keep retrying, reset generated IDs, or treat this command as the default distribution path. The cause of the title-service denial is unconfirmed; use the separate `publish` and administrator approval workflow for distribution. A dry run of `share-tenant` checks command syntax only, not permission to share.
 
 If a batch stops, inspect the failed package's Toolkit output and local `env/.env.dev`, fix the cause, and rerun only the failed stage. Repeating a successful stage uses its existing package-local IDs; do not delete or replace them to force a retry. A partial `publish` run may already have submitted earlier packages for approval; check the Teams admin center before resubmitting. The coordinator does not run in CI.
+
+### Public Marketplace packaging
+
+The dev `publish` stage above submits only to your organization's catalog, not the public Teams Store or AppSource. Never submit a dev ZIP to Partner Center. For each role, provision a **separate production Teams app ID** and a PDS MCP auth registration that works across customer tenants. The existing `m365agents.yml` uses `targetAudience: HomeTenant` for dev; its DCR output is not a cross-tenant production registration. Set up and verify the production registration with `AnyApp` and a cross-tenant audience through the approved deployment workflow. Do not copy any dev ID or secret into production. The PDS API/Entra registrations must support external-tenant users and combined consent before publishing.
+
+Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, and the package's `MCP_DA_AUTH_ID_*` key with its separately registered production auth ID. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. The packaging command checks all five identities before it builds anything. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
+
+```powershell
+npm run package:marketplace
+# Optional local template check without prod credentials or tenant calls:
+npm run package:marketplace -- --prepare
+# Only once separate production IDs and cross-tenant auth have been verified:
+npm run package:marketplace -- --execute
+```
+
+Execution performs only local Toolkit `package` and `validate` for `prod`; it cannot provision, publish, install, share, upload, or submit apps. Confirm every ZIP under `apps/<role>/appPackage/build/appPackage.prod.zip` has the intended production identity and auth binding. Test PDS sign-in, Graph OBO, picker, pagination, and read-only boundaries with a non-admin user in an **external test tenant** before Partner Center submission. Submit production packages through the publisher's approved Marketplace workflow, with distinct role value propositions and required listing/test assets. Work IQ OneDrive/SharePoint/Word preview MCP URLs and tenant-specific authentication are not bundled into these public packages; add them only after a supported cross-tenant, read-only connection has been demonstrated. No production tenant changes are part of this packaging workflow.
 
 ## License
 

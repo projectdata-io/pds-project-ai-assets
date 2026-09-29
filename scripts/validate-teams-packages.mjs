@@ -64,7 +64,8 @@ for (const [packageSlug, role] of expected) {
     const plugin = JSON.parse(readFileSync(join(appPackagePath, "ai-plugin.json"), "utf8"));
     const tools = plugin.runtimes?.[0]?.run_for_functions ?? [];
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
-    if (!tools.includes("open_project_plan_picker") || !tools.includes("create_session_from_onedrive")) failures.push(`${packageSlug} lacks the shared picker/session flow.`);
+    const usesDynamicDiscovery = tools.length === 1 && tools[0] === "*";
+    if (!usesDynamicDiscovery && (!tools.includes("open_project_plan_picker") || !tools.includes("create_session_from_onedrive"))) failures.push(`${packageSlug} lacks the shared picker/session flow.`);
     if (new Set(tools).size !== tools.length || tools.some((tool) => knownTools.get(tool) === "Session.ReadWrite" || writeTools.test(tool))) failures.push(`${packageSlug} exposes a write-capable MCP tool.`);
   }
   const yamlPath = join(packagePath, "m365agents.yml");
@@ -91,10 +92,18 @@ const coordinator = join(rootPath, "scripts", "manage-teams-packages.mjs");
 const installPlan = spawnSync(process.execPath, [coordinator, "install", "--env", "dev"], { encoding: "utf8" });
 const tenantSharePlan = spawnSync(process.execPath, [coordinator, "share-tenant", "--env", "dev"], { encoding: "utf8" });
 const allPlan = spawnSync(process.execPath, [coordinator, "all", "--env", "dev"], { encoding: "utf8" });
+const marketplace = join(rootPath, "scripts", "package-marketplace.mjs");
+const marketplacePlan = spawnSync(process.execPath, [marketplace], { encoding: "utf8" });
+const marketplaceWithoutIdentity = [...expected.keys()].every((slug) => !existsSync(join(rootPath, "apps", slug, "env", ".env.prod")))
+  ? spawnSync(process.execPath, [marketplace, "--execute"], { encoding: "utf8" })
+  : null;
 const installSteps = installPlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 const tenantShareSteps = tenantSharePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
+const marketplaceSteps = marketplacePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 if (installPlan.status !== 0 || installSteps.length !== 15 || expected.keys().some((slug) => !installSteps.some((step) => step.includes(`${slug} - atk install --file-path ./appPackage/build/appPackage.dev.zip --scope Personal`)))) failures.push("Batch install must build, validate, and personally install all five packages in a dry run.");
 if (tenantSharePlan.status !== 0 || tenantShareSteps.length !== 5 || expected.keys().some((slug) => !tenantShareSteps.some((step) => step.includes(`${slug} - atk share --env dev --scope tenant`))) || tenantShareSteps.some((step) => step.includes(" - atk install "))) failures.push("Batch tenant sharing must share all five without installing them.");
 if (allPlan.status !== 0 || allPlan.stdout?.includes(" - atk install ") || allPlan.stdout?.includes(" - atk share ")) failures.push("Batch all mode must not implicitly install or share packages.");
+if (marketplacePlan.status !== 0 || marketplaceSteps.length !== 10 || expected.keys().some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must only package and validate five production agents.");
+if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);
-console.log("All five ProjectData AI Essentials packages are isolated and read-only.");
+console.log("All five PDS Project AI packages are isolated and read-only.");

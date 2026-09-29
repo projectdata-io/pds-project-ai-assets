@@ -5,6 +5,10 @@
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
+      "text": "Select a Microsoft Project plan to analyze.",
+      "title": "Select a Microsoft Project plan to analyze"
+    },
+    {
       "text": "Summarize the current project delivery status with traceable task evidence.",
       "title": "Summarize the current project delivery status with traceable task evidence"
     },

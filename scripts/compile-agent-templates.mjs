@@ -115,7 +115,7 @@ function renderTemplate(agent, metadata) {
   const mcpComponents = mcpServers.map((server) => {
     if (server === "project") {
       return `  - kind: DialogComponent
-    displayName: PDS Project Data AI
+    displayName: PDS Project AI
     id: ${mcpId}
     shareContext:
       kind: ContentShareContext
@@ -171,7 +171,7 @@ ${hasSharePoint ? `  - kind: ConnectionReference
 ` : ""}connectorDefinitions:
   - kind: ConnectorDefinition
     connectorId: ${connectorId}
-    displayName: PDS Project Data AI
+    displayName: PDS Project AI
     description: PDS Project AI MCP server for Microsoft Project MPP analysis and controlled editing.
     isCustom: true
     connectorType: Solution
@@ -179,8 +179,8 @@ ${hasSharePoint ? `  - kind: ConnectionReference
     isSSOSupported: false
     operations:
       - kind: ConnectorOperation
-        displayName: PDS Project Data AI
-        description: Invoke the PDS Project Data AI MCP server.
+        displayName: PDS Project AI
+        description: Invoke the PDS Project AI MCP server.
         inputType:
           kind: Record
           properties:

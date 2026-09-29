@@ -1,13 +1,14 @@
 {
   "packageSlug": "teams-schedule-quality-analyst",
   "role": "schedule-quality-analyst",
-  "title": "ProjectData AI Essentials: Schedule Quality Analyst",
+  "title": "PDS Project AI: Schedule Quality Analyst",
   "shortName": "PDS Schedule Quality",
   "shortDescription": "Read-only schedule quality analysis for Microsoft Project plans.",
-  "version": "2.0.2",
+  "version": "2.1.1",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_SCHEDULE_QUALITY_ANALYST",
   "conversationStarters": [
+    "Select a Microsoft Project plan to analyze.",
     "Audit schedule logic and identify the highest-impact quality findings.",
     "Review constraints, calendars, and critical-path risks with evidence."
   ]
