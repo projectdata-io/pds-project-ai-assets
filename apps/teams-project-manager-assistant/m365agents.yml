@@ -10,6 +10,36 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  - uses: oauth/register
+    with:
+      name: workiqwordprojectmanagerassistant
+      appId: ${{TEAMS_APP_ID}}
+      flow: authorizationCode
+      identityProvider: MicrosoftEntra
+      baseUrl: https://agent365.svc.cloud.microsoft/agents/tenants/${{WORKIQ_TENANT_ID}}/servers/mcp_WordServer
+    writeToEnvironmentFile:
+      configurationId: WORKIQ_WORD_AUTH_ID_PROJECT_MANAGER_ASSISTANT
+
+  - uses: oauth/register
+    with:
+      name: workiqonedriveconversionprojectmanagerassistant
+      appId: ${{TEAMS_APP_ID}}
+      flow: authorizationCode
+      identityProvider: MicrosoftEntra
+      baseUrl: https://workiq.svc.cloud.microsoft/mcp
+    writeToEnvironmentFile:
+      configurationId: WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_PROJECT_MANAGER_ASSISTANT
+
+  - uses: oauth/register
+    with:
+      name: workiqsharepointreportsprojectmanagerassistant
+      appId: ${{TEAMS_APP_ID}}
+      flow: authorizationCode
+      identityProvider: MicrosoftEntra
+      baseUrl: https://agent365.svc.cloud.microsoft/agents/tenants/${{WORKIQ_TENANT_ID}}/servers/mcp_SharePointRemoteServer
+    writeToEnvironmentFile:
+      configurationId: WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_PROJECT_MANAGER_ASSISTANT
+
   - uses: dcr/register
     with:
       name: pdsprojectaiprojectmanagerassistant
@@ -24,7 +54,7 @@ provision:
 
   - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.dev.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputFolder: ./appPackage/build
   - uses: teamsApp/validateAppPackage
@@ -47,7 +77,7 @@ projectId: 32751b19-8b2e-407d-9168-e5192f738cec
 publish:
   - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.json
+      manifestPath: ./appPackage/manifest.dev.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputFolder: ./appPackage/build
   - uses: teamsApp/validateAppPackage

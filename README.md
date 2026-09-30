@@ -124,11 +124,21 @@ The same workflow builds and deploys the static agent catalog to GitHub Pages on
 - `teams-resource-manager`
 - `teams-mpp-data-auditor`
 
-Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, role-specific generated instructions, and a minimal read-only PDS MCP allowlist. All five retain the shared User UI icon's white mark with distinct role badges, and reuse the PDS MCP endpoint and metadata-only project-plan picker. They do not contain write agents, write skills, or write tools.
+Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, package-local Work IQ Word, OneDrive conversion, and report-storage auth bindings, role-specific generated instructions, and a minimal read-only PDS MCP allowlist. All five retain the shared User UI icon's white mark with distinct role badges, and reuse the PDS MCP endpoint and metadata-only project-plan picker. Work IQ is limited to Word document creation, exact read-only OneDrive-to-PDF conversion, and scoped report-file persistence; it does not provide Teams or general SharePoint context to these read-only agents.
 
 On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the five Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
 
 The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint and picker result `{ driveId, itemId, fileName }` remain unchanged.
+
+### Work IQ Word setup
+
+The generated packages include Microsoft's preview Work IQ Word MCP action at `https://agent365.svc.cloud.microsoft/agents/tenants/{tenantId}/servers/mcp_WordServer`. It exposes only `WordCreateNewDocument`, which creates a Word document in the signed-in user's OneDrive root from HTML or plain text and returns Microsoft Graph `DriveItem` metadata. This is a consequential OneDrive write, so the agent should use it only when the user asks to save a Word report.
+
+They also include a separate Work IQ Preview action at `https://workiq.svc.cloud.microsoft/mcp`, exposing only `fetch_blob_work_iq` with `path` and `format: "pdf"`. The agent passes the exact Word `DriveItem` content path `/me/drive/items/{itemId}/content`; conversion returns PDF bytes and does not modify or persist the source file. This read-only capability is tenant-dependent and currently documented with an approximately 4 MB conversion/download limit, so Code Interpreter remains the fallback for larger or unsupported files.
+
+The generated packages also include a narrowly scoped Work IQ SharePoint report-storage action at `mcp_SharePointRemoteServer`. It exposes only `createSmallBinaryFile` and `uploadFileFromUrl`; it does not provide SharePoint discovery, reads, list access, Teams access, or project-data CRUD. Binary persistence through `createSmallBinaryFile` is limited to files smaller than 5 MB. Conversion returns bytes; the report-storage action is still required to persist a generated or converted file, and the agent must not claim persistence until that action succeeds.
+
+Before packaging or publishing in a tenant, set `WORKIQ_TENANT_ID`, `WORKIQ_WORD_AUTH_ID_<ROLE>`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_<ROLE>`, and `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_<ROLE>` in the package's ignored `env/.env.dev` or `env/.env.prod`. Each value is a separate static Microsoft Entra SSO plugin configuration for the resolved endpoint; all are separate from the PDS DCR value and are not created by the `dcr/register` lifecycle step. Provision each Teams app first, create or bind the three Work IQ auth configurations, then package and test Word creation, conversion, and report persistence. These Work IQ MCP features are preview functionality and may change independently of these assets.
 
 ### Safe local package checks
 
@@ -140,11 +150,25 @@ npm run check:teams-packages
 npm run validate:teams-packages
 ```
 
+### CI installable package artifacts
+
+On pushes to `main` and manual workflow runs, the Build agent assets workflow builds and validates one sideloadable M365 app ZIP for each Teams agent, then uploads them as the `m365-agent-installable-packages` artifact. Pull requests continue to run source validation without requiring tenant-specific configuration. This CI step only packages and validates; it does not provision, install, share, or publish apps.
+
+Configure these five GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
+
+- `M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT`
+- `M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST`
+- `M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST`
+- `M365_AGENT_DEV_ENV_RESOURCE_MANAGER`
+- `M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR`
+
+Each file must contain that package's provisioned dev app ID and PDS/Work IQ auth configuration IDs. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
+
 ### Development provisioning and organization submission
 
 Run from this asset repository in PowerShell, signed in to Microsoft 365 Agents Toolkit for a **non-production tenant**. Custom app upload must be enabled and the account must have permission to create and submit apps. Keep each package's ignored `env/.env.dev` local with `TEAMSFX_ENV=dev` and `APP_NAME_SUFFIX=dev`; Toolkit writes that package's `TEAMS_APP_ID`, `M365_APP_ID`, and `MCP_DA_AUTH_ID_*` during provisioning. Never copy generated IDs between packages or commit local env files. Do not clear existing IDs when retrying a partially successful run.
 
-The Microsoft 365 title service requires every extension to use a manifest version higher than the existing title. When changing a provisioned package, bump the `version` in every package's `source-metadata.json` and `package.json` in lockstep, then run `npm run generate:teams-packages` before retrying the failed stage. Keep the existing package-local IDs; provisioning updates the existing Teams app and acquires the higher-version title.
+The Microsoft 365 title service requires every extension to use a manifest version higher than the existing title. An executed `publish` or `all` run automatically increments the patch version in every package's canonical `source-metadata.json` and regenerates the package manifests and package metadata before invoking Toolkit. Use `npm run bump:teams-package-versions` followed by `npm run generate:teams-packages` when preparing a version outside the coordinator. Keep the existing package-local IDs; provisioning updates the existing Teams app and acquires the higher-version title.
 
 The coordinator targets only `--env dev`. Without `--execute` it prints the planned work and does not contact the tenant. With `--execute` it runs each package sequentially and stops at the first Toolkit failure; it does not roll back packages that already succeeded.
 
@@ -173,7 +197,7 @@ If a batch stops, inspect the failed package's Toolkit output and local `env/.en
 
 The dev `publish` stage above submits only to your organization's catalog, not the public Teams Store or AppSource. Never submit a dev ZIP to Partner Center. For each role, provision a **separate production Teams app ID** and a PDS MCP auth registration that works across customer tenants. The existing `m365agents.yml` uses `targetAudience: HomeTenant` for dev; its DCR output is not a cross-tenant production registration. Set up and verify the production registration with `AnyApp` and a cross-tenant audience through the approved deployment workflow. Do not copy any dev ID or secret into production. The PDS API/Entra registrations must support external-tenant users and combined consent before publishing.
 
-Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, and the package's `MCP_DA_AUTH_ID_*` key with its separately registered production auth ID. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. The packaging command checks all five identities before it builds anything. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
+Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, the package's `MCP_DA_AUTH_ID_*` key with its separately registered production auth ID, `WORKIQ_TENANT_ID=<production tenant ID>`, `WORKIQ_WORD_AUTH_ID_<ROLE>`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_<ROLE>`, and `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_<ROLE>`. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. The packaging command checks all five identities before it builds anything. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
 
 ```powershell
 npm run package:marketplace

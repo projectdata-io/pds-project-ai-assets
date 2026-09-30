@@ -1,0 +1,149 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "Work IQ Report Storage",
+  "description_for_human": "Save generated report files to OneDrive or SharePoint.",
+  "description_for_model": "Use this action only to persist a report file the agent has just generated or converted. createSmallBinaryFile is limited to files smaller than 5 MB and requires a destination document library; uploadFileFromUrl accepts only a supported SharePoint or OneDrive source URL. Do not use this action for project-data CRUD or general SharePoint discovery.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "workiqsharepointreportsschedulequalityanalyst",
+  "functions": [
+    {
+      "name": "createSmallBinaryFile",
+      "description": "Save a generated report file smaller than 5 MB to a specified SharePoint or OneDrive document library.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "base64Content": {
+            "type": "string"
+          },
+          "documentLibraryId": {
+            "type": "string"
+          },
+          "parentFolderId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename",
+          "base64Content",
+          "documentLibraryId"
+        ]
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": [
+            "GetPrivateData",
+            "ResourceStateUpdate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "uploadFileFromUrl",
+      "description": "Copy a generated report from a SharePoint or OneDrive URL into a specified document library or the user's OneDrive.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sourceUrl": {
+            "type": "string"
+          },
+          "destinationDocumentLibraryId": {
+            "type": "string"
+          },
+          "destinationFolderId": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceUrl",
+          "destinationDocumentLibraryId"
+        ]
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": [
+            "GetPrivateData",
+            "ResourceStateUpdate"
+          ]
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "run_for_functions": [
+        "createSmallBinaryFile",
+        "uploadFileFromUrl"
+      ],
+      "spec": {
+        "url": "https://agent365.svc.cloud.microsoft/agents/tenants/${{WORKIQ_TENANT_ID}}/servers/mcp_SharePointRemoteServer",
+        "mcp_tool_description": {
+          "tools": [
+            {
+              "name": "createSmallBinaryFile",
+              "description": "Save a generated report file smaller than 5 MB to a specified SharePoint or OneDrive document library.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string"
+                  },
+                  "base64Content": {
+                    "type": "string"
+                  },
+                  "documentLibraryId": {
+                    "type": "string"
+                  },
+                  "parentFolderId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filename",
+                  "base64Content",
+                  "documentLibraryId"
+                ]
+              }
+            },
+            {
+              "name": "uploadFileFromUrl",
+              "description": "Copy a generated report from a SharePoint or OneDrive URL into a specified document library or the user's OneDrive.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "sourceUrl": {
+                    "type": "string"
+                  },
+                  "destinationDocumentLibraryId": {
+                    "type": "string"
+                  },
+                  "destinationFolderId": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sourceUrl",
+                  "destinationDocumentLibraryId"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_SCHEDULE_QUALITY_ANALYST}}"
+      }
+    }
+  ]
+}

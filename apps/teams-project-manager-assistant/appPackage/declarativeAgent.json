@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "Project Manager Assistant ${{APP_NAME_SUFFIX}}",
-  "description": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention.",
+  "description": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
@@ -25,6 +25,23 @@
     {
       "id": "pdsProjectAiMcp",
       "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
     }
   ],
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"

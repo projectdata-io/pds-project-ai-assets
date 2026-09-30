@@ -1,0 +1,86 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "Work IQ OneDrive Conversion",
+  "description_for_human": "Convert an exact generated OneDrive document to PDF.",
+  "description_for_model": "Use this action only to convert an exact Word document already created by this agent in the user's OneDrive to PDF. Pass the exact /me/drive/items/{itemId}/content path returned by the Word action and format pdf. This is read-only and does not discover, upload, modify, share, or delete files.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "workiqonedriveconversionmppdataauditor",
+  "functions": [
+    {
+      "name": "fetch_blob_work_iq",
+      "description": "Convert an exact OneDrive file to PDF and return the converted bytes without changing the source file.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Exact server-relative OneDrive content path, for example /me/drive/items/{itemId}/content."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pdf"
+            ],
+            "description": "Requested output format."
+          }
+        },
+        "required": [
+          "path",
+          "format"
+        ]
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": [
+            "GetPrivateData",
+            "DataTransform"
+          ]
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "run_for_functions": [
+        "fetch_blob_work_iq"
+      ],
+      "spec": {
+        "url": "https://workiq.svc.cloud.microsoft/mcp",
+        "mcp_tool_description": {
+          "tools": [
+            {
+              "name": "fetch_blob_work_iq",
+              "description": "Convert an exact OneDrive file to PDF and return the converted bytes without changing the source file.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Exact server-relative OneDrive content path, for example /me/drive/items/{itemId}/content."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "pdf"
+                    ],
+                    "description": "Requested output format."
+                  }
+                },
+                "required": [
+                  "path",
+                  "format"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_MPP_DATA_AUDITOR}}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "Work IQ Word",
+  "description_for_human": "Create Word reports in the user's OneDrive.",
+  "description_for_model": "Use this action when the user asks to create or save a project report as a Word document in their OneDrive. Do not use it for Excel, PowerPoint, PDF, or temporary download-only requests.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "workiqwordmppdataauditor",
+  "functions": [
+    {
+      "name": "WordCreateNewDocument",
+      "description": "Create a new Word report in the user's OneDrive root from HTML or plain text content.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "The desired .docx file name."
+          },
+          "contentInHtml": {
+            "type": "string",
+            "description": "The report body as HTML or plain text."
+          }
+        },
+        "required": [
+          "fileName",
+          "contentInHtml"
+        ]
+      },
+      "capabilities": {
+        "security_info": {
+          "data_handling": [
+            "GetPrivateData",
+            "ResourceStateUpdate"
+          ]
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "run_for_functions": [
+        "WordCreateNewDocument"
+      ],
+      "spec": {
+        "url": "https://agent365.svc.cloud.microsoft/agents/tenants/${{WORKIQ_TENANT_ID}}/servers/mcp_WordServer",
+        "mcp_tool_description": {
+          "tools": [
+            {
+              "name": "WordCreateNewDocument",
+              "description": "Creates a new Word document in the root of the user's OneDrive from HTML or plain text.",
+              "inputSchema": {
+                "type": "object",
+                "properties": {
+                  "fileName": {
+                    "type": "string",
+                    "description": "Desired file name; use a .docx extension."
+                  },
+                  "contentInHtml": {
+                    "type": "string",
+                    "description": "HTML or plain text content for the document body."
+                  }
+                },
+                "required": [
+                  "fileName",
+                  "contentInHtml"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{WORKIQ_WORD_AUTH_ID_MPP_DATA_AUDITOR}}"
+      }
+    }
+  ]
+}

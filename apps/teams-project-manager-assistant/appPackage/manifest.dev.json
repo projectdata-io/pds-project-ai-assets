@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.30",
+  "version": "2.1.14",
+  "id": "${{TEAMS_APP_ID}}",
+  "developer": {
+    "name": "WACG Inc.",
+    "websiteUrl": "https://projectdata.io/",
+    "privacyUrl": "https://projectdata.io/privacy-policy",
+    "termsOfUseUrl": "https://projectdata.io/terms-conditions"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "PDS Project Manager ${{APP_NAME_SUFFIX}}",
+    "full": "PDS Project AI: Project Manager Assistant"
+  },
+  "description": {
+    "short": "Understand delivery status, risks, milestones, and next steps.",
+    "full": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan. Connects to your existing PDS Project AI service to help you find and analyze project schedules. It only reads project information and never changes your project files."
+  },
+  "accentColor": "#FFFFFF",
+  "supportsChannelFeatures": "tier1",
+  "composeExtensions": [],
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "project-manager-assistant",
+        "file": "declarativeAgent.dev.json"
+      }
+    ]
+  },
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": []
+}

@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "Resource Manager ${{APP_NAME_SUFFIX}}",
-  "description": "Read-only resource planning agent for assignment demand, overallocations, availability, cost, and near-term staffing pressure.",
+  "description": "Helps you understand resource demand, overallocations, availability, costs, assignments, and near-term staffing pressure.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
@@ -21,6 +21,23 @@
     {
       "id": "pdsProjectAiMcp",
       "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
     }
   ],
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"

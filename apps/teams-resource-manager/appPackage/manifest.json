@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
   "manifestVersion": "1.30",
-  "version": "2.1.1",
+  "version": "2.1.14",
   "id": "${{TEAMS_APP_ID}}",
   "developer": {
     "name": "WACG Inc.",
@@ -18,8 +18,8 @@
     "full": "PDS Project AI: Resource Manager"
   },
   "description": {
-    "short": "Read-only resource and capacity analysis for project plans.",
-    "full": "Read-only resource planning agent for assignment demand, overallocations, availability, cost, and near-term staffing pressure. Uses the existing PDS Project AI service and its metadata-only MPP picker."
+    "short": "Understand resource demand, capacity, and staffing pressure.",
+    "full": "Helps you understand resource demand, overallocations, availability, costs, assignments, and near-term staffing pressure. Connects to your existing PDS Project AI service to help you find and analyze project schedules. It only reads project information and never changes your project files."
   },
   "accentColor": "#FFFFFF",
   "supportsChannelFeatures": "tier1",

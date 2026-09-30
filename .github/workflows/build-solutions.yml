@@ -29,6 +29,33 @@ jobs:
         with:
           node-version: 20
 
+      - name: Configure M365 dev package environments
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        env:
+          M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT }}
+          M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST: ${{ secrets.M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST }}
+          M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST: ${{ secrets.M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST }}
+          M365_AGENT_DEV_ENV_RESOURCE_MANAGER: ${{ secrets.M365_AGENT_DEV_ENV_RESOURCE_MANAGER }}
+          M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR: ${{ secrets.M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR }}
+        run: |
+          $packageEnvironments = @(
+            @{ Slug = 'teams-project-manager-assistant'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT },
+            @{ Slug = 'teams-schedule-quality-analyst'; SecretName = 'M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST'; Content = $env:M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST },
+            @{ Slug = 'teams-portfolio-executive-analyst'; SecretName = 'M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST'; Content = $env:M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST },
+            @{ Slug = 'teams-resource-manager'; SecretName = 'M365_AGENT_DEV_ENV_RESOURCE_MANAGER'; Content = $env:M365_AGENT_DEV_ENV_RESOURCE_MANAGER },
+            @{ Slug = 'teams-mpp-data-auditor'; SecretName = 'M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR'; Content = $env:M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR }
+          )
+          $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+          foreach ($packageEnvironment in $packageEnvironments) {
+            if ([string]::IsNullOrWhiteSpace($packageEnvironment.Content)) {
+              throw "Required GitHub Actions secret $($packageEnvironment.SecretName) is not configured."
+            }
+            $environmentDirectory = Join-Path 'apps' "$($packageEnvironment.Slug)/env"
+            New-Item -ItemType Directory -Path $environmentDirectory -Force | Out-Null
+            [System.IO.File]::WriteAllText((Join-Path $environmentDirectory '.env.dev'), $packageEnvironment.Content, $utf8NoBom)
+          }
+
       - name: Validate source assets
         run: npm test
 
@@ -37,6 +64,46 @@ jobs:
 
       - name: Verify Agent templates
         run: npm run verify:agents
+
+      - name: Build and validate installable M365 agent packages
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        env:
+          ATK_CLI_SKILL: "true"
+        run: |
+          $packageSlugs = @(
+            'teams-project-manager-assistant',
+            'teams-schedule-quality-analyst',
+            'teams-portfolio-executive-analyst',
+            'teams-resource-manager',
+            'teams-mpp-data-auditor'
+          )
+          $outputDirectory = 'dist/m365-agent-packages'
+          New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+
+          foreach ($packageSlug in $packageSlugs) {
+            $packageDirectory = Join-Path 'apps' $packageSlug
+            Push-Location $packageDirectory
+            try {
+              npx --yes @microsoft/m365agentstoolkit-cli@beta package --env dev --manifest-file ./appPackage/manifest.dev.json --interactive false
+              if ($LASTEXITCODE -ne 0) { throw "Toolkit package failed for $packageSlug." }
+              npx --yes @microsoft/m365agentstoolkit-cli@beta validate --env dev --manifest-file ./appPackage/manifest.dev.json --interactive false
+              if ($LASTEXITCODE -ne 0) { throw "Toolkit validation failed for $packageSlug." }
+            } finally {
+              Pop-Location
+            }
+
+            $packageZip = Join-Path $packageDirectory 'appPackage/build/appPackage.dev.zip'
+            if (-not (Test-Path -LiteralPath $packageZip -PathType Leaf)) {
+              throw "Toolkit did not create the expected package ZIP for $packageSlug."
+            }
+            Copy-Item -LiteralPath $packageZip -Destination (Join-Path $outputDirectory "$packageSlug.zip") -Force
+          }
+
+          $packageFiles = @(Get-ChildItem -LiteralPath $outputDirectory -Filter '*.zip' -File)
+          if ($packageFiles.Count -ne $packageSlugs.Count) {
+            throw "Expected $($packageSlugs.Count) installable M365 agent ZIP files, found $($packageFiles.Count)."
+          }
 
       - name: Verify packages and stamp version
         shell: pwsh
@@ -75,6 +142,15 @@ jobs:
         with:
           name: pds-project-ai-agent-packages
           path: dist/agent-packages/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload installable M365 agent packages
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: m365-agent-installable-packages
+          path: dist/m365-agent-packages/*.zip
           if-no-files-found: error
           retention-days: 14
 

@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "Schedule Quality Analyst ${{APP_NAME_SUFFIX}}",
-  "description": "Read-only schedule assurance agent for logic, critical path, constraints, baselines, progress quality, calendars, WBS, and realism.",
+  "description": "Helps you find schedule logic issues, critical-path risks, constraints, baseline variance, progress problems, calendar issues, and unrealistic dates.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
@@ -21,6 +21,23 @@
     {
       "id": "pdsProjectAiMcp",
       "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
     }
   ],
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"

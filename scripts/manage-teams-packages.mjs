@@ -14,12 +14,22 @@ const packages = [
 const [mode, ...options] = process.argv.slice(2);
 const usage = "Usage: node scripts/manage-teams-packages.mjs <provision|install|share-tenant|publish|all> --env dev [--execute]";
 
+function runNodeScript(scriptName) {
+  const result = spawnSync(process.execPath, [join(rootPath, "scripts", scriptName)], { stdio: "inherit" });
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`${scriptName} failed with exit code ${result.status ?? 1}.`);
+}
+
 if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) || options.some((option) => !["--env", "dev", "--execute"].includes(option)) || options.indexOf("--env") < 0 || options[options.indexOf("--env") + 1] !== "dev") {
   console.error(usage);
   process.exitCode = 1;
 } else {
   const execute = options.includes("--execute");
   const stages = mode === "all" ? ["provision", "publish"] : [mode];
+  if (execute && (mode === "publish" || mode === "all")) {
+    runNodeScript("bump-teams-package-versions.mjs");
+    runNodeScript("generate-teams-packages.mjs");
+  }
   for (const packageName of packages) {
     const folder = join(rootPath, "apps", packageName);
     if (!existsSync(join(folder, "m365agents.yml"))) {
@@ -32,13 +42,15 @@ if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) |
       const folder = join(rootPath, "apps", packageName);
       const commands = stage === "install"
         ? [
-            ["package", "--env", "dev", "--interactive", "false"],
-            ["validate", "--env", "dev", "--interactive", "false"],
+            ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"],
+            ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"],
             ["install", "--file-path", "./appPackage/build/appPackage.dev.zip", "--scope", "Personal", "--interactive", "false"]
           ]
         : stage === "share-tenant"
           ? [["share", "--env", "dev", "--scope", "tenant", "--interactive", "false"]]
-        : [[stage, "--env", "dev", "--interactive", "false"]];
+        : stage === "publish"
+          ? [["publish", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"]]
+          : [[stage, "--env", "dev", "--interactive", "false"]];
       for (const command of commands) {
         console.log(`${execute ? "Running" : "Dry run"}: ${packageName} - atk ${command.join(" ")}`);
         if (!execute) continue;

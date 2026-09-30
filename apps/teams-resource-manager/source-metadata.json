@@ -3,10 +3,13 @@
   "role": "resource-manager",
   "title": "PDS Project AI: Resource Manager",
   "shortName": "PDS Resource Manager",
-  "shortDescription": "Read-only resource and capacity analysis for project plans.",
-  "version": "2.1.1",
+  "shortDescription": "Understand resource demand, capacity, and staffing pressure.",
+  "version": "2.1.14",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_RESOURCE_MANAGER",
+  "capabilities": [
+    "CodeInterpreter"
+  ],
   "conversationStarters": [
     "Select a Microsoft Project plan to analyze.",
     "Report staffing pressure, overallocations, and near-term demand.",

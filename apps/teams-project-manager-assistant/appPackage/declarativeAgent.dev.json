@@ -1,0 +1,48 @@
+{
+  "version": "v1.8",
+  "name": "Project Manager Assistant ${{APP_NAME_SUFFIX}}",
+  "description": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan.",
+  "instructions": "$[file('instruction.dev.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Select a Microsoft Project plan to analyze.",
+      "title": "Select a Microsoft Project plan to analyze"
+    },
+    {
+      "text": "Summarize the current project delivery status with traceable task evidence.",
+      "title": "Summarize the current project delivery status with traceable task evidence"
+    },
+    {
+      "text": "Assess schedule health and identify the most important delivery risks.",
+      "title": "Assess schedule health and identify the most important delivery risks"
+    },
+    {
+      "text": "Prepare a concise project-manager brief for the current reporting window.",
+      "title": "Prepare a concise project-manager brief for the current reporting window"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

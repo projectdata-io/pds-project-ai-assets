@@ -3,10 +3,13 @@
   "role": "portfolio-executive-analyst",
   "title": "PDS Project AI: Portfolio and Executive Analyst",
   "shortName": "PDS Portfolio Analyst",
-  "shortDescription": "Read-only portfolio and executive project analysis.",
-  "version": "2.1.1",
+  "shortDescription": "Review portfolio status, costs, milestones, and risks.",
+  "version": "2.1.14",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PORTFOLIO_EXECUTIVE_ANALYST",
+  "capabilities": [
+    "CodeInterpreter"
+  ],
   "conversationStarters": [
     "Select a Microsoft Project plan to analyze.",
     "Prepare an executive delivery outlook with material risks and decisions.",

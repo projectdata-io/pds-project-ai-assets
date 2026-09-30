@@ -1,0 +1,44 @@
+{
+  "version": "v1.8",
+  "name": "Schedule Quality Analyst ${{APP_NAME_SUFFIX}}",
+  "description": "Helps you find schedule logic issues, critical-path risks, constraints, baseline variance, progress problems, calendar issues, and unrealistic dates.",
+  "instructions": "$[file('instruction.dev.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Select a Microsoft Project plan to analyze.",
+      "title": "Select a Microsoft Project plan to analyze"
+    },
+    {
+      "text": "Audit schedule logic and identify the highest-impact quality findings.",
+      "title": "Audit schedule logic and identify the highest-impact quality findings"
+    },
+    {
+      "text": "Review constraints, calendars, and critical-path risks with evidence.",
+      "title": "Review constraints, calendars, and critical-path risks with evidence"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

@@ -1,7 +1,7 @@
 {
   "name": "portfolio-executive-analyst",
   "title": "Portfolio and Executive Analyst",
-  "description": "Read-only leadership reporting agent for executive status, master-project rollups, milestones, cost, earned value, and plan comparison.",
+  "description": "Helps leaders review project and portfolio status, milestones, costs, earned value, baseline variance, and delivery risks.",
   "access": "read-only",
   "skills": [
     "mpp-executive-status-report",

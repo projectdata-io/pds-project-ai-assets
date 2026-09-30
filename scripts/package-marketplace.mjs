@@ -29,13 +29,23 @@ const identities = packages.map((packageName) => {
   const production = parseEnv(readFileSync(productionPath, "utf8"));
   const development = parseEnv(readFileSync(developmentPath, "utf8"));
   const { dcrEnvironmentVariable } = JSON.parse(readFileSync(join(folder, "source-metadata.json"), "utf8"));
+  const workIqWordAuthEnvironmentVariable = `WORKIQ_WORD_AUTH_ID_${packageName.replace(/^teams-/, "").replaceAll("-", "_").toUpperCase()}`;
+  const workIqOneDriveConversionAuthEnvironmentVariable = `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_${packageName.replace(/^teams-/, "").replaceAll("-", "_").toUpperCase()}`;
+  const workIqSharePointAuthEnvironmentVariable = `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_${packageName.replace(/^teams-/, "").replaceAll("-", "_").toUpperCase()}`;
   if (production.TEAMSFX_ENV !== "prod" || production.APP_NAME_SUFFIX !== "" ||
       !production.TEAMS_APP_ID || !production[dcrEnvironmentVariable] ||
+      !production.WORKIQ_TENANT_ID || !production[workIqWordAuthEnvironmentVariable] ||
+      !production[workIqOneDriveConversionAuthEnvironmentVariable] ||
+      !production[workIqSharePointAuthEnvironmentVariable] ||
+      !development[workIqWordAuthEnvironmentVariable] || !development[workIqOneDriveConversionAuthEnvironmentVariable] || !development[workIqSharePointAuthEnvironmentVariable] ||
       production.TEAMS_APP_ID === development.TEAMS_APP_ID ||
-      production[dcrEnvironmentVariable] === development[dcrEnvironmentVariable]) {
-    throw new Error(`${packageName} needs a distinct production Teams app and cross-tenant PDS auth registration, with an empty name suffix.`);
+      production[dcrEnvironmentVariable] === development[dcrEnvironmentVariable] ||
+      production[workIqWordAuthEnvironmentVariable] === development[workIqWordAuthEnvironmentVariable] ||
+      production[workIqOneDriveConversionAuthEnvironmentVariable] === development[workIqOneDriveConversionAuthEnvironmentVariable] ||
+      production[workIqSharePointAuthEnvironmentVariable] === development[workIqSharePointAuthEnvironmentVariable]) {
+    throw new Error(`${packageName} needs a distinct production Teams app, PDS auth registration, and Work IQ Word/conversion/report-storage auth configurations, with an empty name suffix.`);
   }
-  return { packageName, folder, production, development, dcrEnvironmentVariable };
+  return { packageName, folder, production, development, dcrEnvironmentVariable, workIqWordAuthEnvironmentVariable, workIqOneDriveConversionAuthEnvironmentVariable, workIqSharePointAuthEnvironmentVariable };
 });
 
 if (execute) {
@@ -49,7 +59,7 @@ if (execute) {
   }
 }
 
-for (const { packageName, folder, production, dcrEnvironmentVariable } of identities) {
+for (const { packageName, folder, production, dcrEnvironmentVariable, workIqWordAuthEnvironmentVariable, workIqOneDriveConversionAuthEnvironmentVariable, workIqSharePointAuthEnvironmentVariable } of identities) {
   const commands = ["package", "validate"];
   if (execute || prepareOnly) {
     const sourcePath = join(folder, "appPackage");
@@ -63,7 +73,7 @@ for (const { packageName, folder, production, dcrEnvironmentVariable } of identi
     agent.name = metadata.title;
     writeFileSync(join(marketplacePath, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
     writeFileSync(join(marketplacePath, "declarativeAgent.json"), `${JSON.stringify(agent, null, 2)}\n`);
-    for (const name of ["ai-plugin.json", "instruction.txt", "color.png", "outline.png"]) {
+    for (const name of ["ai-plugin.json", "workiq-word-plugin.json", "workiq-onedrive-conversion-plugin.json", "workiq-sharepoint-reports-plugin.json", "instruction.txt", "color.png", "outline.png"]) {
       copyFileSync(join(sourcePath, name), join(marketplacePath, name));
     }
   }
@@ -92,11 +102,21 @@ for (const { packageName, folder, production, dcrEnvironmentVariable } of identi
     const manifest = JSON.parse(readFileSync(join(folder, "appPackage", "build", "manifest.prod.json"), "utf8"));
     const agent = JSON.parse(readFileSync(join(folder, "appPackage", "build", "declarativeAgent.prod.json"), "utf8"));
     const plugin = JSON.parse(readFileSync(join(folder, "appPackage", "build", "ai-plugin.prod.json"), "utf8"));
+    const wordPlugin = JSON.parse(readFileSync(join(folder, "appPackage", "build", "workiq-word-plugin.prod.json"), "utf8"));
+    const oneDriveConversionPlugin = JSON.parse(readFileSync(join(folder, "appPackage", "build", "workiq-onedrive-conversion-plugin.prod.json"), "utf8"));
+    const sharePointPlugin = JSON.parse(readFileSync(join(folder, "appPackage", "build", "workiq-sharepoint-reports-plugin.prod.json"), "utf8"));
     if (manifest.id !== production.TEAMS_APP_ID || manifest.name.short !== manifest.name.short.trim() ||
       agent.name !== agent.name.trim() || /\bdev\b/i.test(`${manifest.name.short} ${manifest.name.full} ${agent.name}`) ||
       plugin.runtimes?.[0]?.auth?.reference_id !== production[dcrEnvironmentVariable] ||
+        wordPlugin.runtimes?.[0]?.auth?.reference_id !== production[workIqWordAuthEnvironmentVariable] ||
+        wordPlugin.runtimes?.[0]?.spec?.url !== `https://agent365.svc.cloud.microsoft/agents/tenants/${production.WORKIQ_TENANT_ID}/servers/mcp_WordServer` ||
+        oneDriveConversionPlugin.runtimes?.[0]?.auth?.reference_id !== production[workIqOneDriveConversionAuthEnvironmentVariable] ||
+        oneDriveConversionPlugin.runtimes?.[0]?.spec?.url !== "https://workiq.svc.cloud.microsoft/mcp" ||
+        JSON.stringify(oneDriveConversionPlugin.runtimes?.[0]?.run_for_functions) !== JSON.stringify(["fetch_blob_work_iq"]) ||
+        sharePointPlugin.runtimes?.[0]?.auth?.reference_id !== production[workIqSharePointAuthEnvironmentVariable] ||
+        sharePointPlugin.runtimes?.[0]?.spec?.url !== `https://agent365.svc.cloud.microsoft/agents/tenants/${production.WORKIQ_TENANT_ID}/servers/mcp_SharePointRemoteServer` ||
         !existsSync(join(folder, "appPackage", "build", "appPackage.prod.zip"))) {
-      throw new Error(`${packageName} production package has mismatched identity, dev branding, or unresolved auth.`);
+      throw new Error(`${packageName} production package has mismatched identity, dev branding, or unresolved PDS/Work IQ auth.`);
     }
   }
 }

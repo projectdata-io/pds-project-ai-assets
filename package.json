@@ -8,6 +8,7 @@
     "compile": "node scripts/compile-copilot-studio.mjs",
     "compile:agents": "node scripts/compile-agent-templates.mjs",
     "generate:teams-packages": "node scripts/generate-teams-packages.mjs",
+    "bump:teams-package-versions": "node scripts/bump-teams-package-versions.mjs",
     "manage:teams-packages": "node scripts/manage-teams-packages.mjs",
     "package:marketplace": "node scripts/package-marketplace.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
   "manifestVersion": "1.30",
-  "version": "2.1.1",
+  "version": "2.1.14",
   "id": "${{TEAMS_APP_ID}}",
   "developer": {
     "name": "WACG Inc.",
@@ -18,8 +18,8 @@
     "full": "PDS Project AI: MPP Data Auditor"
   },
   "description": {
-    "short": "Read-only Microsoft Project data assurance analysis.",
-    "full": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison. Uses the existing PDS Project AI service and its metadata-only MPP picker."
+    "short": "Check Microsoft Project data quality and consistency.",
+    "full": "Helps you check Microsoft Project data quality, including task and resource relationships, hierarchy, custom fields, progress, calendars, and plan comparisons. Connects to your existing PDS Project AI service to help you find and analyze project schedules. It only reads project information and never changes your project files."
   },
   "accentColor": "#FFFFFF",
   "supportsChannelFeatures": "tier1",

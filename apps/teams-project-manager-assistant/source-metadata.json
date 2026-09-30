@@ -3,10 +3,13 @@
   "role": "project-manager-assistant",
   "title": "PDS Project AI: Project Manager Assistant",
   "shortName": "PDS Project Manager",
-  "shortDescription": "Read-only delivery analysis for Microsoft Project plans.",
-  "version": "2.1.1",
+  "shortDescription": "Understand delivery status, risks, milestones, and next steps.",
+  "version": "2.1.14",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
+  "capabilities": [
+    "CodeInterpreter"
+  ],
   "conversationStarters": [
     "Select a Microsoft Project plan to analyze.",
     "Summarize the current project delivery status with traceable task evidence.",

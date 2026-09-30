@@ -1,7 +1,7 @@
 {
   "name": "mpp-data-auditor",
   "title": "MPP Data Auditor",
-  "description": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison.",
+  "description": "Helps you check Microsoft Project data quality, including task and resource relationships, hierarchy, custom fields, progress, calendars, and plan comparisons.",
   "access": "read-only",
   "skills": [
     "mpp-progress-audit",

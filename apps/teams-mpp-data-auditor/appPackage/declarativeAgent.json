@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "MPP Data Auditor ${{APP_NAME_SUFFIX}}",
-  "description": "Read-only data assurance agent for entity integrity, custom fields, hierarchy, progress consistency, calendars, and plan comparison.",
+  "description": "Helps you check Microsoft Project data quality, including task and resource relationships, hierarchy, custom fields, progress, calendars, and plan comparisons.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
@@ -21,6 +21,23 @@
     {
       "id": "pdsProjectAiMcp",
       "file": "ai-plugin.json"
+    },
+    {
+      "id": "workIqWordMcp",
+      "file": "workiq-word-plugin.json"
+    },
+    {
+      "id": "workIqOneDriveConversionMcp",
+      "file": "workiq-onedrive-conversion-plugin.json"
+    },
+    {
+      "id": "workIqSharePointReportsMcp",
+      "file": "workiq-sharepoint-reports-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "CodeInterpreter"
     }
   ],
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"

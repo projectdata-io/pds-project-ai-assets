@@ -1,7 +1,7 @@
 {
   "name": "project-manager-assistant",
   "title": "Project Manager Assistant",
-  "description": "Operational project delivery assistant for status, milestones, lookahead, dependencies, constraints, and near-term attention.",
+  "description": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan.",
   "access": "read-only",
   "skills": [
     "mpp-project-summary",

@@ -1,7 +1,7 @@
 {
   "name": "schedule-quality-analyst",
   "title": "Schedule Quality Analyst",
-  "description": "Read-only schedule assurance agent for logic, critical path, constraints, baselines, progress quality, calendars, WBS, and realism.",
+  "description": "Helps you find schedule logic issues, critical-path risks, constraints, baseline variance, progress problems, calendar issues, and unrealistic dates.",
   "access": "read-only",
   "skills": [
     "mpp-schedule-health",
