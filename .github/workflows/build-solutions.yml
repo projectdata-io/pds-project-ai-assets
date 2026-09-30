@@ -104,6 +104,7 @@ jobs:
           if ($packageFiles.Count -ne $packageSlugs.Count) {
             throw "Expected $($packageSlugs.Count) installable M365 agent ZIP files, found $($packageFiles.Count)."
           }
+          Copy-Item -LiteralPath 'M365-AGENT-DEPLOYMENT.md' -Destination (Join-Path $outputDirectory 'DEPLOYMENT.md') -Force
 
       - name: Verify packages and stamp version
         shell: pwsh
@@ -150,7 +151,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: m365-agent-installable-packages
-          path: dist/m365-agent-packages/*.zip
+          path: dist/m365-agent-packages/
           if-no-files-found: error
           retention-days: 14
 

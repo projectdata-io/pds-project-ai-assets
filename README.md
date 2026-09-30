@@ -164,6 +164,14 @@ Configure these five GitHub Actions repository or organization secrets with the 
 
 Each file must contain that package's provisioned dev app ID and PDS/Work IQ auth configuration IDs. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
 
+### Build and download the CI artifacts
+
+To build on demand, open the repository's **Actions** tab, select **Build agent assets**, choose **Run workflow**, select the branch, and start the run. Pushes to `main` also build the artifacts automatically; pull requests validate the source but do not produce the M365 app ZIP artifact.
+
+After the workflow succeeds, open that run and download **`m365-agent-installable-packages`** from its **Artifacts** section. It contains one installable app ZIP per role, named for its `teams-*` package, plus `DEPLOYMENT.md` with testing and organization rollout steps. Extract the downloaded artifact and upload individual package ZIPs, not the outer artifact archive. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains the Copilot Studio agent asset bundles. Artifacts are retained for 14 days.
+
+The downloaded M365 ZIPs are packaged for the dev tenant configured by the five secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
+
 ### Development provisioning and organization submission
 
 Run from this asset repository in PowerShell, signed in to Microsoft 365 Agents Toolkit for a **non-production tenant**. Custom app upload must be enabled and the account must have permission to create and submit apps. Keep each package's ignored `env/.env.dev` local with `TEAMSFX_ENV=dev` and `APP_NAME_SUFFIX=dev`; Toolkit writes that package's `TEAMS_APP_ID`, `M365_APP_ID`, and `MCP_DA_AUTH_ID_*` during provisioning. Never copy generated IDs between packages or commit local env files. Do not clear existing IDs when retrying a partially successful run.
