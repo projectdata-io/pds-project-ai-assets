@@ -12,7 +12,7 @@ The `m365-agent-installable-packages` artifact contains this guide and seven sep
 - `teams-project-plan-editor.zip`
 - `teams-project-schedule-generator.zip`
 
-Download and extract the artifact, then use an individual package ZIP. Do not upload the outer artifact archive. Each package is built with the dev app ID and PDS authentication binding configured in GitHub Actions. All seven packages use native, read-only Microsoft 365 capabilities to search SharePoint and OneDrive files, email, and Teams conversations the signed-in user can access; none has email or Teams write actions. The five analysis packages also use their package-specific Work IQ bindings for report generation and storage. These are dev-tenant packages, not production or public Marketplace packages.
+Download and extract the artifact, then use an individual package ZIP. Do not upload the outer artifact archive. Each package is built with the dev app ID and PDS authentication binding configured in GitHub Actions. All seven packages use native, read-only Microsoft 365 capabilities to search SharePoint and OneDrive files, email, and Teams conversations the signed-in user can access; none has email or Teams write actions. The five analysis packages also include Work IQ Word, OneDrive conversion, and report-storage actions for user-requested reports. The editor packages do not generate or save reports and documents. These are dev-tenant packages, not production or public Marketplace packages.
 
 ## Personal test in Teams
 
@@ -21,7 +21,7 @@ Custom app upload must be enabled by your Teams administrator. Sign in to Teams 
 1. Open **Apps** > **Manage your apps** > **Upload an app** > **Upload a custom app**.
 2. Select one of the `teams-*.zip` package files and choose **Add**.
 3. Open the app in personal scope and complete its sign-in and project-plan selection flow.
-4. Ask an analysis agent to answer a plan question using relevant SharePoint/OneDrive files, email, and Teams context; verify that it cites returned source metadata, distinguishes customer context from current MPP facts, and does not claim exhaustive search. Verify that it never changes project data. For Project Plan Editor and Project Schedule Generator, verify that relevant accessible M365 context can inform a draft, then confirm the agent previews and validates the draft, explains the exact changes and destination, and waits for your explicit confirmation before committing. Email and Teams activity must remain read-only. Repeat with another package ZIP to test another role.
+4. Ask an analysis agent to answer a plan question using relevant SharePoint/OneDrive files, email, and Teams context; verify that it cites returned source metadata, distinguishes customer context from current MPP facts, and does not claim exhaustive search. Verify that it never changes project data, and test report saving only when explicitly requested. For Project Plan Editor and Project Schedule Generator, verify relevant M365 context can inform a draft and that the agent previews and validates it, explains the exact changes and destination, and waits for your explicit confirmation before committing. Email and Teams activity must remain read-only. Repeat with another package ZIP to test another role.
 
 This installs the selected app for your account only. It does not make the app available to other users. If custom app upload is unavailable, ask your Teams administrator to enable or perform the test deployment.
 

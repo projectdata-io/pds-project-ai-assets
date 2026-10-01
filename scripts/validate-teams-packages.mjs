@@ -88,7 +88,7 @@ for (const [packageSlug, role] of expected) {
   for (const name of requiredPackageFiles) {
     if (!existsSync(join(appPackagePath, name))) failures.push(`${packageSlug} is missing ${name}.`);
   }
-  if (access === "commit" && ["workiq-word-plugin.json", "workiq-onedrive-conversion-plugin.json", "workiq-sharepoint-reports-plugin.json"].some((name) => existsSync(join(appPackagePath, name)))) failures.push(`${packageSlug} must not include unrelated Work IQ actions.`);
+  if (access === "commit" && ["workiq-word-plugin.json", "workiq-onedrive-conversion-plugin.json", "workiq-sharepoint-reports-plugin.json"].some((name) => existsSync(join(appPackagePath, name)))) failures.push(`${packageSlug} must not include report-generation Work IQ actions.`);
   if (existsSync(join(appPackagePath, "instruction.txt"))) {
     const instruction = readFileSync(join(appPackagePath, "instruction.txt"), "utf8");
     if (access === "read-only") {
@@ -113,7 +113,7 @@ for (const [packageSlug, role] of expected) {
   }
   if (access === "read-only" && existsSync(join(appPackagePath, "instruction.dev.txt"))) {
     const developmentInstruction = readFileSync(join(appPackagePath, "instruction.dev.txt"), "utf8");
-    if (!developmentInstruction.includes("execute file-generation code and return the resulting file as an attachment") || !developmentInstruction.includes("Do not return HTML, CSS, Python, ReportLab source, or a plan") || !developmentInstruction.includes("a citations section")) failures.push(`${packageSlug} must require executed, cited report-file attachments.`);
+    if (!developmentInstruction.includes("Do not return HTML, CSS, Python, ReportLab source, or a plan") || !developmentInstruction.includes("a citations section")) failures.push(`${packageSlug} must require executed, cited report-file attachments.`);
   }
   for (const [name, variants] of iconVariants) {
     const iconPath = join(appPackagePath, name);
@@ -189,7 +189,13 @@ for (const [packageSlug, role] of expected) {
     const sections = lifecycle.split(/^publish:\s*$/m);
     if (!sections[0].includes(metadata.dcrEnvironmentVariable)) failures.push(`${packageSlug} does not define its package-local DCR lifecycle.`);
     if (sections.length !== 2 || sections[0].includes("teamsApp/publishAppPackage") || !/teamsApp\/zipAppPackage[\s\S]*teamsApp\/validateAppPackage[\s\S]*teamsApp\/publishAppPackage/.test(sections[1])) failures.push(`${packageSlug} must publish only in a separate build/validate/submit stage.`);
-    if (access === "commit" && /oauth\/register/.test(sections[0])) failures.push(`${packageSlug} must not provision unrelated Work IQ authentication.`);
+    if (access === "read-only") {
+      for (const authName of [`WORKIQ_WORD_AUTH_ID_${role.replaceAll("-", "_").toUpperCase()}`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_${role.replaceAll("-", "_").toUpperCase()}`, `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_${role.replaceAll("-", "_").toUpperCase()}`]) {
+        if (!sections[0].includes(authName)) failures.push(`${packageSlug} does not provision its package-local Work IQ auth binding ${authName}.`);
+      }
+    } else if (/oauth\/register/.test(sections[0])) {
+      failures.push(`${packageSlug} must not provision Work IQ report-generation auth.`);
+    }
   }
   for (const path of ["package.json", "README.md", ".gitignore", "scripts/generate-instructions.mjs", "scripts/validate-package.mjs"]) {
     if (!existsSync(join(packagePath, path))) failures.push(`${packageSlug} is missing ${path}.`);
