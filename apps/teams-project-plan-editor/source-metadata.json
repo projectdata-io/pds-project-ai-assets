@@ -1,0 +1,22 @@
+{
+  "packageSlug": "teams-project-plan-editor",
+  "role": "project-plan-editor",
+  "access": "commit",
+  "title": "PDS Project AI: Project Plan Editor",
+  "shortName": "PDS Plan Editor",
+  "shortDescription": "Stage requested plan edits informed by authorized M365 context.",
+  "version": "2.1.17",
+  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_PLAN_EDITOR",
+  "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email"
+  ],
+  "conversationStarters": [
+    "Review a project plan and prepare a specific requested edit.",
+    "Draft changes to tasks, dependencies, or resources in a selected plan.",
+    "Preview and validate a plan edit before I confirm it.",
+    "Check project files, email, and Teams decisions before drafting an edit."
+  ]
+}

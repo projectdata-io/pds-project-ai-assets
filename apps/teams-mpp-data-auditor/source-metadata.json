@@ -4,10 +4,13 @@
   "title": "PDS Project AI: MPP Data Auditor",
   "shortName": "PDS Data Auditor",
   "shortDescription": "Check Microsoft Project data quality and consistency.",
-  "version": "2.1.14",
+  "version": "2.1.17",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_MPP_DATA_AUDITOR",
   "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email",
     "CodeInterpreter"
   ],
   "conversationStarters": [

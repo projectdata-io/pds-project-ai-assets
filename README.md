@@ -20,25 +20,25 @@ This repository's top-level folders are intentionally not VS Code workspace disc
 
 Each agent packages role-focused instructions, an MCP tool allowlist, and mapped workflows for Copilot Studio. Standard Agents are created manually; Agents can also be deployed from a generated `BotDefinition` template.
 
-| Agent | What it does | Standard Agent | Agent |
-| --- | --- | --- | --- |
-| Project Manager Assistant | Status, milestones, lookahead, dependencies, and near-term attention. | Yes | Yes |
-| Schedule Quality Analyst | Schedule logic, constraints, realism, and data-quality assurance. | Yes | Yes |
-| Resource Manager | Resource demand, capacity, and assignment reporting. | No | Yes |
-| Portfolio and Executive Analyst | Executive status, master-project rollup, and variance reporting. | Yes | Yes |
-| Project Plan Editor | Guarded MPP edits: draft, preview, validate, confirm, commit. | No | Yes |
-| Project Schedule Generator | Generate new project schedules through guarded drafts. | No | Yes |
-| MPP Data Auditor | Read-only entity, hierarchy, and custom-field assurance. | Yes | Yes |
-| Portfolio List Maintainer | Keeps a SharePoint portfolio list in sync from changed MPP files. | Yes | No |
-| Task List Synchronizer | Syncs MPP tasks into a SharePoint task list, including deletions. | Yes | No |
-| Project Intake Triage | Profiles newly added MPP files and records a triage classification. | Yes | No |
-| Change Watcher | Diffs updated MPP files against the last sync and records a change report. | Yes | No |
-| Stakeholder Notifier | Derives per-audience notification entries from updated MPP files. | Yes | No |
-| Compliance Gate | Evaluates plans against schedule quality gates and records the verdict. | Yes | No |
-| Project Template Provisioning | Provisions new project files from approved templates, with guarded customization. | Yes | No |
-| Progress Collector | Seeds SharePoint progress requests from a plan, then applies the submissions back in one confirmed batch. | Yes | No |
-| Cross-Project Dependency Checker | Keeps a shared dependency register and reports broken cross-project links. | Yes | No |
-| Deliverable Link Checker | Keeps a shared deliverable-key register and reports broken soft cross-project links. | Yes | No |
+| Agent                            | What it does                                                                                              | Standard Agent | Agent |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------- | ----- |
+| Project Manager Assistant        | Status, milestones, lookahead, dependencies, and near-term attention.                                     | Yes            | Yes   |
+| Schedule Quality Analyst         | Schedule logic, constraints, realism, and data-quality assurance.                                         | Yes            | Yes   |
+| Resource Manager                 | Resource demand, capacity, and assignment reporting.                                                      | No             | Yes   |
+| Portfolio and Executive Analyst  | Executive status, master-project rollup, and variance reporting.                                          | Yes            | Yes   |
+| Project Plan Editor              | Guarded MPP edits: draft, preview, validate, confirm, commit.                                             | No             | Yes   |
+| Project Schedule Generator       | Generate new project schedules through guarded drafts.                                                    | No             | Yes   |
+| MPP Data Auditor                 | Read-only entity, hierarchy, and custom-field assurance.                                                  | Yes            | Yes   |
+| Portfolio List Maintainer        | Keeps a SharePoint portfolio list in sync from changed MPP files.                                         | Yes            | No    |
+| Task List Synchronizer           | Syncs MPP tasks into a SharePoint task list, including deletions.                                         | Yes            | No    |
+| Project Intake Triage            | Profiles newly added MPP files and records a triage classification.                                       | Yes            | No    |
+| Change Watcher                   | Diffs updated MPP files against the last sync and records a change report.                                | Yes            | No    |
+| Stakeholder Notifier             | Derives per-audience notification entries from updated MPP files.                                         | Yes            | No    |
+| Compliance Gate                  | Evaluates plans against schedule quality gates and records the verdict.                                   | Yes            | No    |
+| Project Template Provisioning    | Provisions new project files from approved templates, with guarded customization.                         | Yes            | No    |
+| Progress Collector               | Seeds SharePoint progress requests from a plan, then applies the submissions back in one confirmed batch. | Yes            | No    |
+| Cross-Project Dependency Checker | Keeps a shared dependency register and reports broken cross-project links.                                | Yes            | No    |
+| Deliverable Link Checker         | Keeps a shared deliverable-key register and reports broken soft cross-project links.                      | Yes            | No    |
 
 Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See [Apply Generated Assets in Copilot Studio](agents/copilot-studio/README.md) for setup, and the [available workflow specifications](#available-workflow-specifications) below for the skills each agent can run.
 
@@ -46,51 +46,51 @@ Agent sources live under [`agents/copilot-studio/`](agents/copilot-studio/). See
 
 These `SKILL.md` files are reusable workflow specifications. Copilot Studio agents using the standard harness do not import them as native skills, topics, or tools.
 
-| Skill | Purpose |
-| --- | --- |
-| [`mpp-project-summary`](skills/mpp-project-summary/SKILL.md) | Summarize project dates, progress, milestones, effort, cost, and key concerns. |
-| [`mpp-schedule-health`](skills/mpp-schedule-health/SKILL.md) | Assess overdue work, stale progress, constraints, deadlines, slack, and status consistency. |
-| [`mpp-critical-path-analysis`](skills/mpp-critical-path-analysis/SKILL.md) | Analyze critical tasks, slack, predecessor chains, and finish drivers. |
-| [`mpp-resource-capacity`](skills/mpp-resource-capacity/SKILL.md) | Review overallocations, assignment load, availability, and workload concentration. |
-| [`mpp-executive-status-report`](skills/mpp-executive-status-report/SKILL.md) | Produce an evidence-based sponsor or steering status report. |
-| [`mpp-safe-commit`](skills/mpp-safe-commit/SKILL.md) | Stage, preview, validate, confirm, and commit explicitly requested MPP edits. |
-| [`mpp-milestone-review`](skills/mpp-milestone-review/SKILL.md) | Review upcoming, missed, completed, and dependency-exposed milestones. |
-| [`mpp-baseline-variance`](skills/mpp-baseline-variance/SKILL.md) | Compare current schedule, work, and cost values with saved baselines. |
-| [`mpp-earned-value-analysis`](skills/mpp-earned-value-analysis/SKILL.md) | Analyze stored and calculated earned-value performance measures. |
-| [`mpp-progress-audit`](skills/mpp-progress-audit/SKILL.md) | Find contradictory, incomplete, and stale project status data. |
-| [`mpp-cost-review`](skills/mpp-cost-review/SKILL.md) | Review current, actual, remaining, baseline, fixed, and overtime costs. |
-| [`mpp-calendar-analysis`](skills/mpp-calendar-analysis/SKILL.md) | Explain working time, exceptions, work weeks, and calendar inheritance. |
-| [`mpp-wbs-analysis`](skills/mpp-wbs-analysis/SKILL.md) | Analyze hierarchy, work packages, rollups, and outline anomalies. |
-| [`mpp-master-project-navigation`](skills/mpp-master-project-navigation/SKILL.md) | Navigate read-only master-project graphs and child project data. |
-| [`mpp-data-quality-audit`](skills/mpp-data-quality-audit/SKILL.md) | Audit identifiers, relationships, dates, hierarchy, and planning completeness. |
-| [`mpp-custom-field-analysis`](skills/mpp-custom-field-analysis/SKILL.md) | Discover and analyze custom fields, aliases, and extended attributes. |
-| [`mpp-lookahead-report`](skills/mpp-lookahead-report/SKILL.md) | Report upcoming work, milestones, handoffs, and near-term resource demand. |
-| [`mpp-plan-comparison`](skills/mpp-plan-comparison/SKILL.md) | Compare two plans while preserving identity and match confidence. |
-| [`mpp-change-impact-report`](skills/mpp-change-impact-report/SKILL.md) | Explain previewed draft effects and validation status before commit. |
-| [`mpp-create-project`](skills/mpp-create-project/SKILL.md) | Create and validate a new project draft from explicit requirements. |
-| [`mpp-progress-editor`](skills/mpp-progress-editor/SKILL.md) | Stage and validate explicit task progress updates. |
-| [`mpp-schedule-editor`](skills/mpp-schedule-editor/SKILL.md) | Stage and validate task, hierarchy, duration, and dependency edits. |
-| [`mpp-resource-editor`](skills/mpp-resource-editor/SKILL.md) | Stage and validate resource and assignment edits. |
-| [`mpp-draft-repair`](skills/mpp-draft-repair/SKILL.md) | Repair structured draft validation issues without committing. |
-| [`mpp-dependency-audit`](skills/mpp-dependency-audit/SKILL.md) | Audit dependency completeness, integrity, cycles, lag, and handoffs. |
-| [`mpp-constraint-review`](skills/mpp-constraint-review/SKILL.md) | Review constraints, deadlines, date restrictions, and schedule exposure. |
-| [`mpp-project-manager-brief`](skills/mpp-project-manager-brief/SKILL.md) | Produce an operational briefing for near-term project delivery. |
-| [`mpp-resource-manager-report`](skills/mpp-resource-manager-report/SKILL.md) | Report staffing demand, availability, assignment load, and decisions. |
-| [`mpp-portfolio-rollup`](skills/mpp-portfolio-rollup/SKILL.md) | Roll up resolved master-project nodes without double-counting. |
-| [`mpp-portfolio-list-maintenance`](skills/mpp-portfolio-list-maintenance/SKILL.md) | Build a deterministic portfolio-list payload from a created or updated MPP file. |
-| [`mpp-task-list-sync`](skills/mpp-task-list-sync/SKILL.md) | Synchronize an MPP task schedule into a configured SharePoint task list. |
-| [`mpp-project-intake-triage`](skills/mpp-project-intake-triage/SKILL.md) | Profile a newly added MPP file and record a rule-based triage classification. |
-| [`mpp-change-watch-report`](skills/mpp-change-watch-report/SKILL.md) | Diff an updated MPP file against its task-list snapshot and record a change report. |
-| [`mpp-stakeholder-notification`](skills/mpp-stakeholder-notification/SKILL.md) | Derive per-audience notification entries from an updated MPP file. |
-| [`mpp-compliance-gate-check`](skills/mpp-compliance-gate-check/SKILL.md) | Evaluate an updated MPP file against schedule quality gates and record the verdict. |
-| [`mpp-project-template-provisioning`](skills/mpp-project-template-provisioning/SKILL.md) | Provision a new project file by copying an approved MPP template, then customize it through guarded drafts. |
-| [`mpp-progress-collection`](skills/mpp-progress-collection/SKILL.md) | Collect team-reported progress from a SharePoint intake list and apply it to the source plan in one confirmed batch. |
-| [`mpp-progress-request`](skills/mpp-progress-request/SKILL.md) | Seed a SharePoint intake list with per-resource progress request rows from a plan's active assignments. |
-| [`mpp-dependency-register-publish`](skills/mpp-dependency-register-publish/SKILL.md) | Publish a plan's provided milestones and required external dependencies to a shared register. |
-| [`mpp-cross-project-dependency-check`](skills/mpp-cross-project-dependency-check/SKILL.md) | Evaluate cross-project requirements against the shared dependency register and record the verdict. |
-| [`mpp-deliverable-register-publish`](skills/mpp-deliverable-register-publish/SKILL.md) | Publish a plan's declared deliverable keys to a shared deliverable register, independent of native Project Server fields. |
-| [`mpp-deliverable-link-check`](skills/mpp-deliverable-link-check/SKILL.md) | Evaluate declared deliverable-key links against the shared register and record the verdict. |
-| [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md) | Review schedule logic, modeling quality, assumptions, and realism. |
+| Skill                                                                                      | Purpose                                                                                                                   |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| [`mpp-project-summary`](skills/mpp-project-summary/SKILL.md)                               | Summarize project dates, progress, milestones, effort, cost, and key concerns.                                            |
+| [`mpp-schedule-health`](skills/mpp-schedule-health/SKILL.md)                               | Assess overdue work, stale progress, constraints, deadlines, slack, and status consistency.                               |
+| [`mpp-critical-path-analysis`](skills/mpp-critical-path-analysis/SKILL.md)                 | Analyze critical tasks, slack, predecessor chains, and finish drivers.                                                    |
+| [`mpp-resource-capacity`](skills/mpp-resource-capacity/SKILL.md)                           | Review overallocations, assignment load, availability, and workload concentration.                                        |
+| [`mpp-executive-status-report`](skills/mpp-executive-status-report/SKILL.md)               | Produce an evidence-based sponsor or steering status report.                                                              |
+| [`mpp-safe-commit`](skills/mpp-safe-commit/SKILL.md)                                       | Stage, preview, validate, confirm, and commit explicitly requested MPP edits.                                             |
+| [`mpp-milestone-review`](skills/mpp-milestone-review/SKILL.md)                             | Review upcoming, missed, completed, and dependency-exposed milestones.                                                    |
+| [`mpp-baseline-variance`](skills/mpp-baseline-variance/SKILL.md)                           | Compare current schedule, work, and cost values with saved baselines.                                                     |
+| [`mpp-earned-value-analysis`](skills/mpp-earned-value-analysis/SKILL.md)                   | Analyze stored and calculated earned-value performance measures.                                                          |
+| [`mpp-progress-audit`](skills/mpp-progress-audit/SKILL.md)                                 | Find contradictory, incomplete, and stale project status data.                                                            |
+| [`mpp-cost-review`](skills/mpp-cost-review/SKILL.md)                                       | Review current, actual, remaining, baseline, fixed, and overtime costs.                                                   |
+| [`mpp-calendar-analysis`](skills/mpp-calendar-analysis/SKILL.md)                           | Explain working time, exceptions, work weeks, and calendar inheritance.                                                   |
+| [`mpp-wbs-analysis`](skills/mpp-wbs-analysis/SKILL.md)                                     | Analyze hierarchy, work packages, rollups, and outline anomalies.                                                         |
+| [`mpp-master-project-navigation`](skills/mpp-master-project-navigation/SKILL.md)           | Navigate read-only master-project graphs and child project data.                                                          |
+| [`mpp-data-quality-audit`](skills/mpp-data-quality-audit/SKILL.md)                         | Audit identifiers, relationships, dates, hierarchy, and planning completeness.                                            |
+| [`mpp-custom-field-analysis`](skills/mpp-custom-field-analysis/SKILL.md)                   | Discover and analyze custom fields, aliases, and extended attributes.                                                     |
+| [`mpp-lookahead-report`](skills/mpp-lookahead-report/SKILL.md)                             | Report upcoming work, milestones, handoffs, and near-term resource demand.                                                |
+| [`mpp-plan-comparison`](skills/mpp-plan-comparison/SKILL.md)                               | Compare two plans while preserving identity and match confidence.                                                         |
+| [`mpp-change-impact-report`](skills/mpp-change-impact-report/SKILL.md)                     | Explain previewed draft effects and validation status before commit.                                                      |
+| [`mpp-create-project`](skills/mpp-create-project/SKILL.md)                                 | Create and validate a new project draft from explicit requirements.                                                       |
+| [`mpp-progress-editor`](skills/mpp-progress-editor/SKILL.md)                               | Stage and validate explicit task progress updates.                                                                        |
+| [`mpp-schedule-editor`](skills/mpp-schedule-editor/SKILL.md)                               | Stage and validate task, hierarchy, duration, and dependency edits.                                                       |
+| [`mpp-resource-editor`](skills/mpp-resource-editor/SKILL.md)                               | Stage and validate resource and assignment edits.                                                                         |
+| [`mpp-draft-repair`](skills/mpp-draft-repair/SKILL.md)                                     | Repair structured draft validation issues without committing.                                                             |
+| [`mpp-dependency-audit`](skills/mpp-dependency-audit/SKILL.md)                             | Audit dependency completeness, integrity, cycles, lag, and handoffs.                                                      |
+| [`mpp-constraint-review`](skills/mpp-constraint-review/SKILL.md)                           | Review constraints, deadlines, date restrictions, and schedule exposure.                                                  |
+| [`mpp-project-manager-brief`](skills/mpp-project-manager-brief/SKILL.md)                   | Produce an operational briefing for near-term project delivery.                                                           |
+| [`mpp-resource-manager-report`](skills/mpp-resource-manager-report/SKILL.md)               | Report staffing demand, availability, assignment load, and decisions.                                                     |
+| [`mpp-portfolio-rollup`](skills/mpp-portfolio-rollup/SKILL.md)                             | Roll up resolved master-project nodes without double-counting.                                                            |
+| [`mpp-portfolio-list-maintenance`](skills/mpp-portfolio-list-maintenance/SKILL.md)         | Build a deterministic portfolio-list payload from a created or updated MPP file.                                          |
+| [`mpp-task-list-sync`](skills/mpp-task-list-sync/SKILL.md)                                 | Synchronize an MPP task schedule into a configured SharePoint task list.                                                  |
+| [`mpp-project-intake-triage`](skills/mpp-project-intake-triage/SKILL.md)                   | Profile a newly added MPP file and record a rule-based triage classification.                                             |
+| [`mpp-change-watch-report`](skills/mpp-change-watch-report/SKILL.md)                       | Diff an updated MPP file against its task-list snapshot and record a change report.                                       |
+| [`mpp-stakeholder-notification`](skills/mpp-stakeholder-notification/SKILL.md)             | Derive per-audience notification entries from an updated MPP file.                                                        |
+| [`mpp-compliance-gate-check`](skills/mpp-compliance-gate-check/SKILL.md)                   | Evaluate an updated MPP file against schedule quality gates and record the verdict.                                       |
+| [`mpp-project-template-provisioning`](skills/mpp-project-template-provisioning/SKILL.md)   | Provision a new project file by copying an approved MPP template, then customize it through guarded drafts.               |
+| [`mpp-progress-collection`](skills/mpp-progress-collection/SKILL.md)                       | Collect team-reported progress from a SharePoint intake list and apply it to the source plan in one confirmed batch.      |
+| [`mpp-progress-request`](skills/mpp-progress-request/SKILL.md)                             | Seed a SharePoint intake list with per-resource progress request rows from a plan's active assignments.                   |
+| [`mpp-dependency-register-publish`](skills/mpp-dependency-register-publish/SKILL.md)       | Publish a plan's provided milestones and required external dependencies to a shared register.                             |
+| [`mpp-cross-project-dependency-check`](skills/mpp-cross-project-dependency-check/SKILL.md) | Evaluate cross-project requirements against the shared dependency register and record the verdict.                        |
+| [`mpp-deliverable-register-publish`](skills/mpp-deliverable-register-publish/SKILL.md)     | Publish a plan's declared deliverable keys to a shared deliverable register, independent of native Project Server fields. |
+| [`mpp-deliverable-link-check`](skills/mpp-deliverable-link-check/SKILL.md)                 | Evaluate declared deliverable-key links against the shared register and record the verdict.                               |
+| [`mpp-schedule-realism-review`](skills/mpp-schedule-realism-review/SKILL.md)               | Review schedule logic, modeling quality, assumptions, and realism.                                                        |
 
 ## Development
 
@@ -116,19 +116,21 @@ The same workflow builds and deploys the static agent catalog to GitHub Pages on
 
 ## Microsoft 365 Declarative-Agent Packages
 
-`apps/` contains five independently deployable `PDS Project AI` packages:
+`apps/` contains seven independently deployable `PDS Project AI` packages:
 
 - `teams-project-manager-assistant`
 - `teams-schedule-quality-analyst`
 - `teams-portfolio-executive-analyst`
 - `teams-resource-manager`
 - `teams-mpp-data-auditor`
+- `teams-project-plan-editor`
+- `teams-project-schedule-generator`
 
-Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, package-local Work IQ Word, OneDrive conversion, and report-storage auth bindings, role-specific generated instructions, and a minimal read-only PDS MCP allowlist. All five retain the shared User UI icon's white mark with distinct role badges, and reuse the PDS MCP endpoint and metadata-only project-plan picker. Work IQ is limited to Word document creation, exact read-only OneDrive-to-PDF conversion, and scoped report-file persistence; it does not provide Teams or general SharePoint context to these read-only agents.
+Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, and role-specific generated instructions and artwork. All seven use native, read-only Microsoft 365 capabilities to search the signed-in user's accessible SharePoint and OneDrive files, email, and Teams conversations for relevant project context; none has email or Teams write actions. The five analysis packages also expose read-only PDS tools and scoped Work IQ Word, OneDrive conversion, and report-storage actions. Project Plan Editor and Project Schedule Generator expose only the PDS tools mapped to their skills; both use guarded drafts and require explicit confirmation of the exact validated changes before commit. Native M365 context never authorizes a PDS commit. All seven reuse the PDS MCP endpoint and metadata-only project-plan picker.
 
-On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the five Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
+On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the seven Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
 
-The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint and picker result `{ driveId, itemId, fileName }` remain unchanged.
+The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint remains unchanged; the picker returns `{ selectionReference, fileName }`, which is passed to `create_session_from_onedrive`. Legacy callers may continue passing `{ driveId, itemId }`.
 
 ### Work IQ Word setup
 
@@ -138,7 +140,7 @@ They also include a separate Work IQ Preview action at `https://workiq.svc.cloud
 
 The generated packages also include a narrowly scoped Work IQ SharePoint report-storage action at `mcp_SharePointRemoteServer`. It exposes only `createSmallBinaryFile` and `uploadFileFromUrl`; it does not provide SharePoint discovery, reads, list access, Teams access, or project-data CRUD. Binary persistence through `createSmallBinaryFile` is limited to files smaller than 5 MB. Conversion returns bytes; the report-storage action is still required to persist a generated or converted file, and the agent must not claim persistence until that action succeeds.
 
-Before packaging or publishing in a tenant, set `WORKIQ_TENANT_ID`, `WORKIQ_WORD_AUTH_ID_<ROLE>`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_<ROLE>`, and `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_<ROLE>` in the package's ignored `env/.env.dev` or `env/.env.prod`. Each value is a separate static Microsoft Entra SSO plugin configuration for the resolved endpoint; all are separate from the PDS DCR value and are not created by the `dcr/register` lifecycle step. Provision each Teams app first, create or bind the three Work IQ auth configurations, then package and test Word creation, conversion, and report persistence. These Work IQ MCP features are preview functionality and may change independently of these assets.
+Before packaging or publishing the five analysis packages in a tenant, set `WORKIQ_TENANT_ID`, `WORKIQ_WORD_AUTH_ID_<ROLE>`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_<ROLE>`, and `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_<ROLE>` in each package's ignored `env/.env.dev` or `env/.env.prod`. Each value is a separate static Microsoft Entra SSO plugin configuration for the resolved endpoint; these are separate from the PDS DCR value and are not created by the `dcr/register` lifecycle step. The two editor packages use native Microsoft 365 knowledge capabilities under the signed-in user's existing permissions and require no Work IQ auth configuration. These Work IQ MCP features are preview functionality and may change independently of these assets.
 
 ### Safe local package checks
 
@@ -154,15 +156,17 @@ npm run validate:teams-packages
 
 On pushes to `main` and manual workflow runs, the Build agent assets workflow builds and validates one sideloadable M365 app ZIP for each Teams agent, then uploads them as the `m365-agent-installable-packages` artifact. Pull requests continue to run source validation without requiring tenant-specific configuration. This CI step only packages and validates; it does not provision, install, share, or publish apps.
 
-Configure these five GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
+Configure these seven GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
 
 - `M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT`
 - `M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST`
 - `M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST`
 - `M365_AGENT_DEV_ENV_RESOURCE_MANAGER`
 - `M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR`
+- `M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR`
+- `M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR`
 
-Each file must contain that package's provisioned dev app ID and PDS/Work IQ auth configuration IDs. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
+Each file must contain that package's provisioned dev app ID and PDS auth configuration ID. The five analysis packages also require their package-specific Work IQ auth configuration IDs. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
 
 ### Build and download the CI artifacts
 
@@ -170,7 +174,7 @@ To build on demand, open the repository's **Actions** tab, select **Build agent 
 
 After the workflow succeeds, open that run and download **`m365-agent-installable-packages`** from its **Artifacts** section. It contains one installable app ZIP per role, named for its `teams-*` package, plus `DEPLOYMENT.md` with testing and organization rollout steps. Extract the downloaded artifact and upload individual package ZIPs, not the outer artifact archive. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains the Copilot Studio agent asset bundles. Artifacts are retained for 14 days.
 
-The downloaded M365 ZIPs are packaged for the dev tenant configured by the five secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
+The downloaded M365 ZIPs are packaged for the dev tenant configured by the seven secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
 
 ### Development provisioning and organization submission
 
@@ -185,17 +189,17 @@ npm run generate:teams-packages
 npm test
 npm run manage:teams-packages -- all --env dev
 npm run manage:teams-packages -- provision --env dev --execute
-# After provisioning, install the five dev agents for your signed-in account:
+# After provisioning, install the seven dev agents for your signed-in account:
 npm run manage:teams-packages -- install --env dev
 npm run manage:teams-packages -- install --env dev --execute
-# Only after testing all five agents and approving submission for admin review:
+# Only after testing all seven agents and approving submission for admin review:
 npm run manage:teams-packages -- publish --env dev
 npm run manage:teams-packages -- publish --env dev --execute
 ```
 
-`provision` creates or updates five separate dev Teams apps and DCR configurations and extends each to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. Test every agent in Copilot, including per-user PDS sign-in, MPP selection, and read-only behavior, before submitting it for organization review. `all` still means **provision and publish**, not install or share.
+`provision` creates or updates seven separate dev Teams apps and PDS DCR configurations and extends each to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. Test every agent in Copilot, including per-user PDS sign-in and MPP selection. For the five analysis agents, verify read-only behavior. For Project Plan Editor and Project Schedule Generator, verify that they preview and validate drafts and wait for confirmation of the exact changes before committing. `all` still means **provision and publish**, not install or share.
 
-For managed rollout or automatic installation for selected users, use `publish`: it rebuilds and validates each package, then submits it to the Teams admin center for organization review. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. Check **Teams admin center > Teams apps > Manage apps** for any previously submitted app by its Teams app ID before running the five-package batch; a successful `atk publish` may already have submitted one package even if its local `TEAMS_APP_PUBLISHED_APP_ID` is absent. If one has already been submitted, run `atk publish --env dev --interactive false` only from each remaining package directory after testing it. `all --env dev --execute` runs provisioning **and submission** in one go; avoid it when a human testing gate is required between those stages. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
+For managed rollout or automatic installation for selected users, use `publish`: it rebuilds and validates each package, then submits it to the Teams admin center for organization review. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. Check **Teams admin center > Teams apps > Manage apps** for any previously submitted app by its Teams app ID before running the seven-package batch; a successful `atk publish` may already have submitted one package even if its local `TEAMS_APP_PUBLISHED_APP_ID` is absent. If one has already been submitted, run `atk publish --env dev --interactive false` only from each remaining package directory after testing it. `all --env dev --execute` runs provisioning **and submission** in one go; avoid it when a human testing gate is required between those stages. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
 
 The optional `share-tenant` coordinator calls Toolkit `share --scope tenant` on each title; it does **not** submit an app for admin review or preinstall it. In this dev tenant, Toolkit's title-service `POST /allowed` returned HTTP 403 (`Title ... is not allowed to be modify`) for both tenant-wide and single-user shares of fresh titles. The batch stops on the first denial, leaving later packages untouched. Do not keep retrying, reset generated IDs, or treat this command as the default distribution path. The cause of the title-service denial is unconfirmed; use the separate `publish` and administrator approval workflow for distribution. A dry run of `share-tenant` checks command syntax only, not permission to share.
 
@@ -203,7 +207,7 @@ If a batch stops, inspect the failed package's Toolkit output and local `env/.en
 
 ### Public Marketplace packaging
 
-The dev `publish` stage above submits only to your organization's catalog, not the public Teams Store or AppSource. Never submit a dev ZIP to Partner Center. For each role, provision a **separate production Teams app ID** and a PDS MCP auth registration that works across customer tenants. The existing `m365agents.yml` uses `targetAudience: HomeTenant` for dev; its DCR output is not a cross-tenant production registration. Set up and verify the production registration with `AnyApp` and a cross-tenant audience through the approved deployment workflow. Do not copy any dev ID or secret into production. The PDS API/Entra registrations must support external-tenant users and combined consent before publishing.
+The dev `publish` stage above submits only to your organization's catalog, not the public Teams Store or AppSource. Never submit a dev ZIP to Partner Center. The current public Marketplace packaging path is limited to the five read-only analysis packages; the commit-capable editor packages are intentionally excluded pending a separate external-tenant security review. For each Marketplace role, provision a **separate production Teams app ID** and a PDS MCP auth registration that works across customer tenants. The existing `m365agents.yml` uses `targetAudience: HomeTenant` for dev; its DCR output is not a cross-tenant production registration. Set up and verify the production registration with `AnyApp` and a cross-tenant audience through the approved deployment workflow. Do not copy any dev ID or secret into production. The PDS API/Entra registrations must support external-tenant users and combined consent before publishing.
 
 Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, the package's `MCP_DA_AUTH_ID_*` key with its separately registered production auth ID, `WORKIQ_TENANT_ID=<production tenant ID>`, `WORKIQ_WORD_AUTH_ID_<ROLE>`, `WORKIQ_ONEDRIVE_CONVERSION_AUTH_ID_<ROLE>`, and `WORKIQ_SHAREPOINT_REPORTS_AUTH_ID_<ROLE>`. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. The packaging command checks all five identities before it builds anything. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
 

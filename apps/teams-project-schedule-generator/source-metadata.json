@@ -1,0 +1,22 @@
+{
+  "packageSlug": "teams-project-schedule-generator",
+  "role": "project-schedule-generator",
+  "access": "commit",
+  "title": "PDS Project AI: Project Schedule Generator",
+  "shortName": "PDS Schedule Generator",
+  "shortDescription": "Generate validated schedules informed by authorized M365 context.",
+  "version": "2.1.17",
+  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_SCHEDULE_GENERATOR",
+  "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email"
+  ],
+  "conversationStarters": [
+    "Help me define the requirements for a new project schedule.",
+    "Build a draft schedule from these deliverables, dates, and assumptions.",
+    "Validate a complete schedule draft before I decide whether to commit.",
+    "Use relevant project files, email, and Teams decisions to draft a schedule."
+  ]
+}

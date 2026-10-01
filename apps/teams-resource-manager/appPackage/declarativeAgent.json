@@ -37,6 +37,15 @@
   ],
   "capabilities": [
     {
+      "name": "OneDriveAndSharePoint"
+    },
+    {
+      "name": "TeamsMessages"
+    },
+    {
+      "name": "Email"
+    },
+    {
       "name": "CodeInterpreter"
     }
   ],

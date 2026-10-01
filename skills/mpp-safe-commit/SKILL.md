@@ -43,7 +43,7 @@ argument-hint: "Describe the requested MPP changes, source or session ID, and de
 - Do not invent drive IDs, item IDs, parent IDs, upload URLs, file names, ETags, or target modes.
 - Treat overwrite and external upload as consequential actions and name the destination before confirmation.
 - Do not retry with a new idempotency key. On an ETag conflict, stop and ask the user to refresh or choose a new target.
-- Do not expose raw credentials, signed URLs, or provider diagnostics in the narrative response.
+- Never display raw credentials, signed URLs, or provider diagnostics as visible prose. A user-facing download URL may appear only as the destination of a labeled Markdown link; never include it in logs or diagnostics.
 
 ## Confirmation Format
 
@@ -59,6 +59,7 @@ Before commit, show:
 ## Output Format
 
 After commit, return the commit status, resulting file name or provider destination, artifact availability, and concise applied-operation summary. Never claim persistence based only on draft validation.
+When the commit response includes `download.downloadUrl`, present it as a labeled Markdown link, for example `[Download the committed MPP](<exact download URL>)`. Preserve the URL exactly, including its query string, and do not print the signed URL as plain text.
 
 ## Error Handling
 

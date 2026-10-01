@@ -1,0 +1,42 @@
+{
+  "version": "v1.8",
+  "name": "Project Plan Editor ${{APP_NAME_SUFFIX}}",
+  "description": "Guarded Microsoft Project editing agent that stages, previews, validates, confirms, and commits explicitly requested changes.",
+  "instructions": "$[file('instruction.dev.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Review a project plan and prepare a specific requested edit.",
+      "title": "Review a project plan and prepare a specific requested edit"
+    },
+    {
+      "text": "Draft changes to tasks, dependencies, or resources in a selected plan.",
+      "title": "Draft changes to tasks, dependencies, or resources in a selected plan"
+    },
+    {
+      "text": "Preview and validate a plan edit before I confirm it.",
+      "title": "Preview and validate a plan edit before I confirm it"
+    },
+    {
+      "text": "Check project files, email, and Teams decisions before drafting an edit.",
+      "title": "Check project files, email, and Teams decisions before drafting an edit"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "OneDriveAndSharePoint"
+    },
+    {
+      "name": "TeamsMessages"
+    },
+    {
+      "name": "Email"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "PDS Project AI",
+  "description_for_human": "Project Schedule Generator guarded project-plan editing.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "pdsprojectaiprojectschedulegenerator",
+  "functions": [],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "spec": {
+        "url": "https://mcp.projectdata.ai"
+      },
+      "run_for_functions": [
+        "add_edit_operations",
+        "close_session",
+        "commit_edit_draft",
+        "create_edit_draft",
+        "create_new_project_session",
+        "create_session_from_onedrive",
+        "create_session_from_reference",
+        "get_edit_capabilities",
+        "get_project",
+        "list_assignments",
+        "list_resources",
+        "list_tasks",
+        "preview_edit_draft",
+        "replace_edit_operations",
+        "validate_edit_draft"
+      ],
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{MCP_DA_AUTH_ID_PROJECT_SCHEDULE_GENERATOR}}"
+      }
+    }
+  ]
+}

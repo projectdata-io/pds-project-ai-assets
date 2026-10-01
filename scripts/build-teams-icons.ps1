@@ -43,6 +43,19 @@ function Draw-Glyph($graphics, $role, $originX, $originY, $scale) {
                 $graphics.DrawLine($pen, 8, 12, 11, 15)
                 $graphics.DrawLine($pen, 11, 15, 17, 9)
             }
+            'teams-project-plan-editor' {
+                $graphics.DrawRectangle($pen, 5, 4, 18, 22)
+                $graphics.DrawLine($pen, 9, 10, 18, 10)
+                $graphics.DrawLine($pen, 9, 15, 16, 15)
+                $graphics.DrawLine($pen, 13, 22, 24, 11)
+            }
+            'teams-project-schedule-generator' {
+                $graphics.DrawRectangle($pen, 4, 5, 22, 21)
+                $graphics.DrawLine($pen, 4, 11, 26, 11)
+                $graphics.DrawLine($pen, 10, 5, 10, 26)
+                $graphics.DrawLine($pen, 14, 17, 18, 21)
+                $graphics.DrawLine($pen, 18, 21, 24, 14)
+            }
         }
     } finally {
         $pen.Dispose()
@@ -56,6 +69,8 @@ $roles = [ordered]@{
     'teams-portfolio-executive-analyst' = '#347DB4'
     'teams-resource-manager' = '#159C94'
     'teams-mpp-data-auditor' = '#A64E83'
+    'teams-project-plan-editor' = '#407A61'
+    'teams-project-schedule-generator' = '#D0823F'
 }
 
 try {

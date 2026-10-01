@@ -4,10 +4,13 @@
   "title": "PDS Project AI: Schedule Quality Analyst",
   "shortName": "PDS Schedule Quality",
   "shortDescription": "Find schedule risks, logic issues, and unrealistic dates.",
-  "version": "2.1.14",
+  "version": "2.1.17",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_SCHEDULE_QUALITY_ANALYST",
   "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email",
     "CodeInterpreter"
   ],
   "conversationStarters": [

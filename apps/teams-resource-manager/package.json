@@ -1,6 +1,6 @@
 {
   "name": "@pds-project-ai/teams-resource-manager",
-  "version": "2.1.14",
+  "version": "2.1.17",
   "private": true,
   "type": "module",
   "scripts": {

@@ -9,7 +9,9 @@ const packages = [
   "teams-schedule-quality-analyst",
   "teams-portfolio-executive-analyst",
   "teams-resource-manager",
-  "teams-mpp-data-auditor"
+  "teams-mpp-data-auditor",
+  "teams-project-plan-editor",
+  "teams-project-schedule-generator"
 ];
 const [mode, ...options] = process.argv.slice(2);
 const usage = "Usage: node scripts/manage-teams-packages.mjs <provision|install|share-tenant|publish|all> --env dev [--execute]";

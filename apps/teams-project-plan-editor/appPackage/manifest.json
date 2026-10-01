@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.30",
+  "version": "2.1.17",
+  "id": "${{TEAMS_APP_ID}}",
+  "developer": {
+    "name": "WACG Inc.",
+    "websiteUrl": "https://projectdata.io/",
+    "privacyUrl": "https://projectdata.io/privacy-policy",
+    "termsOfUseUrl": "https://projectdata.io/terms-conditions"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "PDS Plan Editor ${{APP_NAME_SUFFIX}}",
+    "full": "PDS Project AI: Project Plan Editor"
+  },
+  "description": {
+    "short": "Stage requested plan edits informed by authorized M365 context.",
+    "full": "Guarded Microsoft Project editing agent that stages, previews, validates, confirms, and commits explicitly requested changes. Connects to your existing PDS Project AI service. It stages and validates requested plan changes and commits only after you explicitly confirm the exact validated draft."
+  },
+  "accentColor": "#FFFFFF",
+  "supportsChannelFeatures": "tier1",
+  "composeExtensions": [],
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "project-plan-editor",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": []
+}

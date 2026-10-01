@@ -8,7 +8,9 @@ const packageSlugs = [
   "teams-schedule-quality-analyst",
   "teams-portfolio-executive-analyst",
   "teams-resource-manager",
-  "teams-mpp-data-auditor"
+  "teams-mpp-data-auditor",
+  "teams-project-plan-editor",
+  "teams-project-schedule-generator"
 ];
 
 function readJson(path) {

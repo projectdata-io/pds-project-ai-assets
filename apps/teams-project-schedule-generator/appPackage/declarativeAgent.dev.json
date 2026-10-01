@@ -1,0 +1,42 @@
+{
+  "version": "v1.8",
+  "name": "Project Schedule Generator ${{APP_NAME_SUFFIX}}",
+  "description": "Interactive schedule-generation agent that turns explicit user requirements into a previewed, validated, and confirmed Microsoft Project plan.",
+  "instructions": "$[file('instruction.dev.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Help me define the requirements for a new project schedule.",
+      "title": "Help me define the requirements for a new project schedule"
+    },
+    {
+      "text": "Build a draft schedule from these deliverables, dates, and assumptions.",
+      "title": "Build a draft schedule from these deliverables, dates, and assumptions"
+    },
+    {
+      "text": "Validate a complete schedule draft before I decide whether to commit.",
+      "title": "Validate a complete schedule draft before I decide whether to commit"
+    },
+    {
+      "text": "Use relevant project files, email, and Teams decisions to draft a schedule.",
+      "title": "Use relevant project files, email, and Teams decisions to draft a schedule"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "OneDriveAndSharePoint"
+    },
+    {
+      "name": "TeamsMessages"
+    },
+    {
+      "name": "Email"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}
