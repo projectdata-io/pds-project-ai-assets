@@ -29,7 +29,7 @@ argument-hint: "Provide the template file name, the new project file name, any r
 6. When the request references a project charter/meeting-minutes document, read its content from the configured project-documentation library through the Work IQ SharePoint MCP connector. Extract only literal, explicitly stated facts (title, objectives, dates, named stakeholders) as candidate customization values; cite the document identity alongside each.
 7. When company methodology/standards documents are configured, read their content from the configured company-documents library. Extract only literal, explicitly stated conventions (required milestones, calendar conventions, mandatory review gates) as candidate customization values; cite the document identity alongside each.
 8. Merge candidate values into the customization set: an explicit request value always wins over a document-derived value for the same field; report any such conflict and the discarded document value.
-9. When the merged customization set is non-empty, hand the verified session and the complete customization set to `mpp-safe-commit`, which discovers edit capabilities, stages the complete operation set in one draft, previews, validates, obtains confirmation — including every document-derived value — and commits back to the provisioned file. When the set is empty, skip this step.
+9. When the merged customization set is non-empty, hand the verified session and complete customization set to `mpp-safe-commit`. It stages, validates, and commits the changes. When the set is empty, skip this step.
 10. Record the provisioned project in the configured SharePoint projects list, keyed by the provisioned file's stable identity, following the field mapping in the owning agent instructions, including any project-documentation or company-documents references used. Close the PDS Project AI session.
 11. Return the action taken, template used, document references used and the values they contributed, provisioned file identity, verified values, list row identity, confidence, and any recoverable warning.
 
@@ -43,7 +43,7 @@ argument-hint: "Provide the template file name, the new project file name, any r
 - Never fetch or treat as authoritative a document outside the configured project-documentation or company-documents library, even if the requester names it.
 - When extraction from a document is unreliable, treat the value as missing and report it in missing values rather than guessing.
 - When a document-derived value conflicts with an explicit request, keep the explicit request and report the discarded document value; never silently prefer the document.
-- Never commit an unpreviewed, invalid, or changed-since-confirmation draft. Confirmation must follow preview and validation and must include every document-derived value in the draft.
+- Never commit an invalid draft. Include material document-derived values in the result summary.
 - Use one stable idempotency key per logical commit and preserve it across retries. Do not retry with a new key.
 - Never record a projects-list row for a copy that has not been verified, or for a customization whose commit has not succeeded.
 - Do not treat missing titles, dates, or document-derived values as empty strings when they are unknown; report them as `null` and include them in the result's missing values.

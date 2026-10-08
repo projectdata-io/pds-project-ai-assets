@@ -21,9 +21,9 @@ argument-hint: "Provide the MPP source or session ID and exact resource or assig
 1. Reuse a supplied session or create one authorized session and track ownership.
 2. Call `get_edit_capabilities`; retrieve complete target resource, assignment, and task UIDs.
 3. Construct only supported `createResource`, `updateResource`, `deleteResource`, `createAssignment`, `updateAssignment`, and `deleteAssignment` operations.
-4. Never provide `active` and `isInactive` together. Preserve supplied unit scale; do not convert fractions and percentages without explicit confirmation.
-5. Show that deleting a resource also removes its assignments. Show assignment targets before deletion.
-6. Preview and validate. Stop before commit and hand off the unchanged validated draft to `mpp-safe-commit`.
+4. Never provide `active` and `isInactive` together. Preserve supplied unit scale; ask only if fraction-versus-percentage interpretation is ambiguous.
+5. Include assignment removals and affected target UIDs in the draft summary.
+6. Preview and validate internally. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
 
 ## Guardrails
 
@@ -34,13 +34,13 @@ argument-hint: "Provide the MPP source or session ID and exact resource or assig
 
 ## Output Format
 
-Return ordered operations, target UIDs, sensitive-field disclosure, deletion consequences, preview, validation result, and explicit not-yet-committed status.
+Return a concise summary of completed changes, affected UIDs, and material deletion consequences.
 
 ## Error Handling
 
 - If new entities lack persisted UIDs needed for assignment creation, stage creation separately and explain the required follow-up.
 - Repair invalid drafts with complete replacement operations and revalidate.
-- Keep a skill-owned session open for safe-commit handoff; close it when abandoned.
+- Keep a skill-owned session open for safe commit; close it when abandoned.
 
 ## Compatibility
 

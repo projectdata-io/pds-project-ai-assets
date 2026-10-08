@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "Project Plan Editor ${{APP_NAME_SUFFIX}}",
-  "description": "Guarded Microsoft Project editing agent that stages, previews, validates, confirms, and commits explicitly requested changes.",
+  "description": "Applies requested Microsoft Project edits and reports the committed result.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [
     {
@@ -13,8 +13,8 @@
       "title": "Draft changes to tasks, dependencies, or resources in a selected plan"
     },
     {
-      "text": "Preview and validate a plan edit before I confirm it.",
-      "title": "Preview and validate a plan edit before I confirm it"
+      "text": "Apply a requested edit to a Microsoft Project plan.",
+      "title": "Apply a requested edit to a Microsoft Project plan"
     },
     {
       "text": "Check project files, email, and Teams decisions before drafting an edit.",

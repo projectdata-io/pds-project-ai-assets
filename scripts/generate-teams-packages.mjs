@@ -140,17 +140,17 @@ Complete the requested analysis first and ground every report in the selected MP
 When analysis needs a plan and the caller has not supplied a session or authorized MPP reference, call \`open_project_plan_picker\`. Use only the opaque \`selectionReference\` and \`fileName\` returned by the picker with \`create_session_from_onedrive\`; never expose or infer the underlying OneDrive IDs. Do not request an MPP chat attachment, alter the reference, infer a URL, or call picker browse tools outside the picker flow.`
     : `## Microsoft 365 Plan Selection
 
-For edits to an existing plan, use \`open_project_plan_picker\` when the caller has not supplied an authorized MPP reference. Use only the opaque \`selectionReference\` and \`fileName\` returned by the picker with \`create_session_from_onedrive\`; never expose or infer the underlying OneDrive IDs. For a new schedule, gather the required project title, start date or scheduling anchor, deliverables, dependencies, and staffing assumptions before calling \`create_new_project_session\`. Selecting a plan or creating a session is not permission to commit changes.`;
+For edits to an existing plan, use \`open_project_plan_picker\` when the caller has not supplied an authorized MPP reference. Use only the opaque \`selectionReference\` and \`fileName\` returned by the picker with \`create_session_from_onedrive\`; never expose or infer the underlying OneDrive IDs. For a new schedule, gather required project title, start date or scheduling anchor, deliverables, dependencies, and staffing assumptions before calling \`create_new_project_session\`. Continue the requested write after selecting or creating its target session.`;
   const workflowExecution = isReadOnly
     ? `## Workflow Execution
 
 Choose the narrowest workflow below. Reuse caller-owned sessions and close sessions created in this turn when no follow-up needs them. Page required collections, cite entity UIDs, state the reporting basis, and disclose missing data, partial pages, and calculations. This agent is read-only: never create, edit, validate, commit, upload, or delete project data.`
-    : `## Guarded Edit Lifecycle
+    : `## Write Workflow
 
-Act only on an explicit user request to create or change a project plan. Discover edit capabilities before constructing operations, use stable entity UIDs, and stage all changes in a draft. Preview and validate the full draft after every operation replacement. Before committing, show the exact operations, targets, previewed impacts, validation warnings, destination, and overwrite consequences; then wait for the user's explicit confirmation of that exact validated draft. Never infer confirmation from the original request. Reuse one idempotency key for retries, stop on concurrency conflicts, and never claim persistence until commit succeeds and the resulting artifact or provider destination is available. Do not edit protected, external, cross-project, inserted, or read-only tasks.`;
+Carry out clear write requests end-to-end without asking the user to repeat or reconfirm them. Ask only for missing required details or genuinely ambiguous targets. Discover supported capabilities, identify entities by stable UIDs, and stage the requested operations in one draft. Run preview and validation internally because commit requires a valid draft; repair issues when intent is unchanged. Call the exposed \`commit_edit_draft\` MCP tool directly as soon as validation and target requirements are satisfied. Do not stop at a validated draft or hand it to a nonexistent runtime agent. Reuse one idempotency key for retries and stop on concurrency conflicts or material target changes. Do not edit protected, external, cross-project, inserted, or read-only tasks. Report only meaningful blockers during the workflow and summarize the committed result at the end.`;
   const sessionRecovery = isReadOnly
     ? `If a query explicitly returns SessionGone or SessionNotFound, recreate a read-only session once using the same opaque selectionReference and fileName from this conversation with create_session_from_onedrive, then retry the interrupted query and continue paging. Do not expose or reconstruct the underlying OneDrive IDs. If the selection reference has expired or recreation fails, report the actual tool error and completed coverage. Never describe a session as expired without an explicit session error.`
-    : `If a session is no longer available, report the actual error and do not retry a commit blindly. Rebuild and revalidate a draft before asking for confirmation again.`;
+    : `If a session is unavailable, do not retry a commit blindly. Preserve the requested intent, rebuild and validate only as needed, and ask again only if the target or requested changes materially changed.`;
   const instruction = `${augmentedBaseInstructions}${m365ContextInstructions ? `\n\n${m365ContextInstructions}` : ""}
 
 ${planSelection}
@@ -218,7 +218,7 @@ for (const packageSlug of packageSlugs) {
     developer: { name: "WACG Inc.", websiteUrl: "https://projectdata.io/", privacyUrl: "https://projectdata.io/privacy-policy", termsOfUseUrl: "https://projectdata.io/terms-conditions" },
     icons: { color: "color.png", outline: "outline.png" },
     name: { short: `${packageMetadata.shortName} \${{APP_NAME_SUFFIX}}`, full: packageMetadata.title },
-    description: { short: packageMetadata.shortDescription, full: `${metadata.description} Connects to your existing PDS Project AI service. ${access === "commit" ? "It stages and validates requested plan changes and commits only after you explicitly confirm the exact validated draft." : "It only reads project information and never changes your project files."}` },
+    description: { short: packageMetadata.shortDescription, full: `${metadata.description} Connects to your existing PDS Project AI service. ${access === "commit" ? "It applies requested plan changes and reports the committed result." : "It only reads project information and never changes your project files."}` },
     accentColor: "#FFFFFF",
     supportsChannelFeatures: "tier1",
     composeExtensions: [],
@@ -251,7 +251,7 @@ for (const packageSlug of packageSlugs) {
   const developmentAgent = `${JSON.stringify(developmentAgentObject, null, 2)}\n`;
   const developmentManifest = manifest.replace('"declarativeAgent.json"', '"declarativeAgent.dev.json"');
   const developmentInstruction = access === "commit"
-    ? `${instruction}\n\n## Development Capability Boundary\n\nThis development package exposes only the role-scoped PDS MCP tools listed by its mapped skills. Follow the guarded edit lifecycle above for every write, and do not claim a change was persisted until the commit result confirms it.`
+    ? `${instruction}\n\n## Development Capability Boundary\n\nThis development package exposes only the role-scoped PDS MCP tools listed by its mapped skills. Complete clear write requests without an extra confirmation. Report persistence only after the commit result confirms it.`
     : developmentWorkIqEnabled
     ? `${instruction}\n\n## Development Capability Boundary\n\nThis development package includes the configured Work IQ Word, OneDrive conversion, and report-storage actions. Use them according to the report-file rules above. Never claim that a report was saved until the relevant Work IQ action returns success.`
     : `${instruction}\n\n## Development Capability Boundary\n\nThis development package does not include the Work IQ Word, OneDrive conversion, or report-storage actions because its local environment has no Work IQ auth bindings. Use the Code Interpreter fallback for temporary report downloads in development, and never claim that a report was saved to OneDrive or SharePoint. The canonical package uses Work IQ where its configured actions are available.`;
@@ -260,7 +260,8 @@ for (const packageSlug of packageSlugs) {
     $schema: "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
     schema_version: "v2.4",
     name_for_human: "PDS Project AI",
-    description_for_human: `${metadata.title} ${access === "commit" ? "guarded project-plan editing" : "read-only MPP analysis"}.`,
+    description_for_human: `${metadata.title} ${access === "commit" ? "Microsoft Project plan creation and editing" : "read-only MPP analysis"}.`,
+    ...(access === "commit" ? { description_for_model: "Use these PDS Project AI tools to create and edit real Microsoft Project MPP files. For a new plan, call create_new_project_session, create a draft, add supported operations, validate, and commit. Do not substitute a text-only WBS or claim these tools are unavailable when they are present." } : {}),
     contact_email: "support@projectdata.io",
     namespace: `pdsprojectai${metadata.name.replaceAll("-", "")}`,
     functions: [],
@@ -351,13 +352,13 @@ execFileSync(process.execPath, [fileURLToPath(new URL("../../../scripts/validate
 `;
   const editorReadme = `# ${packageMetadata.title}
 
-This is an independently deployable Microsoft 365 declarative-agent package for guarded project-plan editing. The PDS MCP tool allowlist is derived from this role's mapped skills. Native read-only capabilities search the user's accessible SharePoint and OneDrive files, email, and Teams conversations; no Work IQ actions are included.
+This is an independently deployable Microsoft 365 declarative-agent package for project-plan editing. The PDS MCP tool allowlist is derived from this role's mapped skills. Native read-only capabilities search the user's accessible SharePoint and OneDrive files, email, and Teams conversations; no Work IQ actions are included.
 
-The agent may stage changes only for an explicit user request. It must preview and validate the complete draft, explain the exact operations and effects, and wait for confirmation of that exact validated draft before committing. It must not claim persistence until commit succeeds and the resulting artifact or provider destination is available.
+The agent executes clear edit requests end-to-end, asks only for missing or ambiguous inputs, and reports persistence only after commit succeeds.
 
 ## Development Lifecycle
 
-Keep package-local env/.env.* files local and package-specific. Configure the package's Teams app ID and DCR binding in env/.env.dev. From the asset repository, use the batch lifecycle runbook in the root README to provision in a non-production tenant, personally install the package, test draft and confirmation behavior, then choose submission for admin review. The coordinator requires --execute for tenant changes. Do not run all --env dev --execute when testing must happen between provisioning and submission.
+Keep package-local env/.env.* files local and package-specific. Configure the package's Teams app ID and DCR binding in env/.env.dev. From the asset repository, use the batch lifecycle runbook in the root README to provision in a non-production tenant, personally install the package, test requested edits, then choose submission for admin review. The coordinator requires --execute for tenant changes. Do not run all --env dev --execute when testing must happen between provisioning and submission.
 `;
   const readOnlyReadme = `# ${packageMetadata.title}
 

@@ -7,7 +7,7 @@ These rules apply when an AI agent creates or modifies content in this repositor
 3. Prefer narrowly scoped skills, prompts, and agents over broad assistants that duplicate one another.
 4. Every workflow that creates a parsing session must define cleanup behavior.
 5. Read-only assets must not call edit or commit tools.
-6. Editing assets must require preview and validation before commit, and must request confirmation before an externally visible write.
+6. Editing assets must validate before commit. A clear user request authorizes the write; ask only when required inputs or targets are ambiguous.
 7. Distinguish source values from calculated findings and state assumptions used in calculations.
 8. Use stable identifiers such as task, resource, assignment, session, edit, and graph node IDs when presenting evidence.
 9. Keep examples synthetic and free of secrets or personal data.

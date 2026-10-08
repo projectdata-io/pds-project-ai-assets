@@ -1,6 +1,6 @@
 ---
 name: mpp-safe-commit
-description: "Safely stage, preview, validate, confirm, and commit Microsoft Project MPP edits through PDS Project AI. Use when a user explicitly asks to modify, create, or write back a project plan."
+description: "Stage, validate, and commit requested Microsoft Project edits through PDS Project AI. Use when a user asks to modify, create, or write back a project plan."
 argument-hint: "Describe the requested MPP changes, source or session ID, and desired output target"
 ---
 
@@ -23,38 +23,26 @@ argument-hint: "Describe the requested MPP changes, source or session ID, and de
 
 ## Workflow
 
-1. Require an explicit user request to modify the project. Establish the source, exact requested changes, output target, and whether the source session is caller-owned.
+1. Treat a clear edit request as authorization to proceed. Establish the source, requested changes, output target, and session ownership; ask only for required details that are missing or ambiguous.
 2. Reuse a supplied session, create one from an authorized source, or call `create_new_project_session` only when the user requested a new plan. Track session ownership.
 3. Call `get_edit_capabilities` before constructing operations. Use only returned operation types, targets, change fields, and commit target requirements.
 4. Read the affected project entities with stable UIDs. Reject name-only targeting when names are duplicated or ambiguous.
 5. Refuse edits to master-project child nodes and tasks marked read-only, inserted-subproject, external, or cross-project when the capability contract prohibits them.
 6. Create one edit draft with a descriptive label. Add the complete ordered operation set. Use explicit `opId` values when later operations refer to entities created earlier in the same draft.
-7. Call `preview_edit_draft`, then `validate_edit_draft`. Present the preview, validation result, destination, overwrite/create mode, and material schedule effects to the user.
-8. Do not commit until the user explicitly confirms that reviewed draft. Confirmation obtained before preview or before a repaired validation result is not sufficient.
-9. If validation fails, repair the complete operation list with `replace_edit_operations`, then preview and validate again. Never remove an issue silently.
-10. For provider overwrite, use the source `ifMatch` value when available. Use one stable `idempotencyKey` for the logical commit and preserve it unchanged across retries.
-11. Call `commit_edit_draft` once confirmed. Request `downloadUrl` by default for user retrieval unless the user asks for another supported return format or provider target.
-12. Verify the commit response before claiming success. Ensure the user has the resulting artifact or confirmed provider destination before closing a session owned by this skill.
+7. Call `preview_edit_draft` and `validate_edit_draft` internally; commit requires a valid draft. Repair validation issues automatically when the requested intent is unchanged, then repeat both checks.
+8. For provider overwrite, use the source `ifMatch` value when available. Use one stable `idempotencyKey` for the logical commit and preserve it unchanged across retries.
+9. For OneDrive/SharePoint creation, satisfy `get_edit_capabilities` target requirements. Resolve `driveId`, `parentId`, and `fileName` from authorized context. If folder IDs remain unavailable, finish and validate the draft first, then ask only for the destination folder or link.
+10. Call `commit_edit_draft` as soon as validation and target requirements are satisfied. Request `downloadUrl` by default when no provider target was requested; otherwise write to the requested provider target.
+11. Verify the commit response before claiming success. Ensure the resulting artifact or provider destination is available before closing a session owned by this skill.
 
 ## Guardrails
 
 - Never turn advice or analysis into a write operation without an explicit edit request.
-- Never commit an unpreviewed, invalid, changed-since-confirmation, or ambiguously targeted draft.
+- Never commit an invalid or ambiguously targeted draft.
 - Do not invent drive IDs, item IDs, parent IDs, upload URLs, file names, ETags, or target modes.
-- Treat overwrite and external upload as consequential actions and name the destination before confirmation.
+- Ask for clarification only when overwrite mode or external upload destination is missing or ambiguous.
 - Do not retry with a new idempotency key. On an ETag conflict, stop and ask the user to refresh or choose a new target.
 - Never display raw credentials, signed URLs, or provider diagnostics as visible prose. A user-facing download URL may appear only as the destination of a labeled Markdown link; never include it in logs or diagnostics.
-
-## Confirmation Format
-
-Before commit, show:
-
-1. Source project and session.
-2. Ordered operation summary with target UIDs.
-3. Previewed schedule and entity impacts.
-4. Validation status and unresolved warnings.
-5. Destination, mode, return format, and overwrite consequences.
-6. A direct request to confirm this exact draft.
 
 ## Output Format
 
@@ -63,9 +51,9 @@ When the commit response includes `download.downloadUrl`, present it as a labele
 
 ## Error Handling
 
-- On validation failure, preserve the draft, explain issues, repair only with user-approved intent, then repeat preview and validation.
+- On validation failure, preserve the request and repair the draft when the fix does not alter user intent; ask only when a real decision is needed.
 - On provider or transient failure, follow returned retry guidance and reuse the same idempotency key.
-- On session expiry before commit, do not silently recreate and replay operations; explain that the draft is unavailable and rebuild only with renewed user approval.
+- If the session is unavailable before commit, rebuild and validate from the same request. Ask only if the target or requested changes are ambiguous.
 - Close only sessions created by this skill, and only after the output is secured or the workflow is abandoned.
 
 ## Compatibility

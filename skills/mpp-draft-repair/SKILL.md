@@ -21,21 +21,21 @@ argument-hint: "Provide the session ID, edit ID, validation issues, and intended
 1. Require caller-supplied `sessionId`, `editId`, intended outcome, and the current complete operation list or sufficient draft context.
 2. Call `get_edit_capabilities` and retrieve any target entities needed to resolve validation issues.
 3. Map every issue code and path to the affected operation. Preserve valid intent and ordering while fixing only unsupported types, fields, values, targets, or duplicate IDs.
-4. Present the complete corrected operation list before replacement when the repair changes meaning, target, deletion, hierarchy, dependency, units, or dates.
+4. Repair automatically when the correction preserves the requested meaning and targets. Ask only if a repair would change the user's requested outcome.
 5. Call `replace_edit_operations` with the complete non-empty corrected list.
 6. Preview and validate again. Repeat only when new local validation issues clearly identify another repair.
-7. Stop before commit and hand off the exact validated draft to `mpp-safe-commit`.
+7. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
 
 ## Guardrails
 
 - Do not silently drop an operation or substitute a different target.
-- Do not convert ambiguous values without user confirmation.
+- Ask only if value interpretation is ambiguous.
 - Do not create a new draft unless the existing draft is unavailable.
 - Never call `commit_edit_draft`.
 
 ## Output Format
 
-Return original issues, repair mapping, complete replacement summary, changed semantics, preview, final validation result, and explicit not-yet-committed status.
+Return a concise repair and commit summary, including any unresolved material issue.
 
 ## Error Handling
 

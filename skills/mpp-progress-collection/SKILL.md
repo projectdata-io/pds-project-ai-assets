@@ -1,6 +1,6 @@
 ---
 name: mpp-progress-collection
-description: "Collect team-reported task progress from a configured SharePoint intake list, stage the batch on the source MPP file through the guarded PDS Project AI draft lifecycle, and record per-submission outcomes through the Work IQ SharePoint MCP connector."
+description: "Collect team-reported task progress from a configured SharePoint intake list, apply the batch to the source MPP file through PDS Project AI, and record per-submission outcomes through the Work IQ SharePoint MCP connector."
 argument-hint: "Provide the source MPP driveId/itemId or authorized reference and the configured SharePoint intake and outcome list identities"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "Provide the source MPP driveId/itemId or authorized reference an
 
 ## Use When
 
-- Team members have reported task progress into a configured SharePoint intake list and the source plan should be updated in one confirmed batch.
+- Team members have reported task progress into a configured SharePoint intake list and the source plan should be updated in one batch.
 - A request asks to apply pending progress submissions to a named MPP file.
 
 ## Required MCP Capabilities
@@ -23,11 +23,10 @@ argument-hint: "Provide the source MPP driveId/itemId or authorized reference an
 2. Read all pending submissions from the intake list through the Work IQ SharePoint MCP connector, following pagination to the end.
 3. Open the source file with `create_session_from_onedrive` or `create_session_from_reference` and retrieve the complete task collection with `list_tasks`, following pagination to the end.
 4. Match each submission to exactly one task UID. Reject ambiguous or unmatched submissions individually rather than guessing.
-5. Hand the verified session and the matched update set to `mpp-progress-editor`, which stages the complete batch in one draft, previews, and validates. Exclude individually invalid submissions and record their reasons.
-6. Present the batch preview, validation status, destination, and overwrite consequence, and obtain explicit confirmation of that exact draft.
-7. Commit through `mpp-safe-commit` with one stable idempotency key. Stop on an ETag or concurrency conflict.
-8. After the commit result is known, write one outcome row per processed submission to the outcome list and update each submission's status in the intake list (`applied`, `rejected`, or `skipped`). Close the PDS Project AI session.
-9. Return the action taken, per-status counts, committed task UIDs, outcome row identity, confidence, and any recoverable warning.
+5. Hand the verified session and matched update set to `mpp-progress-editor`. It stages the batch, previews, and validates it. Exclude individually invalid submissions and record their reasons.
+6. Commit the validated batch through `mpp-safe-commit` using one stable idempotency key. Stop on an ETag or concurrency conflict.
+7. After the commit result is known, write one outcome row per processed submission to the outcome list and update each submission's status in the intake list (`applied`, `rejected`, or `skipped`). Close the PDS Project AI session.
+8. Return the action taken, per-status counts, committed task UIDs, outcome row identity, confidence, and any recoverable warning.
 
 ## Guardrails
 
@@ -35,7 +34,7 @@ argument-hint: "Provide the source MPP driveId/itemId or authorized reference an
 - Do not edit any MPP file other than the named source.
 - Never stage a submission whose task cannot be uniquely matched; never invent progress values, actual dates, or identifiers.
 - Stage the batch as a single draft; do not commit per submission.
-- Never commit an unpreviewed, invalid, or changed-since-confirmation draft. Confirmation must follow preview and validation.
+- Never commit an unvalidated draft. Do not ask the user to approve the collection request a second time.
 - Use one stable idempotency key per logical commit and preserve it across retries. Do not retry with a new key.
 - Update submission statuses only after the commit result is known; never mark a submission applied before commit succeeds.
 - Never delete intake submissions.

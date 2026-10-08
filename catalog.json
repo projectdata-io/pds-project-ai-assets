@@ -140,8 +140,8 @@
     {
       "name": "mpp-create-project",
       "category": "editing",
-      "access": "draft-only",
-      "tools": ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "preview_edit_draft", "validate_edit_draft", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
+      "access": "commit",
+      "tools": ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session"],
       "agents": ["project-plan-editor", "project-schedule-generator"]
     },
     {

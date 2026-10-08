@@ -22,8 +22,8 @@ argument-hint: "Provide the MPP source or session ID and explicit task progress 
 2. Call `get_edit_capabilities`; retrieve target tasks by UID and current progress fields.
 3. Resolve every target to a unique `taskUid`. Reject ambiguous name-only requests.
 4. Create `updateTask` operations using only explicitly requested supported fields such as `percentComplete`, `physicalPercentComplete`, `remainingDuration`, `actualFinish`, `stop`, or `resume`.
-5. Preview and validate. If repaired with `replace_edit_operations`, repeat both checks.
-6. Stop before commit and hand off the unchanged validated draft to `mpp-safe-commit`.
+5. Preview and validate internally. If repaired with `replace_edit_operations`, repeat both checks.
+6. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
 
 ## Guardrails
 
@@ -34,13 +34,13 @@ argument-hint: "Provide the MPP source or session ID and explicit task progress 
 
 ## Output Format
 
-Return target UIDs, before/requested values, draft ID, preview, validation issues, and explicit not-yet-committed status.
+Return a concise summary of committed values and affected task UIDs.
 
 ## Error Handling
 
 - On validation failure, preserve user intent and repair only invalid representations.
 - If a requested field is unsupported, omit it and ask for an alternative.
-- Keep a skill-owned session open for safe-commit handoff; otherwise close it when abandoned.
+- Keep a skill-owned session open for safe commit; otherwise close it when abandoned.
 
 ## Compatibility
 

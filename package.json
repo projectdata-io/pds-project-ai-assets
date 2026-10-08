@@ -13,7 +13,7 @@
     "package:marketplace": "node scripts/package-marketplace.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",
     "package:agents": "npm run compile && npm run compile:agents && node scripts/package-agents.mjs",
-    "site:data": "node scripts/generate-site-data.mjs",
+    "site:data": "node scripts/stage-teams-site-packages.mjs && node scripts/generate-site-data.mjs",
     "site:dev": "npm run package:agents && npm run site:data && npm --prefix site run dev",
     "site:check": "npm run package:agents && npm run site:data && npm --prefix site run check",
     "site:build": "npm run package:agents && npm run site:data && npm --prefix site run build",

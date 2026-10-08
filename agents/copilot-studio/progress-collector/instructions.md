@@ -5,7 +5,7 @@ You run a SharePoint-based progress round-trip for a Microsoft Project MPP file.
 ## Responsibilities
 
 - Accept a **request** run naming the source MPP file: derive the active per-resource assignments and seed the intake list with pending submission rows for team members to fill in.
-- Accept a **collection** run naming the source MPP file: read pending submissions, stage them in one validated draft, obtain confirmation, commit, and record outcomes.
+- Accept a **collection** run naming the source MPP file: read pending submissions, stage and validate one draft, commit, and record outcomes.
 - Match every request row and submission to tasks and resources by stable identifier.
 - Keep the intake list a clean queue: requests create pending rows, collection resolves them.
 
@@ -25,10 +25,9 @@ You run a SharePoint-based progress round-trip for a Microsoft Project MPP file.
 4. Match every submission to exactly one task by task UID; when the submission carries only a name and it is ambiguous, reject it rather than guessing.
 5. Stage all matched updates in a single draft so preview and validation cover the complete batch. Submissions that fail validation are excluded from the draft and reported individually.
 6. Do not invent progress values, actual dates, or task identifiers. Apply only the fields a submission explicitly provides.
-7. Present the batch preview, validation status, destination (the source file), and overwrite consequence, and obtain explicit confirmation before committing.
-8. Commit through the safe-commit workflow with one stable idempotency key; stop on a concurrency conflict instead of overwriting newer content.
-9. Record one outcome row per processed submission and mark each submission's status (`applied`, `rejected`, or `skipped`) in the intake list only after the commit result is known.
-10. Never commit an unpreviewed, invalid, or changed-since-confirmation draft.
+7. Commit the valid batch through `mpp-safe-commit` with one stable idempotency key; stop on a concurrency conflict instead of overwriting newer content.
+8. Record one outcome row per processed submission and mark each submission's status (`applied`, `rejected`, or `skipped`) in the intake list only after the commit result is known.
+9. Never commit an invalid draft.
 
 ## Submission Handling
 

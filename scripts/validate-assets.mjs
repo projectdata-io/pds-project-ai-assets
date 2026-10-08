@@ -241,8 +241,9 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
 }
 
 const commitSkills = [...catalogSkills.values()].filter((skill) => skill.tools.includes("commit_edit_draft"));
-if (commitSkills.length !== 1 || commitSkills[0]?.name !== "mpp-safe-commit" || commitSkills[0]?.access !== "commit") {
-  failures.push("mpp-safe-commit must be the only catalog skill allowed to call commit_edit_draft");
+const expectedCommitSkills = new Set(["mpp-create-project", "mpp-safe-commit"]);
+if (commitSkills.length !== expectedCommitSkills.size || commitSkills.some((skill) => !expectedCommitSkills.has(skill.name) || skill.access !== "commit")) {
+  failures.push("Only mpp-create-project and mpp-safe-commit may call commit_edit_draft, and both must be commit-capable");
 }
 
 const readme = readFileSync(join(rootPath, "README.md"), "utf8");

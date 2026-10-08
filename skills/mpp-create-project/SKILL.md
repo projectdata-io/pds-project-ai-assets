@@ -13,35 +13,37 @@ argument-hint: "Provide project title, start date, WBS, resources, assignments, 
 
 ## Required MCP Capabilities
 
-- Tools: `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
+- Tools: `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
 - Scope: `Session.ReadWrite`.
 
 ## Workflow
 
-1. Confirm title, ISO date-time start, file name, scheduling assumptions, and explicit plan requirements.
-2. Call `create_new_project_session`, then `get_edit_capabilities`.
-3. Create one draft. Add deterministic `createTask` operations with unique `opId` values and `afterTaskOpId` chains for sibling order. Use `parentTaskUid` or `outlineLevel` only when they unambiguously describe the intended hierarchy.
-4. Add supported project property and resource operations. Assignment operations may target only known persisted task and resource UIDs; if newly created entity UIDs are required, stage and validate creation first rather than inventing UIDs.
-5. Add supported dependency links only between known task UIDs.
-6. Preview and validate the draft. Present omissions caused by unavailable UIDs or unsupported capabilities.
-7. Stop before commit and hand off the exact validated draft to `mpp-safe-commit` for confirmation and persistence.
+1. Treat a request to create, build, or generate a Microsoft Project plan from requirements or a WBS as a request to use PDS tools, not to return a text-only substitute.
+2. `create_new_project_session` requires `title` and ISO `startDate`; ask only for a required value that is missing or ambiguous. A relative label such as “Day 1” is not an ISO date.
+3. Call `create_new_project_session`, then `get_edit_capabilities`.
+4. Create one draft. Add deterministic `createTask` operations with unique `opId` values and `afterTaskOpId` chains for sibling order. Use `parentTaskUid` or `outlineLevel` only when they unambiguously describe the intended hierarchy.
+5. Add supported project property and resource operations. Assignment operations may target only known persisted task and resource UIDs; if newly created entity UIDs are required, stage and validate creation first rather than inventing UIDs.
+6. Add supported dependency links only between known task UIDs.
+7. Preview and validate internally. Note omissions caused by unavailable UIDs or unsupported capabilities.
+8. Call the exposed `commit_edit_draft` MCP tool directly after validation and target requirements are satisfied. Do not stop at a validated draft. If a OneDrive/SharePoint create target requires unresolved `driveId` or `parentId`, finish and validate the draft first, then ask only for the destination folder or link.
 
 ## Guardrails
 
 - Do not invent dates, durations, units, resources, rates, links, or hierarchy.
 - Use structured duration objects with explicit units when supplied.
 - Do not create a detailed schedule from a vague goal without gathering requirements.
-- Never call `commit_edit_draft`.
+- Never claim that a plan was created, saved, or validated unless the corresponding PDS tool returned success. If a tool is unavailable or fails, report the actual error rather than falling back to a fabricated validation summary.
+- Never claim commit success unless `commit_edit_draft` returns success.
 
 ## Output Format
 
-Return session and draft IDs, staged project structure, operation count, preview, validation result, deferred items, and explicit not-yet-committed status.
+Return the completed project and any material deferred items. Keep draft mechanics out of the user-facing summary.
 
 ## Error Handling
 
-- Repair invalid operations only while preserving approved requirements, then preview and validate again.
+- Repair invalid operations when doing so preserves the requested requirements, then preview and validate again.
 - If a needed operation is unsupported, omit it and explain the limitation.
-- Keep the session open for safe-commit handoff; close it only when the user abandons creation.
+- Keep the session open for the safe-commit workflow; close it only when the request is abandoned.
 
 ## Compatibility
 

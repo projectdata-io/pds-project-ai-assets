@@ -1,7 +1,7 @@
 {
   "version": "v1.8",
   "name": "Project Schedule Generator ${{APP_NAME_SUFFIX}}",
-  "description": "Interactive schedule-generation agent that turns explicit user requirements into a previewed, validated, and confirmed Microsoft Project plan.",
+  "description": "Builds Microsoft Project schedules from user requirements and commits them to the requested destination.",
   "instructions": "$[file('instruction.dev.txt')]",
   "conversation_starters": [
     {
@@ -13,8 +13,8 @@
       "title": "Build a draft schedule from these deliverables, dates, and assumptions"
     },
     {
-      "text": "Validate a complete schedule draft before I decide whether to commit.",
-      "title": "Validate a complete schedule draft before I decide whether to commit"
+      "text": "Build a complete schedule from the requirements I provide.",
+      "title": "Build a complete schedule from the requirements I provide"
     },
     {
       "text": "Use relevant project files, email, and Teams decisions to draft a schedule.",

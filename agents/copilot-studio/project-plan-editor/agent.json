@@ -1,7 +1,7 @@
 {
   "name": "project-plan-editor",
   "title": "Project Plan Editor",
-  "description": "Guarded Microsoft Project editing agent that stages, previews, validates, confirms, and commits explicitly requested changes.",
+  "description": "Applies requested Microsoft Project edits and reports the committed result.",
   "access": "commit",
   "skills": [
     "mpp-change-impact-report",
