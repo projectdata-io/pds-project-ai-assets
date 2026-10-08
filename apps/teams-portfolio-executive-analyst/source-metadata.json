@@ -4,7 +4,7 @@
   "title": "PDS Project AI: Portfolio and Executive Analyst",
   "shortName": "PDS Portfolio Analyst",
   "shortDescription": "Review portfolio status, costs, milestones, and risks.",
-  "version": "2.1.23",
+  "version": "2.2.2",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PORTFOLIO_EXECUTIVE_ANALYST",
   "capabilities": [

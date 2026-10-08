@@ -53,6 +53,14 @@ for (const agent of agents) {
       failures.push(`${agent.name} is missing inline skill ${skillName}`);
     }
   }
+  if (metadata.access === "read-only" || metadata.name === "project-schedule-generator") {
+    for (const pattern of [/## PMI Alignment/, /PMI\/PMBOK.*tailored recommendations/is, /do not invent PMI limits, clause citations, or compliance scores/i, /Do not claim PMI compliance or certification from MPP data alone/i, /PMBOK Guide Eighth Edition overview.*organization-selected edition/is, /evidence, delivery impact, and recommendation/i]) {
+      if (!pattern.test(content)) failures.push(`${agent.name} is missing tailored PMI analysis guidance`);
+    }
+  }
+  if (metadata.name === "project-schedule-generator" && !/committed MPP is not automatically an approved baseline/i.test(content)) {
+    failures.push(`${agent.name} is missing the baseline approval distinction`);
+  }
   for (const forbidden of ["auditInfo:", "synchronizationStatus:", "createdBy:", "modifiedBy:", "applicationId:"]) {
     if (content.includes(forbidden)) {
       failures.push(`${agent.name} contains environment-specific field ${forbidden}`);

@@ -128,6 +128,22 @@ The same workflow builds and deploys the static agent catalog to GitHub Pages on
 
 Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, and role-specific generated instructions and artwork. All seven use native, read-only Microsoft 365 capabilities to search the signed-in user's accessible SharePoint and OneDrive files, email, and Teams conversations for relevant project context; none has email or Teams write actions. The five analysis packages expose read-only PDS tools, Code Interpreter, and scoped Work IQ Word, OneDrive conversion, and report-storage actions for user-requested reports. Project Plan Editor and Project Schedule Generator expose their mapped PDS write tools and execute clear requests after internally validating them; they ask only for missing or ambiguous inputs. They do not generate reports or documents. All seven reuse the PDS MCP endpoint and metadata-only project-plan picker.
 
+### Editor workflow structure
+
+The two Teams editors receive short role instructions plus one self-contained MCP procedure. Skill mappings determine their tool allowlists, but Teams does not load the skill files or invoke skill handoffs. Existing drafts are reused; draft-only requests never authorize commit. New tasks/resources are committed to the session and read back when their persisted UIDs are needed for dependencies or assignments. Only the final stage writes to a provider or presents the completed download.
+
+For generated Copilot Studio templates with native skills, authoring skills stage and validate changes and return the draft IDs. `mpp-safe-commit` reuses those IDs instead of rebuilding the draft; `mpp-draft-repair` returns the corrected draft to its caller without authorizing persistence. Session ownership follows the workflow, and sessions remain open while a download or follow-up needs them.
+
+### Analysis workflow structure
+
+The five read-only Teams agents receive concise role-specific analysis criteria, one shared MCP query/recovery procedure, and one report-delivery procedure. They call tools directly rather than referring to unavailable skills. Complete-page coverage, entity UIDs, reporting dates/units, source grounding, and explicit session-error recovery apply across roles. Project changes remain prohibited; session lifecycle operations and explicitly requested report writes are separate from project edits.
+
+Word creation, PDF conversion, Code Interpreter fallback, and report persistence retain their scoped actions and verification requirements. Report saving is confirmed only by a successful write action; otherwise output is a temporary download. Skill files remain available unchanged to skill-capable hosts and generated native-skill templates.
+
+All five analytics role prompts include tailored PMI-aligned recommendations for their discipline, with an explicit public PMBOK Guide reference basis and no invented PMI thresholds, clause citations, or certification claims. The same role guidance reaches Teams packages, Copilot Studio instruction bundles, and native-skill templates. See [PMI-Aligned Analytics](docs/pmi-analysis-guidance.md) for verified public sources, role applications, and live acceptance scenarios.
+
+Project Schedule Generator and its creation skill also apply PMI-aligned planning to agreed scope/deliverables, dependency logic, estimates, resource/calendar assumptions, and decision milestones. This does not change the authorized MCP workflow or make a committed MPP an approved baseline. Unsupported planning features and remaining governance decisions are disclosed explicitly.
+
 On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the seven Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
 
 The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint remains unchanged; the picker returns `{ selectionReference, fileName }`, which is passed to `create_session_from_onedrive`. Legacy callers may continue passing `{ driveId, itemId }`.

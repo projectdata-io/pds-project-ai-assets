@@ -43,7 +43,7 @@ argument-hint: "Provide the MPP driveId/itemId or authorized HTTPS file referenc
 Return a concise operational result with:
 
 1. Verdict: `passed`, `attention`, or `failed`.
-2. Per-gate result with cited evidence for failures.
+2. Per-gate result with the configured rule/threshold, observed value, and cited evidence for failures. Include the gate identity or configuration version when supplied; do not invent identifiers or extra SharePoint fields.
 3. Source file identity used for matching.
 4. SharePoint row identity when written.
 5. Missing evidence or mapping gaps.

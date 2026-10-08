@@ -4,7 +4,7 @@
   "title": "PDS Project AI: Resource Manager",
   "shortName": "PDS Resource Manager",
   "shortDescription": "Understand resource demand, capacity, and staffing pressure.",
-  "version": "2.1.23",
+  "version": "2.2.2",
   "mcpEndpoint": "https://mcp.projectdata.ai",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_RESOURCE_MANAGER",
   "capabilities": [

@@ -22,7 +22,7 @@ argument-hint: "Provide the MPP driveId/itemId or authorized HTTPS file referenc
 1. Accept the file identity from the trigger: preferably SharePoint/OneDrive `driveId` and `itemId`, otherwise an authorized HTTPS reference plus file name.
 2. Create one PDS Project AI session with `create_session_from_onedrive` for delegated Graph access or `create_session_from_reference` for an authorized HTTPS reference.
 3. Call `get_project` and retrieve the complete task collection with `list_tasks`, resolving assigned resource names with `list_assignments` and `list_resources`. Follow pagination to the end.
-4. Read all snapshot rows for the same file identity from the configured SharePoint task list, following pagination to the end.
+4. Read all snapshot rows for the same stable file identity from the configured SharePoint task list, following pagination to the end. Use driveId/itemId when available, or the configured exact reference identity for HTTPS sources. Never match by file name alone; if a rename or move changes the configured identity, report the ambiguity instead of comparing another file's rows.
 5. Diff plan tasks against snapshot rows by task UID and classify each difference using the change categories in the owning agent instructions.
 6. Create one change-report row in the configured report list with the change kind, per-category counts, and a bounded summary.
 7. Close the PDS Project AI session after producing the result.

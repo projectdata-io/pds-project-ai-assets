@@ -20,7 +20,7 @@ argument-hint: "Provide two authorized MPP sources or session IDs and the compar
 
 1. Label the two plans as baseline comparison sides, not Microsoft Project saved baselines. Reuse supplied sessions or create one authorized session per source and track ownership independently.
 2. Retrieve the same shape profile, selected fields, expansions, ordering, and complete pages from both sessions.
-3. Match entities by stable GUID when present. Otherwise use UID only when the plans demonstrably share identity lineage. Treat name/WBS matching as tentative and report confidence.
+3. Match unique GUIDs within the same entity type. Use UID only with authoritative version provenance, such as confirmed versions of the same source file or caller-confirmed edit lineage. Equal names, WBS, or hierarchy do not prove lineage. Treat those matches as tentative; report duplicate identifiers and unmatched candidates rather than forcing a match.
 4. Classify added, removed, changed, and unmatched entities. Compare project dates, task hierarchy and schedule, milestones, resources, assignments, work, cost, and progress only when requested.
 5. Keep source-side values visible. Do not collapse null and zero or calculate incompatible differences.
 6. Close each session only if this skill created it.

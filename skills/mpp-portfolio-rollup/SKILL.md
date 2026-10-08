@@ -22,7 +22,7 @@ argument-hint: "Provide a master MPP source or root session ID and the requested
 2. Query root tasks to identify inserted-project placeholders, then call `get_master_project_graph` once.
 3. Record all node IDs, parent relationships, resolution states, and coverage limits. Analyze only resolved nodes.
 4. Read each resolved node summary and retrieve bounded, completely paged node entities required by the requested measures.
-5. Keep every value attributable to a node ID. Exclude root inserted-project placeholder tasks when child detail represents the same work.
+5. Keep every value attributable to a node ID. When including a resolved child's detail, use its graph `parentNodeId` and `parentTaskUid` to exclude the corresponding inserted-project placeholder from that parent's totals. Do not match by task name or assume UIDs are unique across nodes. If the mapping is missing or ambiguous, report the aggregation gap rather than guessing an exclusion.
 6. Aggregate only compatible numeric fields and currencies. Exclude summary tasks when leaf-level aggregation would double-count them.
 7. Report unresolved, failed, and bound-limited nodes as coverage gaps, not zero-value projects.
 8. Close only a root session created by this skill.

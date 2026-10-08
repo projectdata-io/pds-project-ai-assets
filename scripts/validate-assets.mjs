@@ -168,6 +168,19 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
     if (!sameValues(skill.tools, declaredTools)) {
       failures.push(`Catalog tools do not match SKILL.md declaration for ${skill.name}`);
     }
+    const workflow = skillContent.split(/^## Workflow[ \t]*\r?$/m)[1]?.split(/^##[ \t]+/m)[0];
+    if (!workflow?.trim()) {
+      failures.push(`Skill ${skill.name} must contain a non-empty Workflow section`);
+    } else {
+      const referencedTools = sortedUnique([...workflow.matchAll(/`([a-z][a-z0-9_]*)`/g)]
+        .map((match) => match[1])
+        .filter((name) => contractTools.has(name)));
+      for (const tool of referencedTools) {
+        if (!declaredTools.includes(tool)) {
+          failures.push(`Skill ${skill.name} workflow references undeclared MCP tool ${tool}`);
+        }
+      }
+    }
   }
 
   for (const skillName of skillFiles.keys()) {

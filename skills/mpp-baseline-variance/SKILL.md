@@ -22,7 +22,7 @@ argument-hint: "Provide an MPP source or session ID and the baseline or entities
 2. Confirm the baseline requested. If several saved baselines exist and the user has not selected one, list available baseline names or numbers and ask which comparison to use.
 3. Query all relevant entity pages with `shapeProfile: "full"`. For tasks, select `uid,id,name,wbs,summary,start,finish,work,cost,startVariance,finishVariance,workVariance,baselineWork,baselineCost` and expand `baselines`.
 4. Query resources or assignments only when requested. Select stable UIDs, current schedule/work/cost values, explicit variance fields, and expand `baselines`.
-5. Prefer source variance fields. Otherwise calculate current minus baseline only when both values are present, numeric, and expressed compatibly. For finish slippage, compare date-times directly and report elapsed calendar time unless a working-calendar calculation is explicitly available.
+5. Prefer source variance fields. Otherwise calculate current minus baseline only when both values are present, numeric, and expressed compatibly. For finish slippage, normalize explicit UTC offsets before comparing instants and report elapsed calendar time, not working days. If dates lack offsets, compare only with a known shared time basis; never guess a timezone. Use working-calendar differences only when an explicit calendar calculation is available.
 6. Exclude summary tasks from aggregate task variance totals that would double-count children.
 7. Close only a session created by this skill.
 

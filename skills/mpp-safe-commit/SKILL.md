@@ -18,43 +18,37 @@ argument-hint: "Describe the requested MPP changes, source or session ID, and de
 
 ## Required MCP Capabilities
 
-- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `create_new_project_session`, `get_edit_capabilities`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `create_edit_draft`, `add_edit_operations`, `replace_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `close_session`.
+- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `create_new_project_session`, `get_edit_capabilities`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `create_edit_draft`, `add_edit_operations`, `replace_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `open_project_plan_download`, `close_session`.
 - Scope: `Session.ReadWrite` for editing and commit operations.
 
 ## Workflow
 
-1. Treat a clear edit request as authorization to proceed. Establish the source, requested changes, output target, and session ownership; ask only for required details that are missing or ambiguous.
-2. Reuse a supplied session, create one from an authorized source, or call `create_new_project_session` only when the user requested a new plan. Track session ownership.
-3. Call `get_edit_capabilities` before constructing operations. Use only returned operation types, targets, change fields, and commit target requirements.
-4. Read the affected project entities with stable UIDs. Reject name-only targeting when names are duplicated or ambiguous.
-5. Refuse edits to master-project child nodes and tasks marked read-only, inserted-subproject, external, or cross-project when the capability contract prohibits them.
-6. Create one edit draft with a descriptive label. Add the complete ordered operation set. Use explicit `opId` values when later operations refer to entities created earlier in the same draft.
-7. Call `preview_edit_draft` and `validate_edit_draft` internally; commit requires a valid draft. Repair validation issues automatically when the requested intent is unchanged, then repeat both checks.
-8. For provider overwrite, use the source `ifMatch` value when available. Use one stable `idempotencyKey` for the logical commit and preserve it unchanged across retries.
-9. For OneDrive/SharePoint creation, satisfy `get_edit_capabilities` target requirements. Resolve `driveId`, `parentId`, and `fileName` from authorized context. If folder IDs remain unavailable, finish and validate the draft first, then ask only for the destination folder or link.
-10. Call `commit_edit_draft` as soon as validation and target requirements are satisfied. Request `downloadUrl` by default when no provider target was requested; otherwise write to the requested provider target.
-11. Verify the commit response before claiming success. Ensure the resulting artifact or provider destination is available before closing a session owned by this skill.
+1. Confirm the requested write and output target from the conversation. A clear write request is authorization; analysis and draft-only requests are not. Ask only for missing inputs or material ambiguity.
+2. Reuse the supplied `sessionId` and `editId`. Do not create a replacement draft or append operations when an existing draft was supplied. If no draft was supplied, reuse or create an authorized session, call `get_edit_capabilities`, resolve stable entity UIDs, then call `create_edit_draft` and `add_edit_operations` once with the requested changes.
+3. Preview and validate that draft with `preview_edit_draft` and `validate_edit_draft`. Repair unchanged intent using `replace_edit_operations` with the complete corrected list and repeat both checks. Stop if a correction changes the requested outcome.
+4. Resolve provider requirements from `get_edit_capabilities`. Never invent destinations or overwrite behavior. Use the source `ifMatch` when available and one `idempotencyKey` per logical commit, unchanged on retries.
+5. Call `commit_edit_draft` with the same validated `editId`. Omit `returnFormat`; set a provider target only when requested and all required fields are resolved. For an intermediate creation stage, omit the provider target, return the committed IDs to the authoring workflow, and keep the session open without presenting a final download.
+6. After the final commit, verify provider write-back or call `open_project_plan_download` with the committed `sessionId` and file name. Report completion only when the output is available.
 
 ## Guardrails
 
 - Never turn advice or analysis into a write operation without an explicit edit request.
 - Never commit an invalid or ambiguously targeted draft.
 - Do not invent drive IDs, item IDs, parent IDs, upload URLs, file names, ETags, or target modes.
-- Ask for clarification only when overwrite mode or external upload destination is missing or ambiguous.
+- Do not edit protected, inserted-subproject, external, cross-project, or read-only tasks when prohibited by the capability contract.
 - Do not retry with a new idempotency key. On an ETag conflict, stop and ask the user to refresh or choose a new target.
 - Never display raw credentials, signed URLs, or provider diagnostics as visible prose. A user-facing download URL may appear only as the destination of a labeled Markdown link; never include it in logs or diagnostics.
 
 ## Output Format
 
-After commit, return the commit status, resulting file name or provider destination, artifact availability, and concise applied-operation summary. Never claim persistence based only on draft validation.
-When the commit response includes `download.downloadUrl`, present it as a labeled Markdown link, for example `[Download the committed MPP](<exact download URL>)`. Preserve the URL exactly, including its query string, and do not print the signed URL as plain text.
+Return the confirmed commit status, file or provider destination, and concise change summary. For intermediate commits, return `sessionId`, `editId`, and the committed stage instead of claiming the complete file is ready.
 
 ## Error Handling
 
 - On validation failure, preserve the request and repair the draft when the fix does not alter user intent; ask only when a real decision is needed.
 - On provider or transient failure, follow returned retry guidance and reuse the same idempotency key.
-- If the session is unavailable before commit, rebuild and validate from the same request. Ask only if the target or requested changes are ambiguous.
-- Close only sessions created by this skill, and only after the output is secured or the workflow is abandoned.
+- On an explicit missing/expired session, stop and report the last confirmed stage; do not replay possibly committed edits blindly.
+- Close only sessions created by this workflow, including ownership explicitly transferred by an authoring skill. Keep them open while a download or follow-up still needs them; close when abandoned or no longer needed.
 
 ## Compatibility
 

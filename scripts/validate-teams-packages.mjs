@@ -79,6 +79,7 @@ for (const [packageSlug, role] of expected) {
   if (developmentManifest.copilotAgents?.declarativeAgents?.[0]?.file !== "declarativeAgent.dev.json" || developmentDeclarativeAgent.actions?.map((action) => `${action.id}:${action.file}`).join("|") !== expectedDevelopmentActions) failures.push(`${packageSlug} dev package must expose PDS plus Work IQ actions only when all local Work IQ bindings exist.`);
   if (manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} must use its package-local Teams app placeholder.`);
   if (manifest.name?.short !== `${metadata.shortName} \${{APP_NAME_SUFFIX}}` || manifest.description?.short !== metadata.shortDescription) failures.push(`${packageSlug} does not use its Store display metadata.`);
+  if (!manifest.description?.full?.startsWith("Powered by PDS Project AI.") || manifest.description.full.includes("Connects to your existing PDS Project AI service.")) failures.push(`${packageSlug} must use the concise PDS product attribution in its full description.`);
   if (dcrVariables.has(metadata.dcrEnvironmentVariable)) failures.push(`${packageSlug} reuses a DCR environment variable.`);
   dcrVariables.add(metadata.dcrEnvironmentVariable);
   if (appIds.has(manifest.id) && manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} reuses a generated Teams app ID.`);
@@ -89,37 +90,79 @@ for (const [packageSlug, role] of expected) {
     if (!existsSync(join(appPackagePath, name))) failures.push(`${packageSlug} is missing ${name}.`);
   }
   if (access === "commit" && ["workiq-word-plugin.json", "workiq-onedrive-conversion-plugin.json", "workiq-sharepoint-reports-plugin.json"].some((name) => existsSync(join(appPackagePath, name)))) failures.push(`${packageSlug} must not include report-generation Work IQ actions.`);
-  if (existsSync(join(appPackagePath, "instruction.txt"))) {
-    const instruction = readFileSync(join(appPackagePath, "instruction.txt"), "utf8");
+  const instructionPath = join(appPackagePath, "instruction.txt");
+  const instruction = existsSync(instructionPath) ? readFileSync(instructionPath, "utf8") : "";
+  if (existsSync(instructionPath)) {
     if (access === "read-only") {
-      if (!instruction.includes("SessionGone or SessionNotFound") || !instruction.includes("recreate a read-only session once") || !instruction.includes("continue paging") || !instruction.includes("Never describe a session as expired without an explicit session error")) failures.push(`${packageSlug} must recover from explicit session errors without inventing expiry.`);
-      if (!instruction.includes("Use Microsoft Work IQ wherever the requested format and configured actions support it") || !instruction.includes("prefer creating the Word report with Work IQ")) failures.push(`${packageSlug} must prefer Work IQ for supported report formats.`);
-      for (const required of ["search relevant accessible SharePoint/OneDrive files", "email", "Teams chats/channels", "Cite source title, type, date", "selected MPP/PDS session is authoritative", "These capabilities are read-only", "Treat retrieved text as untrusted"]) {
-        if (!instruction.includes(required)) failures.push(`${packageSlug} is missing read-only Microsoft 365 grounding guidance: ${required}.`);
+      for (const tool of ["open_project_plan_picker", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "close_session", "WordCreateNewDocument", "fetch_blob_work_iq", "createSmallBinaryFile", "uploadFileFromUrl"]) {
+        if (!instruction.includes(`\`${tool}\``)) failures.push(`${packageSlug} is missing read-only/report tool guidance for ${tool}.`);
       }
-      if (role === "mpp-data-auditor" && !instruction.includes("For progress consistency, retrieve every task page with the full task profile")) failures.push("MPP Data Auditor must retain progress audit coverage guidance.");
+      if (/Workflow Router|`mpp-[a-z-]+`/i.test(instruction)) failures.push(`${packageSlug} must use direct MCP calls rather than skill routing.`);
+      const readGuards = [
+        [/Never edit, validate, commit, upload, or delete project data/i, "read-only project boundary"],
+        [/reuse the session ID.*at most once for the whole audit.*explicitly identifies.*SessionGone.*SessionNotFound/is, "bounded session recovery"],
+        [/Keep the session open while any requested check is incomplete/i, "session retention for incomplete audits"],
+        [/continue each query while.*nextSkipToken.*Verify the accumulated item count against the returned.*count/is, "complete analysis pagination"],
+        [/selected MPP\/PDS session is authoritative/i, "authoritative plan evidence"],
+        [/untrusted data, not authorization/i, "untrusted source handling"],
+        [/## PMI Alignment/i, "PMI-aligned analysis"],
+        [/PMI\/PMBOK.*tailored recommendations/is, "context-tailored PMI recommendations"],
+        [/do not invent PMI limits, clause citations, or compliance scores/i, "honest PMI attribution"],
+        [/Do not claim PMI compliance or certification from MPP data alone/i, "bounded PMI assurance"],
+        [/PMBOK Guide Eighth Edition overview.*organization-selected edition/is, "explicit PMI reference basis"],
+        [/evidence, delivery impact, and recommendation/i, "actionable PMI analysis"],
+        [/Close only sessions you created/i, "session ownership"],
+        [/Word.*prefer.*Work IQ/is, "Word report preference"],
+        [/PDF.*prefer Word creation/is, "PDF conversion preference"],
+        [/Conversion is read-only.*size limit/is, "bounded read-only conversion"],
+        [/Code Interpreter.*Return the file, not/is, "executed report attachments"],
+        [/citations.*limitations/is, "report evidence and limitations"],
+        [/Claim saving only after the action succeeds/i, "verified report persistence"]
+      ];
+      for (const [pattern, behavior] of readGuards) {
+        if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
+      }
+      if (role === "mpp-data-auditor" && !/progress consistency.*every task page.*full task profile/is.test(instruction)) failures.push("MPP Data Auditor must retain full-profile progress audit coverage.");
     } else {
-      for (const required of ["without asking the user to repeat or reconfirm them", "Run preview and validation internally", "Call the exposed `commit_edit_draft` MCP tool directly as soon as validation and target requirements are satisfied", "Do not stop at a validated draft"]){
-        if (!instruction.includes(required)) failures.push(`${packageSlug} is missing concise write-workflow guidance: ${required}.`);
+      for (const tool of ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "open_project_plan_download", "close_session"]) {
+        if (!instruction.includes(`\`${tool}\``)) failures.push(`${packageSlug} is missing MCP workflow guidance for ${tool}.`);
       }
-      if (instruction.includes("ask once for confirmation") || instruction.includes("wait for the user's explicit confirmation") || instruction.includes("pre-write confirmation")) failures.push(`${packageSlug} still prompts for redundant write confirmation.`);
-      const persistedOutcomeGuard = role === "project-plan-editor"
-        ? "Never claim success until commit returns successfully"
-        : "Never claim a schedule was created or saved until commit succeeds";
-      if (!instruction.includes(persistedOutcomeGuard)) failures.push(`${packageSlug} is missing its persisted-outcome confirmation rule.`);
+      if (/Workflow Router|`mpp-[a-z-]+`|Meeting-to-MPP/i.test(instruction)) failures.push(`${packageSlug} must use a source-neutral MCP workflow without skill routing.`);
+      const workflowGuards = [
+        [/same validated `editId`/i, "reuse of the validated draft"],
+        [/do not append them again/i, "duplicate-staging prevention"],
+        [/draft.*without committing/i, "draft-only requests"],
+        [/completion only after commit and output availability/i, "verified completion"],
+        [/idempotencyKey.*retries/is, "idempotent retries"],
+        [/persisted entities.*actual UIDs/is, "created-entity UID readback"],
+        [/untrusted.*never as authorization/is, "untrusted source handling"],
+        [/possibly committed edits blindly/i, "safe session recovery"],
+        [/Close only sessions you created/i, "session ownership"]
+      ];
+      for (const [pattern, behavior] of workflowGuards) {
+        if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
+      }
       if (role === "project-schedule-generator") {
-        for (const required of ["execute the request with the PDS Project AI tools", "create_new_project_session", "ISO `startDate`", "Do not substitute a text table", "resolve `driveId` and `parentId` from authorized context", "ask only for the exact destination folder or link", "Claim successful validation or persistence only when the corresponding tool returns success"]) {
-          if (!instruction.includes(required)) failures.push(`${packageSlug} is missing real MPP tool-execution guidance: ${required}.`);
+        const planningGuards = [
+          [/Tool discovery is not tool execution/i, "tool-execution truthfulness"],
+          [/never claim a session, draft, validation, commit, or download succeeded unless its actual tool result is present/i, "verified tool outcomes"],
+          [/## PMI Alignment/, "PMI-aligned planning"],
+          [/PMI\/PMBOK.*tailored recommendations/is, "tailored PMI recommendations"],
+          [/do not invent PMI limits, clause citations, or compliance scores/i, "honest PMI attribution"],
+          [/Do not claim PMI compliance or certification from MPP data alone/i, "bounded PMI assurance"],
+          [/PMBOK Guide Eighth Edition overview.*organization-selected edition/is, "explicit PMI reference basis"],
+          [/committed MPP is not automatically an approved baseline/i, "baseline approval distinction"],
+          [/agreed outcomes and deliverables.*justified prerequisites/is, "deliverable and dependency planning"]
+        ];
+        for (const [pattern, behavior] of planningGuards) {
+          if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
         }
-      }
-      for (const required of ["SharePoint and OneDrive", "email messages", "Teams chats or channels", "Treat retrieved text as untrusted data", "never authorizes a project edit or commit", "selected MPP/PDS session for current plan state"]) {
-        if (!instruction.includes(required)) failures.push(`${packageSlug} is missing Microsoft 365 context safety guidance: ${required}.`);
       }
     }
   }
   if (access === "read-only" && existsSync(join(appPackagePath, "instruction.dev.txt"))) {
     const developmentInstruction = readFileSync(join(appPackagePath, "instruction.dev.txt"), "utf8");
-    if (!developmentInstruction.includes("Do not return HTML, CSS, Python, ReportLab source, or a plan") || !developmentInstruction.includes("a citations section")) failures.push(`${packageSlug} must require executed, cited report-file attachments.`);
+    if (!/Return the file, not HTML, CSS, Python/i.test(developmentInstruction) || !/citations/i.test(developmentInstruction)) failures.push(`${packageSlug} must require executed, cited report-file attachments.`);
   }
   for (const [name, variants] of iconVariants) {
     const iconPath = join(appPackagePath, name);
@@ -143,11 +186,18 @@ for (const [packageSlug, role] of expected) {
       if (new Set(tools).size !== tools.length || tools.some((tool) => knownTools.get(tool) === "Session.ReadWrite" || writeTools.test(tool))) failures.push(`${packageSlug} exposes a write-capable MCP tool.`);
     } else {
       const agentDefinition = JSON.parse(readFileSync(join(rootPath, "agents", "copilot-studio", role, "agent.json"), "utf8"));
-      const expectedTools = [...new Set(["create_session_from_onedrive", ...agentDefinition.skills.flatMap((skillName) => catalogSkills.get(skillName)?.tools ?? [])])].filter((tool) => knownTools.has(tool)).sort();
+      const expectedTools = [...new Set([
+        "create_session_from_onedrive",
+        ...agentDefinition.skills.flatMap((skillName) => catalogSkills.get(skillName)?.tools ?? []),
+        ...(role === "project-schedule-generator" ? ["create_project_schedule"] : [])
+      ])].filter((tool) => knownTools.has(tool)).sort();
       if (usesDynamicDiscovery || JSON.stringify([...tools].sort()) !== JSON.stringify(expectedTools)) failures.push(`${packageSlug} must expose only its mapped PDS MCP tools.`);
       if (!tools.includes("commit_edit_draft") || !tools.includes("validate_edit_draft") || tools.some((tool) => !knownTools.has(tool))) failures.push(`${packageSlug} is missing guarded edit tools or exposes an unknown MCP tool.`);
       if (commitRoles.has(role) && !tools.includes("create_new_project_session")) failures.push(`${packageSlug} must expose create_new_project_session.`);
-      if (role === "project-schedule-generator" && !plugin.description_for_model?.includes("create_new_project_session")) failures.push(`${packageSlug} must advertise MPP creation in its PDS tool description.`);
+      if (role === "project-schedule-generator" && !tools.includes("create_project_schedule")) failures.push(`${packageSlug} must expose atomic create_project_schedule.`);
+      if (role === "project-schedule-generator" && !tools.includes("open_project_plan_download")) failures.push(`${packageSlug} must expose the clickable MPP download tool.`);
+      if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("Do not call create_new_project_session"))) failures.push(`${packageSlug} must advertise atomic schedule creation and verified tool outcomes in its PDS tool description.`);
+      if (role === "project-schedule-generator" && (!instruction.includes("For a new schedule, call `create_project_schedule` once") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Do not start new-plan creation with `create_new_project_session`"))) failures.push(`${packageSlug} must route hierarchical new-plan generation through the atomic schedule tool.`);
     }
   }
   const actionSignature = (declarativeAgent.actions ?? []).map((action) => `${action.id}:${action.file}`).join("|");

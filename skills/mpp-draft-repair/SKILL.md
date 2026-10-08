@@ -24,7 +24,7 @@ argument-hint: "Provide the session ID, edit ID, validation issues, and intended
 4. Repair automatically when the correction preserves the requested meaning and targets. Ask only if a repair would change the user's requested outcome.
 5. Call `replace_edit_operations` with the complete non-empty corrected list.
 6. Preview and validate again. Repeat only when new local validation issues clearly identify another repair.
-7. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
+7. Return the same `sessionId`, `editId`, corrected operations, and validation status to the calling workflow. Repair does not authorize persistence; the caller chooses commit only for an existing write request.
 
 ## Guardrails
 
@@ -35,7 +35,7 @@ argument-hint: "Provide the session ID, edit ID, validation issues, and intended
 
 ## Output Format
 
-Return a concise repair and commit summary, including any unresolved material issue.
+Return a concise repair result and validation status, including any unresolved issue. Do not claim a commit.
 
 ## Error Handling
 

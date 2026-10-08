@@ -22,8 +22,8 @@ argument-hint: "Provide the MPP source or session ID and exact resource or assig
 2. Call `get_edit_capabilities`; retrieve complete target resource, assignment, and task UIDs.
 3. Construct only supported `createResource`, `updateResource`, `deleteResource`, `createAssignment`, `updateAssignment`, and `deleteAssignment` operations.
 4. Never provide `active` and `isInactive` together. Preserve supplied unit scale; ask only if fraction-versus-percentage interpretation is ambiguous.
-5. Include assignment removals and affected target UIDs in the draft summary.
-6. Preview and validate internally. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
+5. Reuse a supplied uncommitted draft or call `create_edit_draft`. If it already contains the requested changes, do not append them again; ask for draft context if its operations are unknown. Otherwise call `add_edit_operations` once with the ordered changes. Include assignment removals and affected UIDs.
+6. Preview and validate. Return `sessionId`, `editId`, validation status, intended changes, and session ownership. Pass the existing draft to `mpp-safe-commit` only for a requested write; draft-only requests remain uncommitted.
 
 ## Guardrails
 
@@ -34,13 +34,14 @@ argument-hint: "Provide the MPP source or session ID and exact resource or assig
 
 ## Output Format
 
-Return a concise summary of completed changes, affected UIDs, and material deletion consequences.
+Return the validated draft, affected UIDs, and material deletion consequences; do not claim persistence before commit.
 
 ## Error Handling
 
-- If new entities lack persisted UIDs needed for assignment creation, stage creation separately and explain the required follow-up.
+- When assignment creation needs new entity UIDs, stage and validate entity creation first. For a requested write, pass that draft to `mpp-safe-commit` as an intermediate session-only commit, read the persisted tasks/resources, resolve their actual UIDs, then create and validate an assignment draft. Pass the final draft and provider target to `mpp-safe-commit`. For a draft-only request, report the pending assignment stage without committing.
+- Report partial completion if entity creation committed but a later stage failed; never guess UIDs or replay creation blindly.
 - Repair invalid drafts with complete replacement operations and revalidate.
-- Keep a skill-owned session open for safe commit; close it when abandoned.
+- Pass session ownership with the draft to `mpp-safe-commit`. Keep the session open for commit, download, or follow-up; close only a session you created when abandoned or no longer needed.
 
 ## Compatibility
 

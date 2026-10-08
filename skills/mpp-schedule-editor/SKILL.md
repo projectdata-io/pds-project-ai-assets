@@ -23,8 +23,8 @@ argument-hint: "Provide the MPP source or session ID and exact schedule changes"
 3. Resolve targets by UID. Construct only supported `createTask`, `updateTask`, `deleteTask`, `linkTasks`, and `unlinkTasks` operations.
 4. For created sibling order, use unique `opId` and `afterTaskOpId`. Do not combine `afterTaskUid` and `afterTaskOpId`.
 5. Express durations with explicit units. Preserve requested link type and lag without conversion unless the contract defines it.
-6. Preview and validate internally. Repair validation issues when the requested intent is unchanged.
-7. Route a valid draft to `mpp-safe-commit` for direct persistence after validation.
+6. Reuse a supplied uncommitted draft or call `create_edit_draft`. If it already contains the requested changes, do not append them again; ask for draft context if its operations are unknown. Otherwise call `add_edit_operations` once with the ordered changes. Preview and validate; repair unchanged intent using `replace_edit_operations` and repeat both checks.
+7. Return `sessionId`, `editId`, validation status, intended changes, and session ownership. For a requested write, pass that existing draft to `mpp-safe-commit`; for a draft-only request, stop without committing.
 
 ## Guardrails
 
@@ -35,13 +35,13 @@ argument-hint: "Provide the MPP source or session ID and exact schedule changes"
 
 ## Output Format
 
-Return a concise summary of completed changes and any material impact.
+Return the validated draft and material effects, not a claim of persisted changes.
 
 ## Error Handling
 
 - Replace invalid operation lists with complete corrections when intent is unchanged, then preview and validate again.
 - On unresolved targets or cycles, stop and request clarification.
-- Keep a skill-owned session open for safe commit; close it when abandoned.
+- Pass session ownership with the draft to `mpp-safe-commit`. Keep the session open for commit, download, or follow-up; close only a session you created when abandoned or no longer needed.
 
 ## Compatibility
 

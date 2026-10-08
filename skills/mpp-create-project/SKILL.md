@@ -13,37 +13,37 @@ argument-hint: "Provide project title, start date, WBS, resources, assignments, 
 
 ## Required MCP Capabilities
 
-- Tools: `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
+- Tools: `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `open_project_plan_download`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
 - Scope: `Session.ReadWrite`.
 
 ## Workflow
 
-1. Treat a request to create, build, or generate a Microsoft Project plan from requirements or a WBS as a request to use PDS tools, not to return a text-only substitute.
-2. `create_new_project_session` requires `title` and ISO `startDate`; ask only for a required value that is missing or ambiguous. A relative label such as “Day 1” is not an ISO date.
-3. Call `create_new_project_session`, then `get_edit_capabilities`.
-4. Create one draft. Add deterministic `createTask` operations with unique `opId` values and `afterTaskOpId` chains for sibling order. Use `parentTaskUid` or `outlineLevel` only when they unambiguously describe the intended hierarchy.
-5. Add supported project property and resource operations. Assignment operations may target only known persisted task and resource UIDs; if newly created entity UIDs are required, stage and validate creation first rather than inventing UIDs.
-6. Add supported dependency links only between known task UIDs.
-7. Preview and validate internally. Note omissions caused by unavailable UIDs or unsupported capabilities.
-8. Call the exposed `commit_edit_draft` MCP tool directly after validation and target requirements are satisfied. Do not stop at a validated draft. If a OneDrive/SharePoint create target requires unresolved `driveId` or `parentId`, finish and validate the draft first, then ask only for the destination folder or link.
+1. Gather the title, ISO `startDate`, work items, and material scheduling decisions. Preserve the request across answers. A request for a real project file is not a request for a text-only WBS; a draft-only request must remain uncommitted.
+	Apply PMI-aligned planning to agreed deliverables, scope boundaries, prerequisites, estimates, resource/calendar assumptions, and decision milestones. Tailor to the organization's delivery approach; request only material missing decisions, not a second authorization.
+2. Call `create_new_project_session`, then `get_edit_capabilities`.
+3. Call `create_edit_draft` and `add_edit_operations` with supported task, resource, and project-property creation operations. Use unique `opId` values, `parentTaskOpId` for a parent created earlier in the same draft, and `afterTaskOpId` for row ordering. These request-local operation IDs are not dependency or assignment UIDs.
+4. Preview and validate the draft. Use `mpp-draft-repair` for unchanged-intent corrections. For a draft-only request, return the draft and any remaining relationship stage without committing.
+5. If dependencies or assignments need new entity UIDs, use `mpp-safe-commit` to commit this creation draft to the session without provider write-back or a final download. Read `list_tasks` and `list_resources`, page the required results, and resolve the persisted UIDs unambiguously. Call `create_edit_draft` and `add_edit_operations` for the links, assignments, and remaining changes; preview and validate again.
+6. Pass the final `sessionId`, `editId`, output target, and session ownership to `mpp-safe-commit`. It commits that same draft and presents the completed file. Provider write-back belongs only to the final stage.
 
 ## Guardrails
 
-- Do not invent dates, durations, units, resources, rates, links, or hierarchy.
+- Use source facts and agreed planning assumptions. Do not invent identifiers, dates, durations, units, resources, rates, links, or hierarchy.
 - Use structured duration objects with explicit units when supplied.
-- Do not create a detailed schedule from a vague goal without gathering requirements.
-- Never claim that a plan was created, saved, or validated unless the corresponding PDS tool returned success. If a tool is unavailable or fails, report the actual error rather than falling back to a fabricated validation summary.
-- Never claim commit success unless `commit_edit_draft` returns success.
+- Claim only stages confirmed by successful tools. Report the actual tool error rather than inventing a limitation or final artifact.
+- Use PMI/PMBOK principles as tailored recommendations, not invented thresholds or a certification checklist. State material assumptions and use the organization's specified edition/governance when supplied; otherwise use the public PMBOK Guide Eighth Edition overview as the reference basis.
+- A committed MPP is not automatically an approved baseline. Never claim PMI compliance, certification, saved baselines, or unsupported planning features without the required evidence and supported tool confirmation.
 
 ## Output Format
 
-Return the completed project and any material deferred items. Keep draft mechanics out of the user-facing summary.
+For drafts, return `sessionId`, `editId`, validation status, and remaining stages. For completed files, report the confirmed output, material planning assumptions, remaining governance decisions, and any limitations.
 
 ## Error Handling
 
 - Repair invalid operations when doing so preserves the requested requirements, then preview and validate again.
-- If a needed operation is unsupported, omit it and explain the limitation.
-- Keep the session open for the safe-commit workflow; close it only when the request is abandoned.
+- If a needed operation is unsupported, report it rather than silently dropping requested work.
+- On a later-stage failure, report any intermediate commits; the partial file is not the complete requested result.
+- Keep the session open for commit, download, and follow-up. Transfer ownership to the commit workflow; close a session you created when abandoned or no longer needed.
 
 ## Compatibility
 
