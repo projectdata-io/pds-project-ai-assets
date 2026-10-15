@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
-const packages = [
+const allPackages = [
   "teams-project-manager-assistant",
   "teams-schedule-quality-analyst",
   "teams-portfolio-executive-analyst",
@@ -13,8 +13,15 @@ const packages = [
   "teams-project-plan-editor",
   "teams-project-schedule-generator"
 ];
-const [mode, ...options] = process.argv.slice(2);
-const usage = "Usage: node scripts/manage-teams-packages.mjs <provision|install|share-tenant|publish|all> --env dev [--execute]";
+const activePublishedPackages = [
+  "teams-project-manager-assistant",
+  "teams-mpp-data-auditor",
+  "teams-project-plan-editor",
+  "teams-project-schedule-generator"
+];
+const rawArgs = process.argv.slice(2);
+const mode = rawArgs[0];
+const usage = "Usage: node scripts/manage-teams-packages.mjs <provision|install|share-tenant|publish|all> --env dev [--execute] [--package <name>] [--packages <names>] [--all-packages]";
 
 function runNodeScript(scriptName) {
   const result = spawnSync(process.execPath, [join(rootPath, "scripts", scriptName)], { stdio: "inherit" });
@@ -22,17 +29,42 @@ function runNodeScript(scriptName) {
   if (result.status !== 0) throw new Error(`${scriptName} failed with exit code ${result.status ?? 1}.`);
 }
 
-if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) || options.some((option) => !["--env", "dev", "--execute"].includes(option)) || options.indexOf("--env") < 0 || options[options.indexOf("--env") + 1] !== "dev") {
+let envValue;
+let execute = false;
+let includeAll = false;
+let explicitPackages;
+
+for (let i = 1; i < rawArgs.length; i++) {
+  const arg = rawArgs[i];
+  if (arg === "--env") {
+    envValue = rawArgs[++i];
+  } else if (arg === "--execute") {
+    execute = true;
+  } else if (arg === "--all-packages") {
+    includeAll = true;
+  } else if (arg === "--package") {
+    const pkg = rawArgs[++i];
+    if (pkg) explicitPackages = [pkg.trim()];
+  } else if (arg === "--packages") {
+    const pkgs = rawArgs[++i];
+    if (pkgs) explicitPackages = pkgs.split(",").map((s) => s.trim()).filter(Boolean);
+  } else {
+    console.error(`Unknown argument: ${arg}\n${usage}`);
+    process.exit(1);
+  }
+}
+
+if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) || envValue !== "dev") {
   console.error(usage);
   process.exitCode = 1;
 } else {
-  const execute = options.includes("--execute");
   const stages = mode === "all" ? ["provision", "publish"] : [mode];
   if (execute && (mode === "publish" || mode === "all")) {
     runNodeScript("bump-teams-package-versions.mjs");
     runNodeScript("generate-teams-packages.mjs");
   }
-  for (const packageName of packages) {
+  const packagesToCheck = explicitPackages ?? allPackages;
+  for (const packageName of packagesToCheck) {
     const folder = join(rootPath, "apps", packageName);
     if (!existsSync(join(folder, "m365agents.yml"))) {
       throw new Error(`Missing Toolkit lifecycle for ${packageName}`);
@@ -40,7 +72,13 @@ if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) |
   }
 
   for (const stage of stages) {
-    for (const packageName of packages) {
+    const targetPackages = explicitPackages
+      ? explicitPackages
+      : stage === "publish" && !includeAll
+      ? activePublishedPackages
+      : allPackages;
+
+    for (const packageName of targetPackages) {
       const folder = join(rootPath, "apps", packageName);
       const commands = stage === "install"
         ? [

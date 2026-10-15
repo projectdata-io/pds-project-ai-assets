@@ -17,6 +17,7 @@
     { "name": "get_master_project_node", "scope": "Session.ReadOnly" },
     { "name": "list_master_project_node_entities", "scope": "Session.ReadOnly" },
     { "name": "list_tasks", "scope": "Session.ReadOnly" },
+    { "name": "list_dependencies", "scope": "Session.ReadOnly" },
     { "name": "list_external_dependencies", "scope": "Session.ReadOnly" },
     { "name": "list_resources", "scope": "Session.ReadOnly" },
     { "name": "list_assignments", "scope": "Session.ReadOnly" },

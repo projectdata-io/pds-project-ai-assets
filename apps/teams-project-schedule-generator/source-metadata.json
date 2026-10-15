@@ -5,8 +5,8 @@
   "title": "PDS Project AI: Project Schedule Generator",
   "shortName": "PDS Schedule Generator",
   "shortDescription": "Generate validated schedules informed by authorized M365 context.",
-  "version": "2.2.2",
-  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "version": "2.2.8",
+  "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_SCHEDULE_GENERATOR",
   "capabilities": [
     "OneDriveAndSharePoint",

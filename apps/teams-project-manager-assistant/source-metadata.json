@@ -4,8 +4,8 @@
   "title": "PDS Project AI: Project Manager Assistant",
   "shortName": "PDS Project Manager",
   "shortDescription": "Understand delivery status, risks, milestones, and next steps.",
-  "version": "2.2.2",
-  "mcpEndpoint": "https://mcp.projectdata.ai",
+  "version": "2.2.8",
+  "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
   "capabilities": [
     "OneDriveAndSharePoint",

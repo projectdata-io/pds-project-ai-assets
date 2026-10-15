@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
+const m365McpEndpoint = "https://mcp.projectdata.ai/mcp/m365";
 const expected = new Map([
   ["teams-project-manager-assistant", "project-manager-assistant"],
   ["teams-schedule-quality-analyst", "schedule-quality-analyst"],
@@ -49,6 +50,7 @@ for (const [packageSlug, role] of expected) {
     continue;
   }
   const metadata = JSON.parse(readFileSync(metadataPath, "utf8"));
+  if (metadata.mcpEndpoint !== m365McpEndpoint) failures.push(`${packageSlug} must use the PDS M365 compatibility endpoint.`);
   const access = metadata.access ?? "read-only";
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   const developmentManifest = JSON.parse(readFileSync(developmentManifestPath, "utf8"));
@@ -122,7 +124,7 @@ for (const [packageSlug, role] of expected) {
       for (const [pattern, behavior] of readGuards) {
         if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
       }
-      if (role === "mpp-data-auditor" && !/progress consistency.*every task page.*full task profile/is.test(instruction)) failures.push("MPP Data Auditor must retain full-profile progress audit coverage.");
+      if (role === "mpp-data-auditor" && !/whole-plan audits as summary-first.*full task profile only when the user explicitly requests row-level completeness/is.test(instruction)) failures.push("MPP Data Auditor must keep whole-plan audits summary-first and retain full-profile coverage for explicit row-level audits.");
     } else {
       for (const tool of ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "open_project_plan_download", "close_session"]) {
         if (!instruction.includes(`\`${tool}\``)) failures.push(`${packageSlug} is missing MCP workflow guidance for ${tool}.`);
@@ -178,6 +180,7 @@ for (const [packageSlug, role] of expected) {
   }
   if (existsSync(join(appPackagePath, "ai-plugin.json"))) {
     const plugin = JSON.parse(readFileSync(join(appPackagePath, "ai-plugin.json"), "utf8"));
+    if (plugin.runtimes?.[0]?.spec?.url !== m365McpEndpoint) failures.push(`${packageSlug} PDS plugin must use the M365 compatibility endpoint.`);
     const tools = plugin.runtimes?.[0]?.run_for_functions ?? [];
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
     const usesDynamicDiscovery = tools.length === 1 && tools[0] === "*";

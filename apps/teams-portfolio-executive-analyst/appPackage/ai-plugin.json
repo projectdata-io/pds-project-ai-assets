@@ -10,7 +10,7 @@
     {
       "type": "RemoteMCPServer",
       "spec": {
-        "url": "https://mcp.projectdata.ai"
+        "url": "https://mcp.projectdata.ai/mcp/m365"
       },
       "run_for_functions": [
         "*"

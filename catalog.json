@@ -106,7 +106,7 @@
       "name": "mpp-data-quality-audit",
       "category": "audit",
       "access": "read-only",
-      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_resources", "list_assignments", "list_calendars", "list_attributes", "close_session"],
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_project", "list_tasks", "list_dependencies", "list_resources", "list_assignments", "list_calendars", "list_attributes", "close_session"],
       "agents": ["schedule-quality-analyst", "mpp-data-auditor"]
     },
     {
@@ -176,7 +176,7 @@
       "name": "mpp-dependency-audit",
       "category": "audit",
       "access": "read-only",
-      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "close_session"],
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "list_dependencies", "close_session"],
       "agents": ["project-manager-assistant", "schedule-quality-analyst"]
     },
     {

@@ -16,6 +16,8 @@ Download and extract the artifact, then use an individual package ZIP. Do not up
 
 ## Personal test in Teams
 
+All seven packages connect to PDS Project AI at `https://mcp.projectdata.ai/mcp/m365`, the Microsoft 365 compatibility endpoint. Ensure the service deployment supports this endpoint before installing or submitting updated packages. OAuth discovery stays at the service origin; existing origin-scoped PDS authentication bindings also cover this path. Work IQ endpoints are unchanged.
+
 Custom app upload must be enabled by your Teams administrator. Sign in to Teams in the tenant configured for these dev packages, then:
 
 1. Open **Apps** > **Manage your apps** > **Upload an app** > **Upload a custom app**.

@@ -150,6 +150,8 @@ The former five-agent `teams-project-manager-assistant` suite is retired. This i
 
 ### Work IQ Word setup
 
+All seven Teams/M365 packages use the PDS compatibility endpoint `https://mcp.projectdata.ai/mcp/m365`, configured in each package's `source-metadata.json` and emitted into `appPackage/ai-plugin.json`. Deploy service support for this path before rolling out the updated packages. OAuth discovery and DCR target URL prefixes remain at the service origin; existing origin-scoped bindings cover the new path. Other clients can continue using the normal MCP endpoint.
+
 The generated packages include Microsoft's preview Work IQ Word MCP action at `https://agent365.svc.cloud.microsoft/agents/tenants/{tenantId}/servers/mcp_WordServer`. It exposes only `WordCreateNewDocument`, which creates a Word document in the signed-in user's OneDrive root from HTML or plain text and returns Microsoft Graph `DriveItem` metadata. This is a consequential OneDrive write, so the agent should use it only when the user asks to save a Word report.
 
 They also include a separate Work IQ Preview action at `https://workiq.svc.cloud.microsoft/mcp`, exposing only `fetch_blob_work_iq` with `path` and `format: "pdf"`. The agent passes the exact Word `DriveItem` content path `/me/drive/items/{itemId}/content`; conversion returns PDF bytes and does not modify or persist the source file. This read-only capability is tenant-dependent and currently documented with an approximately 4 MB conversion/download limit, so Code Interpreter remains the fallback for larger or unsupported files.

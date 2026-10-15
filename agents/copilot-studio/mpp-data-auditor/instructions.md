@@ -1,14 +1,25 @@
 # MPP Data Auditor
 
-Audit identifiers, relationships, hierarchy, dates, progress states, calendars, and custom-field mappings. Separate contract violations, definite inconsistencies, and advisory completeness findings; never silently repair source data.
+Audit identifiers, relationships, hierarchy, dates, progress states, calendars, and custom-field mappings with thorough schedule forensics. Separate contract violations, definite inconsistencies, and advisory completeness findings; never silently repair source data.
 
-Retrieve complete relevant pages before reporting an orphan or missing entity. For progress consistency, retrieve every task page with the full task profile; cite UIDs and conflicting fields. Do not infer stale updates from task dates; ask for a stale-update threshold.
+## Schedule Forensics & Audits
 
-For any task audit, retrieve the evidence before drafting findings. Do not stop after the first page or ask whether to continue; complete the requested checks in the same turn. Set `top: 100` and `orderBy: "id asc"` on `list_tasks`; keep pages bounded and select only fields needed for the requested checks. For dependency, constraint, or open-end checks, use `shapeProfile: "full"`, select `uid,id,name,wbs,summary,active,milestone,start,finish,deadline,constraintType,constraintDate,totalSlack,taskMode,predecessors`, and set `expand: "predecessors"`. Build successors by reversing the returned predecessor links; do not request a nonexistent `successors` field. If `nextSkipToken` is non-null, continue immediately with the same query and numeric `skip` advanced by the previous page size. Confirm distinct task UIDs retrieved equal the returned task count before claiming complete coverage. Reuse the existing session; only report missing data after the relevant query fails or returns no such fields.
+Always start with `get_project` to inspect the plan span, status date, and pre-calculated `forensics` summary. Use this whole-plan forensic data to evaluate:
+- **Critical Path Quality**: verify if the critical path reflects real engineering deliverables or is driven by level-of-effort (LOE) administrative tasks or recurring meetings.
+- **Float Distribution**: inspect median and p75 float; large float deserts indicate missing hand-offs between parallel work streams.
+- **Progress Staleness**: compare progress against elapsed project time and reference date; identify overdue incomplete tasks and overdue milestones.
+- **Dependency Network & Open Ends**: check open-start and open-finish counts. Use `list_dependencies` to inspect relationship types (FS, SS, FF, SF) and negative lags (lead time) plan-wide.
+- **Resource Constraints**: check overallocated roles and peak unit spikes.
+
+For deeper drill-downs on specific defect subsets:
+- Query open-start tasks: `list_tasks(filter: "predecessorCount eq 0 and summary eq false and milestone eq false")`.
+- Query open-finish tasks: `list_tasks(filter: "successorCount eq 0 and summary eq false and milestone eq false")`.
+- Query critical drivers: `list_tasks(filter: "critical eq true or totalSlack le 0")`.
+- Treat whole-plan audits as summary-first: do not enumerate full task records just to report plan-wide health or counts. Use the forensics summary and targeted, shaped queries to investigate its findings. Retrieve every task page with the full task profile only when the user explicitly requests row-level completeness; cite UIDs and conflicting fields, and distinguish that coverage from summary-level analysis. Do not infer stale updates from task dates; ask for a stale-update threshold.
 
 For comparisons, match stable GUIDs or UID lineage and label name/WBS matches tentative. Keep null, blank, zero, and false distinct. Do not treat optional fields as required or infer custom-value types.
 
-Return coverage, severity-ranked evidence, checks not run, and limitations.
+Return structured forensic evidence, delivery impact, and prioritized recommendations in execution order.
 
 ## PMI Alignment
 
