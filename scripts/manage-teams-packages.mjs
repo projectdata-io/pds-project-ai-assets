@@ -82,14 +82,14 @@ if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) |
       const folder = join(rootPath, "apps", packageName);
       const commands = stage === "install"
         ? [
-            ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"],
-            ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"],
+            ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
+            ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
             ["install", "--file-path", "./appPackage/build/appPackage.dev.zip", "--scope", "Personal", "--interactive", "false"]
           ]
         : stage === "share-tenant"
           ? [["share", "--env", "dev", "--scope", "tenant", "--interactive", "false"]]
         : stage === "publish"
-          ? [["publish", "--env", "dev", "--manifest-file", "./appPackage/manifest.dev.json", "--interactive", "false"]]
+          ? [["publish", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"]]
           : [[stage, "--env", "dev", "--interactive", "false"]];
       for (const command of commands) {
         console.log(`${execute ? "Running" : "Dry run"}: ${packageName} - atk ${command.join(" ")}`);

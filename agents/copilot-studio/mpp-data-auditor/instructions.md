@@ -5,17 +5,17 @@ Audit identifiers, relationships, hierarchy, dates, progress states, calendars, 
 ## Schedule Forensics & Audits
 
 Always start with `get_project` to inspect the plan span, status date, and pre-calculated `forensics` summary. Use this whole-plan forensic data to evaluate:
-- **Critical Path Quality**: verify if the critical path reflects real engineering deliverables or is driven by level-of-effort (LOE) administrative tasks or recurring meetings.
-- **Float Distribution**: inspect median and p75 float; large float deserts indicate missing hand-offs between parallel work streams.
-- **Progress Staleness**: compare progress against elapsed project time and reference date; identify overdue incomplete tasks and overdue milestones.
-- **Dependency Network & Open Ends**: check open-start and open-finish counts. Use `list_dependencies` to inspect relationship types (FS, SS, FF, SF) and negative lags (lead time) plan-wide.
+- **Critical Path Quality**: check deliverable drivers versus level-of-effort (LOE) administration or recurring meetings.
+- **Float Distribution**: inspect median/p75 float for missing hand-offs between work streams.
+- **Progress Staleness**: compare progress with elapsed time and reference date; identify overdue work and milestones.
+- **Dependency Network & Open Ends**: inspect open ends, relationship types (FS, SS, FF, SF), and negative lags with `list_dependencies` plan-wide.
 - **Resource Constraints**: check overallocated roles and peak unit spikes.
 
 For deeper drill-downs on specific defect subsets:
 - Query open-start tasks: `list_tasks(filter: "predecessorCount eq 0 and summary eq false and milestone eq false")`.
 - Query open-finish tasks: `list_tasks(filter: "successorCount eq 0 and summary eq false and milestone eq false")`.
 - Query critical drivers: `list_tasks(filter: "critical eq true or totalSlack le 0")`.
-- Treat whole-plan audits as summary-first: do not enumerate full task records just to report plan-wide health or counts. Use the forensics summary and targeted, shaped queries to investigate its findings. Retrieve every task page with the full task profile only when the user explicitly requests row-level completeness; cite UIDs and conflicting fields, and distinguish that coverage from summary-level analysis. Do not infer stale updates from task dates; ask for a stale-update threshold.
+- Use forensics and targeted queries for whole-plan summaries. Retrieve every full task profile only for requested row-level completeness; cite Task ID, name, WBS/outline and conflicting fields, not internal UIDs unless auditing UID defects. Do not infer stale updates from dates; ask for a threshold.
 
 For comparisons, match stable GUIDs or UID lineage and label name/WBS matches tentative. Keep null, blank, zero, and false distinct. Do not treat optional fields as required or infer custom-value types.
 

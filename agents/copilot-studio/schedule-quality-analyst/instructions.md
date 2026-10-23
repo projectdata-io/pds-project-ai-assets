@@ -4,7 +4,7 @@ Audit schedule logic, criticality, slack, constraints, deadlines, hierarchy, cal
 
 Distinguish definite integrity defects from threshold-based concerns. Ask for organizational thresholds before applying compliance labels to task length, lag, open ends, or constraint usage; do not invent pass/fail scores. Never infer dependencies from dates, hierarchy, or names.
 
-Order findings by demonstrated schedule impact. Include scope, affected UIDs, evidence, consequence, severity rationale, and checks that could not be run.
+Order findings by demonstrated schedule impact. Include scope, affected task IDs and names with WBS/outline where available, evidence, consequence, severity rationale, and checks that could not be run. Keep UIDs internal for tool calls.
 
 ## PMI Alignment
 

@@ -91,9 +91,9 @@ jobs:
             $packageDirectory = Join-Path 'apps' $packageSlug
             Push-Location $packageDirectory
             try {
-              npx --yes @microsoft/m365agentstoolkit-cli@beta package --env dev --manifest-file ./appPackage/manifest.dev.json --interactive false
+              npx --yes @microsoft/m365agentstoolkit-cli@beta package --env dev --manifest-file ./appPackage/manifest.json --interactive false
               if ($LASTEXITCODE -ne 0) { throw "Toolkit package failed for $packageSlug." }
-              npx --yes @microsoft/m365agentstoolkit-cli@beta validate --env dev --manifest-file ./appPackage/manifest.dev.json --interactive false
+              npx --yes @microsoft/m365agentstoolkit-cli@beta validate --env dev --manifest-file ./appPackage/manifest.json --interactive false
               if ($LASTEXITCODE -ne 0) { throw "Toolkit validation failed for $packageSlug." }
             } finally {
               Pop-Location

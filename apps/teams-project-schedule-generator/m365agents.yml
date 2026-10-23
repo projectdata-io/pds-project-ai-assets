@@ -22,7 +22,7 @@ provision:
 
   - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.dev.json
+      manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputFolder: ./appPackage/build
   - uses: teamsApp/validateAppPackage
@@ -44,7 +44,7 @@ projectId: b2107a2c-c976-4fc2-916a-906cd32cad2d
 publish:
   - uses: teamsApp/zipAppPackage
     with:
-      manifestPath: ./appPackage/manifest.dev.json
+      manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputFolder: ./appPackage/build
   - uses: teamsApp/validateAppPackage

@@ -21,18 +21,6 @@
     {
       "id": "pdsProjectAiMcp",
       "file": "ai-plugin.json"
-    },
-    {
-      "id": "workIqWordMcp",
-      "file": "workiq-word-plugin.json"
-    },
-    {
-      "id": "workIqOneDriveConversionMcp",
-      "file": "workiq-onedrive-conversion-plugin.json"
-    },
-    {
-      "id": "workIqSharePointReportsMcp",
-      "file": "workiq-sharepoint-reports-plugin.json"
     }
   ],
   "capabilities": [

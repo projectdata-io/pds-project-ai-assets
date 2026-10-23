@@ -14,22 +14,7 @@
         "url": "https://mcp.projectdata.ai/mcp/m365"
       },
       "run_for_functions": [
-        "add_edit_operations",
-        "close_session",
-        "commit_edit_draft",
-        "create_edit_draft",
-        "create_new_project_session",
-        "create_session_from_onedrive",
-        "create_session_from_reference",
-        "get_edit_capabilities",
-        "get_project",
-        "list_assignments",
-        "list_resources",
-        "list_tasks",
-        "open_project_plan_download",
-        "preview_edit_draft",
-        "replace_edit_operations",
-        "validate_edit_draft"
+        "*"
       ],
       "auth": {
         "type": "OAuthPluginVault",
