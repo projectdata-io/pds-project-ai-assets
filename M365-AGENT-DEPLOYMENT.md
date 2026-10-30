@@ -31,12 +31,20 @@ See Microsoft's [custom app upload instructions](https://learn.microsoft.com/en-
 
 ## Organization rollout
 
-The ZIP artifact does not submit or publish apps. For the supported organization-review flow, use a checkout of this assets repository with its package-local `env/.env.dev` files configured, then run:
+The ZIP artifact does not submit or publish apps. For the supported organization-review flow, use a checkout of this assets repository with its package-local `env/.env.dev` files configured. For a new version, bump and generate once, then prepare and validate the four active packages:
 
 ```powershell
-npm run manage:teams-packages -- publish --env dev --execute
+npm run bump:teams-package-versions
+npm run generate:teams-packages
+npm run manage:teams-packages -- prepare --env dev --execute
 ```
 
-This command rebuilds and submits the seven dev apps to the Teams admin center for review; it does not install them for everyone. A Teams administrator must review and allow each app, select its intended availability, and optionally configure installation for users. Follow the repository README's **Development provisioning and organization submission** section before running the command. Do not use `all --execute` as a substitute: that also runs provisioning.
+Import the exact frozen ZIPs from `apps/<package>/appPackage/build/appPackage.dev.zip` into their existing Developer Portal apps, preserving app IDs, and verify each app ID/version readback. Then submit the same four ZIPs:
+
+```powershell
+npm run manage:teams-packages -- publish --env dev --execute --portal-verified
+```
+
+This submits Project Manager Assistant, MPP Data Auditor, Project Plan Editor, and Project Schedule Generator to the Teams admin center for review without rebuilding the ZIPs. It does not install them for everyone. Additional roles require an explicitly approved package selection. A Teams administrator must review and allow each submitted app, select its intended availability, and optionally configure installation for users. Follow the repository README's **Development provisioning and organization submission** section before running the command. Retry only `publish` with the same frozen ZIPs; `all --execute` is blocked to prevent rebuilding between portal synchronization and submission.
 
 See Microsoft's [Teams app management guidance](https://learn.microsoft.com/en-us/microsoftteams/manage-apps). Organization rollout is separate from public Marketplace submission. Do not submit these dev-bound packages to the public Store or Partner Center.

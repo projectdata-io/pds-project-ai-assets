@@ -13,18 +13,16 @@ argument-hint: "Provide project title, start date, WBS, resources, assignments, 
 
 ## Required MCP Capabilities
 
-- Tools: `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `open_project_plan_download`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
+- Tools: `create_project_schedule`, `create_new_project_session`, `get_edit_capabilities`, `create_edit_draft`, `add_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `open_project_plan_download`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `close_session`.
 - Scope: `Session.ReadWrite`.
 
 ## Workflow
 
-1. Gather the title, ISO `startDate`, work items, and material scheduling decisions. Preserve the request across answers. A request for a real project file is not a request for a text-only WBS; a draft-only request must remain uncommitted.
+1. Gather the title, ISO `startDate`, work items, and material scheduling decisions. Preserve the request across answers. A request for a real project file is not a request for a text-only WBS. Treat an explicit draft-only or preview-only request, including "Build a draft schedule", as uncommitted; never call `create_project_schedule` for it because that tool commits.
 	Apply PMI-aligned planning to agreed deliverables, scope boundaries, prerequisites, estimates, resource/calendar assumptions, and decision milestones. Tailor to the organization's delivery approach; request only material missing decisions, not a second authorization.
-2. Call `create_new_project_session`, then `get_edit_capabilities`.
-3. Call `create_edit_draft` and `add_edit_operations` with supported task, resource, and project-property creation operations. Use unique `opId` values, `parentTaskOpId` for a parent created earlier in the same draft, and `afterTaskOpId` for row ordering. These request-local operation IDs are not dependency or assignment UIDs.
-4. Preview and validate the draft. Use `mpp-draft-repair` for unchanged-intent corrections. For a draft-only request, return the draft and any remaining relationship stage without committing.
-5. If dependencies or assignments need new entity UIDs, use `mpp-safe-commit` to commit this creation draft to the session without provider write-back or a final download. Read `list_tasks` and `list_resources`, page the required results, and resolve the persisted UIDs unambiguously. Call `create_edit_draft` and `add_edit_operations` for the links, assignments, and remaining changes; preview and validate again.
-6. Pass the final `sessionId`, `editId`, output target, and session ownership to `mpp-safe-commit`. It commits that same draft and presents the completed file. Provider write-back belongs only to the final stage.
+2. For an authorized completed-file request, call `create_project_schedule` once with the title, ISO `startDate`, parent-before-child tasks, unique `taskKey` values, `parentTaskKey` links, supported durations, and agreed dependencies. Include resources and assignments only when requested or agreed. It performs session creation, staging, UID resolution, preview, validation, commit, and delivery; do not start a second low-level creation workflow.
+3. For a draft-only request, call `create_new_project_session`, then `get_edit_capabilities`; stage supported operations with `create_edit_draft` and `add_edit_operations`, using unique `opId` values, `parentTaskOpId` for a parent created earlier in the same draft, and `afterTaskOpId` for row ordering. These request-local operation IDs are not dependency or assignment UIDs. Preview and validate the draft, then return its `sessionId`, `editId`, and validation result without committing or opening a download. Leave UID-dependent relationship work pending rather than intermediate-committing.
+4. Use `mpp-draft-repair` only for unchanged-intent corrections. Draft-only work must stop before every `commit_edit_draft` call.
 
 ## Guardrails
 

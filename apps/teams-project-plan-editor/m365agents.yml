@@ -42,14 +42,6 @@ provision:
 projectId: 680476f0-bef1-422d-8ef5-b3e5c49b5a27
 
 publish:
-  - uses: teamsApp/zipAppPackage
-    with:
-      manifestPath: ./appPackage/manifest.json
-      outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputFolder: ./appPackage/build
-  - uses: teamsApp/validateAppPackage
-    with:
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
   - uses: teamsApp/publishAppPackage
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip

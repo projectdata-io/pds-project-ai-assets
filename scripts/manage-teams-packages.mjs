@@ -1,7 +1,9 @@
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { strFromU8, unzipSync } from "fflate";
 
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const allPackages = [
@@ -19,19 +21,70 @@ const activePublishedPackages = [
   "teams-project-plan-editor",
   "teams-project-schedule-generator"
 ];
+const releaseManifestPath = join(rootPath, "dist", "teams-package-release.json");
 const rawArgs = process.argv.slice(2);
 const mode = rawArgs[0];
-const usage = "Usage: node scripts/manage-teams-packages.mjs <provision|install|share-tenant|publish|all> --env dev [--execute] [--package <name>] [--packages <names>] [--all-packages]";
+const usage = "Usage: node scripts/manage-teams-packages.mjs <prepare|provision|install|share-tenant|publish|all> --env dev [--execute] [--package <name>] [--packages <names>] [--all-packages] [--portal-verified]";
 
-function runNodeScript(scriptName) {
-  const result = spawnSync(process.execPath, [join(rootPath, "scripts", scriptName)], { stdio: "inherit" });
+function artifactInfo(packageName) {
+  const zipPath = join(rootPath, "apps", packageName, "appPackage", "build", "appPackage.dev.zip");
+  if (!existsSync(zipPath)) throw new Error(`Missing prepared ZIP for ${packageName}; run the prepare stage first.`);
+  const bytes = readFileSync(zipPath);
+  const archive = unzipSync(bytes);
+  if (!archive["manifest.json"]) throw new Error(`${packageName} ZIP has no manifest.json.`);
+  const manifest = JSON.parse(strFromU8(archive["manifest.json"]));
+  if (typeof manifest.id !== "string" || typeof manifest.version !== "string") {
+    throw new Error(`${packageName} ZIP has no concrete app ID and version.`);
+  }
+  return {
+    packageName,
+    path: relative(rootPath, zipPath).replaceAll("\\", "/"),
+    appId: manifest.id,
+    version: manifest.version,
+    sha256: createHash("sha256").update(bytes).digest("hex")
+  };
+}
+
+function freezePreparedPackages(packages) {
+  const manifest = { schemaVersion: 1, packages: packages.map(artifactInfo) };
+  mkdirSync(join(rootPath, "dist"), { recursive: true });
+  writeFileSync(releaseManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  for (const artifact of manifest.packages) {
+    console.log(`${artifact.packageName}: app ${artifact.appId}, version ${artifact.version}, SHA-256 ${artifact.sha256}`);
+  }
+  console.log(`Frozen release record: ${relative(rootPath, releaseManifestPath).replaceAll("\\", "/")}`);
+}
+
+function verifyFrozenPackages(packages) {
+  if (!existsSync(releaseManifestPath)) throw new Error("No frozen release record; run the prepare stage first.");
+  const frozen = JSON.parse(readFileSync(releaseManifestPath, "utf8"));
+  if (frozen.schemaVersion !== 1 || !Array.isArray(frozen.packages)) throw new Error("Frozen release record is invalid.");
+  for (const packageName of packages) {
+    const expected = frozen.packages.find((entry) => entry.packageName === packageName);
+    if (!expected) throw new Error(`${packageName} is not in the frozen release; prepare the intended package selection.`);
+    const actual = artifactInfo(packageName);
+    if (actual.path !== expected.path || actual.appId !== expected.appId || actual.version !== expected.version || actual.sha256 !== expected.sha256) {
+      throw new Error(`${packageName} ZIP differs from the frozen release. Do not publish or retry it; synchronize and prepare a new release.`);
+    }
+  }
+}
+
+function runToolkit(packageName, command) {
+  const folder = join(rootPath, "apps", packageName);
+  const result = spawnSync("npx", ["--yes", "@microsoft/m365agentstoolkit-cli@beta", ...command], {
+    cwd: folder,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+    env: { ...process.env, ATK_CLI_SKILL: "true" }
+  });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`${scriptName} failed with exit code ${result.status ?? 1}.`);
+  if (result.status !== 0) throw new Error(`Stopped after ${packageName} ${command[0]} failed; later packages were not changed.`);
 }
 
 let envValue;
 let execute = false;
 let includeAll = false;
+let portalVerified = false;
 let explicitPackages;
 
 for (let i = 1; i < rawArgs.length; i++) {
@@ -42,6 +95,8 @@ for (let i = 1; i < rawArgs.length; i++) {
     execute = true;
   } else if (arg === "--all-packages") {
     includeAll = true;
+  } else if (arg === "--portal-verified") {
+    portalVerified = true;
   } else if (arg === "--package") {
     const pkg = rawArgs[++i];
     if (pkg) explicitPackages = [pkg.trim()];
@@ -54,57 +109,62 @@ for (let i = 1; i < rawArgs.length; i++) {
   }
 }
 
-if (!["provision", "install", "share-tenant", "publish", "all"].includes(mode) || envValue !== "dev") {
+if (!["prepare", "provision", "install", "share-tenant", "publish", "all"].includes(mode) || envValue !== "dev") {
   console.error(usage);
   process.exitCode = 1;
+} else if (execute && mode === "all") {
+  throw new Error("all --execute is disabled because provisioning rebuilds packages; run prepare, Developer Portal synchronization, and publish as separate stages.");
 } else {
-  const stages = mode === "all" ? ["provision", "publish"] : [mode];
-  if (execute && (mode === "publish" || mode === "all")) {
-    runNodeScript("bump-teams-package-versions.mjs");
-    runNodeScript("generate-teams-packages.mjs");
-  }
-  const packagesToCheck = explicitPackages ?? allPackages;
+  const publicationPackages = explicitPackages ?? (includeAll ? allPackages : activePublishedPackages);
+  const packagesToCheck = mode === "prepare" || mode === "publish" ? publicationPackages : explicitPackages ?? allPackages;
   for (const packageName of packagesToCheck) {
     const folder = join(rootPath, "apps", packageName);
-    if (!existsSync(join(folder, "m365agents.yml"))) {
-      throw new Error(`Missing Toolkit lifecycle for ${packageName}`);
-    }
+    if (!existsSync(join(folder, "m365agents.yml"))) throw new Error(`Missing Toolkit lifecycle for ${packageName}`);
   }
 
-  for (const stage of stages) {
-    const targetPackages = explicitPackages
-      ? explicitPackages
-      : stage === "publish" && !includeAll
-      ? activePublishedPackages
-      : allPackages;
+  if (execute && mode === "publish") {
+    if (!portalVerified) throw new Error("Before publishing, synchronize each exact frozen ZIP to its existing Developer Portal app and verify its app ID/version; then pass --portal-verified.");
+    verifyFrozenPackages(publicationPackages);
+  }
 
-    for (const packageName of targetPackages) {
-      const folder = join(rootPath, "apps", packageName);
-      const commands = stage === "install"
-        ? [
-            ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
-            ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
-            ["install", "--file-path", "./appPackage/build/appPackage.dev.zip", "--scope", "Personal", "--interactive", "false"]
-          ]
-        : stage === "share-tenant"
-          ? [["share", "--env", "dev", "--scope", "tenant", "--interactive", "false"]]
-        : stage === "publish"
-          ? [["publish", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"]]
-          : [[stage, "--env", "dev", "--interactive", "false"]];
+  if (mode === "prepare") {
+    const commands = [
+      ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
+      ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"]
+    ];
+    for (const packageName of publicationPackages) {
       for (const command of commands) {
         console.log(`${execute ? "Running" : "Dry run"}: ${packageName} - atk ${command.join(" ")}`);
-        if (!execute) continue;
+        if (execute) runToolkit(packageName, command);
+      }
+    }
+    if (execute) freezePreparedPackages(publicationPackages);
+  } else {
+    const stages = mode === "all" ? ["provision", "publish"] : [mode];
+    for (const stage of stages) {
+      const targetPackages = explicitPackages
+        ? explicitPackages
+        : stage === "publish" && !includeAll
+          ? activePublishedPackages
+          : allPackages;
 
-        const result = spawnSync("npx", ["--yes", "@microsoft/m365agentstoolkit-cli@beta", ...command], { cwd: folder, stdio: "inherit", shell: process.platform === "win32", env: { ...process.env, ATK_CLI_SKILL: "true" } });
-        if (result.error) throw result.error;
-        if (result.status !== 0) {
-          console.error(`Stopped after ${packageName} ${command[0]} failed; later packages were not changed.`);
-          process.exitCode = result.status ?? 1;
-          break;
+      for (const packageName of targetPackages) {
+        const commands = stage === "install"
+          ? [
+              ["package", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
+              ["validate", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"],
+              ["install", "--file-path", "./appPackage/build/appPackage.dev.zip", "--scope", "Personal", "--interactive", "false"]
+            ]
+          : stage === "share-tenant"
+            ? [["share", "--env", "dev", "--scope", "tenant", "--interactive", "false"]]
+            : stage === "publish"
+              ? [["publish", "--env", "dev", "--manifest-file", "./appPackage/manifest.json", "--interactive", "false"]]
+              : [[stage, "--env", "dev", "--interactive", "false"]];
+        for (const command of commands) {
+          console.log(`${execute ? "Running" : "Dry run"}: ${packageName} - atk ${command.join(" ")}`);
+          if (execute) runToolkit(packageName, command);
         }
       }
-      if (process.exitCode) break;
     }
-    if (process.exitCode) break;
   }
 }

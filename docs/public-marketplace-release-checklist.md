@@ -158,6 +158,9 @@ From the `external/pds-project-ai-assets` repository root:
   validation output, and external-tenant test evidence for each exact ZIP.
 - [ ] Freeze and retain these exact ZIPs for submission. Do not rebuild or
   change package contents after testing without a new version and repeat tests.
+- [ ] Synchronize each existing Developer Portal app definition from its exact
+  tested ZIP, preserving the app ID. Read back the app ID and version and stop
+  if either does not match the ZIP.
 
 `package:marketplace --execute` only packages and validates locally. It does
 not provision production identities, deploy the service, upload packages, or
@@ -169,6 +172,8 @@ For each eligible agent:
 
 - [ ] In Partner Center, create or update the supported Teams/Microsoft 365
   Marketplace offer and enter its listing and technical information.
+- [ ] Confirm the existing Developer Portal app ID and version still match the
+  exact tested ZIP before upload; stop if synchronization or readback failed.
 - [ ] Upload the exact tested production package and provide reviewer
   instructions/access as requested.
 - [ ] Review the full offer and submit it for certification.

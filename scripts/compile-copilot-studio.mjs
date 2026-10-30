@@ -120,6 +120,9 @@ for (const agent of catalog.agents) {
   const skills = metadata.skills.map((skillName) => parseSkill(skillName));
   const agentOutput = join("build", "copilot-studio", agent.name);
   const tools = [...new Set(metadata.skills.flatMap((skillName) => catalogSkills.get(skillName)?.tools ?? []))].sort();
+  if (agent.name === "project-schedule-generator" && !tools.includes("create_project_schedule")) {
+    throw new Error("Project Schedule Generator must expose create_project_schedule in its bundle tool allowlist.");
+  }
   const manifest = {
     schemaVersion: "1.0",
     generated: true,

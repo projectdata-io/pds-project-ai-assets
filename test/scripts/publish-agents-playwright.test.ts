@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { strToU8, zipSync } from "fflate";
+import { join } from "node:path";
 import {
   agents, assertProfileOutsideRepository, catalogState, inspectArtifact, needsUpload, publishStage,
   readVersion, reconcileJournal, selectAgents, verifyReadback
@@ -50,7 +51,7 @@ describe("agent publication preflight", () => {
   });
   it("requires an external browser profile", () => {
     expect(() => assertProfileOutsideRepository(process.cwd(), process.cwd())).toThrow("outside");
-    expect(() => assertProfileOutsideRepository(`${process.cwd()}\\tmp\\browser`, process.cwd())).toThrow("outside");
+    expect(() => assertProfileOutsideRepository(join(process.cwd(), "tmp", "browser"), process.cwd())).toThrow("outside");
   });
   it("reads versions only with the expected identity, refusing ambiguous output", () => {
     expect(readVersion(`${agents[0].appId}\nPublished version\n2.3.9\nEveryone`, "catalog", agents[0].appId)).toBe("2.3.9");

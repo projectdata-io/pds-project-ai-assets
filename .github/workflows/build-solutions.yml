@@ -25,9 +25,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Configure M365 dev package environments
         if: github.event_name != 'pull_request'
@@ -61,7 +69,7 @@ jobs:
           }
 
       - name: Validate source assets
-        run: npm test
+        run: pnpm test
 
       - name: Build agent packages
         run: npm run package:agents

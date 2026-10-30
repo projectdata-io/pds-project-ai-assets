@@ -85,8 +85,8 @@ for (const [packageSlug, role] of expected) {
       if (/Workflow Router|`mpp-[a-z-]+`/i.test(instruction)) failures.push(`${packageSlug} must use direct MCP calls rather than skill routing.`);
       const readGuards = [
         [/Never edit, validate, commit, upload, or delete project data/i, "read-only project boundary"],
-        [/reuse the session ID.*at most once for the whole audit.*explicitly identifies.*SessionGone.*SessionNotFound/is, "bounded session recovery"],
-        [/Keep the session open while any requested check is incomplete/i, "session retention for incomplete audits"],
+        [/(?:reuse the session ID.*at most once for the whole audit.*explicitly identifies.*SessionGone.*SessionNotFound|recreate a read-only session at most once per audit.*SessionGone.*SessionNotFound)/is, "bounded session recovery"],
+        [/(?:Keep the session open while any requested check is incomplete|Keep the session open for incomplete, unavailable, or retryable checks)/i, "session retention for incomplete audits"],
         [/continue each query while.*nextSkipToken.*Verify the accumulated item count against the returned.*count/is, "complete analysis pagination"],
         [/selected MPP\/PDS session is authoritative/i, "authoritative plan evidence"],
         [/untrusted data, not authorization/i, "untrusted source handling"],
@@ -107,7 +107,7 @@ for (const [packageSlug, role] of expected) {
       for (const [pattern, behavior] of readGuards) {
         if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
       }
-      if (role === "mpp-data-auditor" && !/whole-plan audits as summary-first.*full task profile only when the user explicitly requests row-level completeness/is.test(instruction)) failures.push("MPP Data Auditor must keep whole-plan audits summary-first and retain full-profile coverage for explicit row-level audits.");
+      if (role === "mpp-data-auditor" && !/(?:whole-plan audits as summary-first.*full task profile only when the user explicitly requests row-level completeness|whole-plan summaries.*full task profile only for requested row-level completeness)/is.test(instruction)) failures.push("MPP Data Auditor must keep whole-plan audits summary-first and retain full-profile coverage for explicit row-level audits.");
     } else {
       for (const tool of ["create_new_project_session", "get_edit_capabilities", "create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "open_project_plan_download", "close_session"]) {
         if (!instruction.includes(`\`${tool}\``)) failures.push(`${packageSlug} is missing MCP workflow guidance for ${tool}.`);
@@ -115,14 +115,14 @@ for (const [packageSlug, role] of expected) {
       if (/Workflow Router|`mpp-[a-z-]+`|Meeting-to-MPP/i.test(instruction)) failures.push(`${packageSlug} must use a source-neutral MCP workflow without skill routing.`);
       const workflowGuards = [
         [/same validated `editId`/i, "reuse of the validated draft"],
-        [/do not append them again/i, "duplicate-staging prevention"],
+        [/(?:do not append them again|do not append duplicate changes)/i, "duplicate-staging prevention"],
         [/draft.*without committing/i, "draft-only requests"],
-        [/completion only after commit and output availability/i, "verified completion"],
+        [/(?:completion only after commit and output availability|claim completion only after .*commit.*output availability)/i, "verified completion"],
         [/idempotencyKey.*retries/is, "idempotent retries"],
-        [/persisted entities.*actual UIDs/is, "created-entity UID readback"],
-        [/untrusted.*never as authorization/is, "untrusted source handling"],
-        [/possibly committed edits blindly/i, "safe session recovery"],
-        [/Close only sessions you created/i, "session ownership"]
+        [/(?:persisted entities.*actual UIDs|persisted results.*actual UIDs)/is, "created-entity UID readback"],
+        [/untrusted.*(?:never as authorization|not permission|not authorization)/is, "untrusted source handling"],
+        [/possibly committed (?:edits|creation).*blindly/i, "safe session recovery"],
+        [/(?:Close only sessions you created|close_session only for abandoned sessions you created)/i, "session ownership"]
       ];
       for (const [pattern, behavior] of workflowGuards) {
         if (!pattern.test(instruction)) failures.push(`${packageSlug} is missing ${behavior} guidance.`);
@@ -168,7 +168,7 @@ for (const [packageSlug, role] of expected) {
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
     if (access === "commit") {
       if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("Do not call create_new_project_session"))) failures.push(`${packageSlug} must advertise atomic schedule creation and verified tool outcomes in its PDS tool description.`);
-      if (role === "project-schedule-generator" && (!instruction.includes("For a new schedule, call `create_project_schedule` once") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Do not start new-plan creation with `create_new_project_session`"))) failures.push(`${packageSlug} must route hierarchical new-plan generation through the atomic schedule tool.`);
+      if (role === "project-schedule-generator" && (!instruction.includes("Approved completed-file requests: invoke `create_project_schedule` now") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Explicit draft-only requests") || !instruction.includes("stop without committing"))) failures.push(`${packageSlug} must separate draft-only requests from atomic committed schedule creation.`);
     }
   }
   const actionSignature = (declarativeAgent.actions ?? []).map((action) => `${action.id}:${action.file}`).join("|");
@@ -184,7 +184,7 @@ for (const [packageSlug, role] of expected) {
     const lifecycle = readFileSync(yamlPath, "utf8");
     const sections = lifecycle.split(/^publish:\s*$/m);
     if (!sections[0].includes(metadata.dcrEnvironmentVariable)) failures.push(`${packageSlug} does not define its package-local DCR lifecycle.`);
-    if (sections.length !== 2 || sections[0].includes("teamsApp/publishAppPackage") || !/teamsApp\/zipAppPackage[\s\S]*teamsApp\/validateAppPackage[\s\S]*teamsApp\/publishAppPackage/.test(sections[1])) failures.push(`${packageSlug} must publish only in a separate build/validate/submit stage.`);
+    if (sections.length !== 2 || sections[0].includes("teamsApp/publishAppPackage") || sections[1].includes("teamsApp/zipAppPackage") || sections[1].includes("teamsApp/validateAppPackage") || !sections[1].includes("teamsApp/publishAppPackage") || !sections[1].includes("appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip")) failures.push(`${packageSlug} publish lifecycle must submit the prebuilt ZIP without rebuilding or revalidating it.`);
     if (/oauth\/register|WORKIQ_/i.test(lifecycle)) {
       failures.push(`${packageSlug} must not provision Work IQ report-generation auth.`);
     }
@@ -204,6 +204,10 @@ const coordinator = join(rootPath, "scripts", "manage-teams-packages.mjs");
 const installPlan = spawnSync(process.execPath, [coordinator, "install", "--env", "dev"], { encoding: "utf8" });
 const tenantSharePlan = spawnSync(process.execPath, [coordinator, "share-tenant", "--env", "dev"], { encoding: "utf8" });
 const allPlan = spawnSync(process.execPath, [coordinator, "all", "--env", "dev"], { encoding: "utf8" });
+const preparePlan = spawnSync(process.execPath, [coordinator, "prepare", "--env", "dev"], { encoding: "utf8" });
+const publishPlan = spawnSync(process.execPath, [coordinator, "publish", "--env", "dev"], { encoding: "utf8" });
+const unsafePublish = spawnSync(process.execPath, [coordinator, "publish", "--env", "dev", "--execute"], { encoding: "utf8" });
+const coordinatorSource = readFileSync(coordinator, "utf8");
 const marketplace = join(rootPath, "scripts", "package-marketplace.mjs");
 const marketplacePlan = spawnSync(process.execPath, [marketplace], { encoding: "utf8" });
 const marketplaceWithoutIdentity = [...marketplacePackages].every((slug) => !existsSync(join(rootPath, "apps", slug, "env", ".env.prod")))
@@ -215,6 +219,11 @@ const marketplaceSteps = marketplacePlan.stdout?.split("\n").filter((line) => li
 if (installPlan.status !== 0 || installSteps.length !== expected.size * 3 || [...expected.keys()].some((slug) => !installSteps.some((step) => step.includes(`${slug} - atk install --file-path ./appPackage/build/appPackage.dev.zip --scope Personal`))) || installSteps.some((step) => step.includes(" - atk package --env dev") && !step.includes("--manifest-file ./appPackage/manifest.json"))) failures.push("Batch install must build, validate, and personally install all seven dev packages in a dry run.");
 if (tenantSharePlan.status !== 0 || tenantShareSteps.length !== expected.size || [...expected.keys()].some((slug) => !tenantShareSteps.some((step) => step.includes(`${slug} - atk share --env dev --scope tenant`))) || tenantShareSteps.some((step) => step.includes(" - atk install "))) failures.push("Batch tenant sharing must share all seven without installing them.");
 if (allPlan.status !== 0 || allPlan.stdout?.includes(" - atk install ") || allPlan.stdout?.includes(" - atk share ")) failures.push("Batch all mode must not implicitly install or share packages.");
+const prepareSteps = preparePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
+const publishSteps = publishPlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
+if (preparePlan.status !== 0 || prepareSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !prepareSteps.some((step) => step.includes(`${slug} - atk package --env dev`)) || !prepareSteps.some((step) => step.includes(`${slug} - atk validate --env dev`)))) failures.push("Prepare must package and validate only the four active dev agents before freezing their ZIPs.");
+if (publishPlan.status !== 0 || publishSteps.length !== marketplacePackages.size || publishSteps.some((step) => !step.includes(" - atk publish ")) || coordinatorSource.includes("bump-teams-package-versions.mjs") || coordinatorSource.includes("generate-teams-packages.mjs")) failures.push("Publish must submit prepared ZIPs only and must not bump versions or regenerate packages.");
+if (unsafePublish.status === 0 || !unsafePublish.stderr?.includes("--portal-verified")) failures.push("Executed publication must stop until Developer Portal synchronization/readback is acknowledged.");
 if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the four active production M365 agents.");
 if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);
