@@ -7,10 +7,9 @@ import { parseEnv } from "node:util";
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const packages = [
   "teams-project-manager-assistant",
-  "teams-schedule-quality-analyst",
-  "teams-portfolio-executive-analyst",
-  "teams-resource-manager",
-  "teams-mpp-data-auditor"
+  "teams-mpp-data-auditor",
+  "teams-project-plan-editor",
+  "teams-project-schedule-generator"
 ];
 const execute = process.argv.slice(2).includes("--execute");
 const prepareOnly = process.argv.slice(2).includes("--prepare");

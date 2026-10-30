@@ -16,10 +16,9 @@ const expected = new Map([
 ]);
 const marketplacePackages = new Set([
   "teams-project-manager-assistant",
-  "teams-schedule-quality-analyst",
-  "teams-portfolio-executive-analyst",
-  "teams-resource-manager",
-  "teams-mpp-data-auditor"
+  "teams-mpp-data-auditor",
+  "teams-project-plan-editor",
+  "teams-project-schedule-generator"
 ]);
 const commitRoles = new Set(["project-plan-editor", "project-schedule-generator"]);
 const commitContextCapabilities = ["OneDriveAndSharePoint", "TeamsMessages", "Email"];
@@ -216,7 +215,7 @@ const marketplaceSteps = marketplacePlan.stdout?.split("\n").filter((line) => li
 if (installPlan.status !== 0 || installSteps.length !== expected.size * 3 || [...expected.keys()].some((slug) => !installSteps.some((step) => step.includes(`${slug} - atk install --file-path ./appPackage/build/appPackage.dev.zip --scope Personal`))) || installSteps.some((step) => step.includes(" - atk package --env dev") && !step.includes("--manifest-file ./appPackage/manifest.json"))) failures.push("Batch install must build, validate, and personally install all seven dev packages in a dry run.");
 if (tenantSharePlan.status !== 0 || tenantShareSteps.length !== expected.size || [...expected.keys()].some((slug) => !tenantShareSteps.some((step) => step.includes(`${slug} - atk share --env dev --scope tenant`))) || tenantShareSteps.some((step) => step.includes(" - atk install "))) failures.push("Batch tenant sharing must share all seven without installing them.");
 if (allPlan.status !== 0 || allPlan.stdout?.includes(" - atk install ") || allPlan.stdout?.includes(" - atk share ")) failures.push("Batch all mode must not implicitly install or share packages.");
-if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the five separately configured production read-only agents.");
+if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the four active production M365 agents.");
 if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);
 console.log("All seven PDS Project AI packages have role-scoped tools, guarded access instructions, and validated agent capabilities.");
