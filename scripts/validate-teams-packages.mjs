@@ -167,7 +167,7 @@ for (const [packageSlug, role] of expected) {
     validateDynamicDiscovery(plugin, `${packageSlug} PDS plugin`);
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
     if (access === "commit") {
-      if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("Do not call create_new_project_session"))) failures.push(`${packageSlug} must advertise atomic schedule creation and verified tool outcomes in its PDS tool description.`);
+      if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("For draft-only requests") || !plugin.description_for_model.includes("use create_new_project_session") || !plugin.description_for_model.includes("Do not use create_new_project_session for completed-file new-plan creation") || !plugin.description_for_model.includes("do not call it for draft-only requests, clarifications") || !plugin.description_for_model.includes("Only after a completed-file creation"))) failures.push(`${packageSlug} must scope creation-session and download rules to the correct schedule workflow.`);
       if (role === "project-schedule-generator" && (!instruction.includes("Approved completed-file requests: invoke `create_project_schedule` now") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Explicit draft-only requests") || !instruction.includes("stop without committing"))) failures.push(`${packageSlug} must separate draft-only requests from atomic committed schedule creation.`);
     }
   }
@@ -207,6 +207,10 @@ const allPlan = spawnSync(process.execPath, [coordinator, "all", "--env", "dev"]
 const preparePlan = spawnSync(process.execPath, [coordinator, "prepare", "--env", "dev"], { encoding: "utf8" });
 const publishPlan = spawnSync(process.execPath, [coordinator, "publish", "--env", "dev"], { encoding: "utf8" });
 const unsafePublish = spawnSync(process.execPath, [coordinator, "publish", "--env", "dev", "--execute"], { encoding: "utf8" });
+const malformedPackageSelections = [
+  ["--package"], ["--package", "--all-packages"], ["--package", ""], ["--package", "   "],
+  ["--packages"], ["--packages", "--all-packages"], ["--packages", ""], ["--packages", "manager,,auditor"]
+].map((selection) => spawnSync(process.execPath, [coordinator, "publish", "--env", "dev", ...selection], { encoding: "utf8" }));
 const coordinatorSource = readFileSync(coordinator, "utf8");
 const marketplace = join(rootPath, "scripts", "package-marketplace.mjs");
 const marketplacePlan = spawnSync(process.execPath, [marketplace], { encoding: "utf8" });
@@ -224,6 +228,8 @@ const publishSteps = publishPlan.stdout?.split("\n").filter((line) => line.start
 if (preparePlan.status !== 0 || prepareSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !prepareSteps.some((step) => step.includes(`${slug} - atk package --env dev`)) || !prepareSteps.some((step) => step.includes(`${slug} - atk validate --env dev`)))) failures.push("Prepare must package and validate only the four active dev agents before freezing their ZIPs.");
 if (publishPlan.status !== 0 || publishSteps.length !== marketplacePackages.size || publishSteps.some((step) => !step.includes(" - atk publish ")) || coordinatorSource.includes("bump-teams-package-versions.mjs") || coordinatorSource.includes("generate-teams-packages.mjs")) failures.push("Publish must submit prepared ZIPs only and must not bump versions or regenerate packages.");
 if (unsafePublish.status === 0 || !unsafePublish.stderr?.includes("--portal-verified")) failures.push("Executed publication must stop until Developer Portal synchronization/readback is acknowledged.");
+if (malformedPackageSelections.some((result) => result.status === 0 || !/requires (?:a non-empty|a comma-separated)|cannot contain empty/.test(result.stderr ?? ""))) failures.push("Publication must reject missing, blank, or incomplete package-selection arguments instead of falling back to default agents.");
+if (!coordinatorSource.includes("rev-parse") || !coordinatorSource.includes("--porcelain=v1") || !coordinatorSource.includes("source: captureSourceProvenance()")) failures.push("The prepared release record must capture its source commit and dirty-tree changes.");
 if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the four active production M365 agents.");
 if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);

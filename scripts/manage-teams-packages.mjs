@@ -45,10 +45,22 @@ function artifactInfo(packageName) {
   };
 }
 
+function captureSourceProvenance() {
+  const commitResult = spawnSync("git", ["rev-parse", "HEAD"], { cwd: rootPath, encoding: "utf8" });
+  const statusResult = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=all"], { cwd: rootPath, encoding: "utf8" });
+  if (commitResult.error) throw commitResult.error;
+  if (statusResult.error) throw statusResult.error;
+  if (commitResult.status !== 0 || statusResult.status !== 0) throw new Error("Unable to capture source commit and dirty-tree state for the prepared release.");
+  const changes = statusResult.stdout.trim().split(/\r?\n/).filter(Boolean);
+  return { commit: commitResult.stdout.trim(), dirty: changes.length > 0, changes };
+}
+
 function freezePreparedPackages(packages) {
-  const manifest = { schemaVersion: 1, packages: packages.map(artifactInfo) };
+  const manifest = { schemaVersion: 1, preparedAtUtc: new Date().toISOString(), source: captureSourceProvenance(), packages: packages.map(artifactInfo) };
   mkdirSync(join(rootPath, "dist"), { recursive: true });
   writeFileSync(releaseManifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  console.log(`Source commit: ${manifest.source.commit}; dirty tree: ${manifest.source.dirty}`);
+  for (const change of manifest.source.changes) console.log(`Source change: ${change}`);
   for (const artifact of manifest.packages) {
     console.log(`${artifact.packageName}: app ${artifact.appId}, version ${artifact.version}, SHA-256 ${artifact.sha256}`);
   }
@@ -58,7 +70,7 @@ function freezePreparedPackages(packages) {
 function verifyFrozenPackages(packages) {
   if (!existsSync(releaseManifestPath)) throw new Error("No frozen release record; run the prepare stage first.");
   const frozen = JSON.parse(readFileSync(releaseManifestPath, "utf8"));
-  if (frozen.schemaVersion !== 1 || !Array.isArray(frozen.packages)) throw new Error("Frozen release record is invalid.");
+  if (frozen.schemaVersion !== 1 || !/^[0-9a-f]{40}$/i.test(frozen.source?.commit ?? "") || typeof frozen.source?.dirty !== "boolean" || !Array.isArray(frozen.source?.changes) || !Array.isArray(frozen.packages)) throw new Error("Frozen release record is invalid or missing source provenance.");
   for (const packageName of packages) {
     const expected = frozen.packages.find((entry) => entry.packageName === packageName);
     if (!expected) throw new Error(`${packageName} is not in the frozen release; prepare the intended package selection.`);
@@ -99,10 +111,13 @@ for (let i = 1; i < rawArgs.length; i++) {
     portalVerified = true;
   } else if (arg === "--package") {
     const pkg = rawArgs[++i];
-    if (pkg) explicitPackages = [pkg.trim()];
+    if (!pkg || pkg.startsWith("--") || !pkg.trim()) throw new Error("--package requires a non-empty package name.");
+    explicitPackages = [pkg.trim()];
   } else if (arg === "--packages") {
     const pkgs = rawArgs[++i];
-    if (pkgs) explicitPackages = pkgs.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!pkgs || pkgs.startsWith("--") || !pkgs.trim()) throw new Error("--packages requires a comma-separated list of package names.");
+    explicitPackages = pkgs.split(",").map((s) => s.trim());
+    if (explicitPackages.some((pkg) => !pkg)) throw new Error("--packages cannot contain empty package names.");
   } else {
     console.error(`Unknown argument: ${arg}\n${usage}`);
     process.exit(1);
