@@ -6,6 +6,7 @@ dist/
 build/
 site/.svelte-kit/
 site/src/lib/generated/
+site/static/m365/
 *.log
 
 # Local environment and credentials

@@ -13,7 +13,7 @@ argument-hint: "Provide an MPP source or session ID and optional task, milestone
 
 ## Required MCP Capabilities
 
-- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `list_tasks`, `close_session`.
+- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `list_tasks`, `list_dependencies`, `close_session`.
 - Scope: `Session.ReadOnly`.
 
 ## Workflow

@@ -13,6 +13,7 @@
     access: "read-only" | "commit";
     authoringTargets: string[];
     packageFile: string;
+    m365PackageFile: string | null;
     instructions: string;
     setupGuide: string;
     agentTemplate: string | null;
@@ -35,6 +36,7 @@
   let query = $state("");
   let access = $state<"all" | Agent["access"]>("all");
   let selected = $state<Agent | null>(null);
+  let activePlatform = $state<"studio" | "m365">("studio");
   let activeTab = $state<"setup" | "instructions" | "template" | "skills">("setup");
   let selectedSkill = $state<Skill | null>(null);
   let copied = $state("");
@@ -53,6 +55,12 @@
   function openAgent(agent: Agent) {
     selected = agent;
     selectedSkill = agent.skills[0] ?? null;
+    activePlatform = "studio";
+    activeTab = "setup";
+  }
+
+  function selectPlatform(platform: "studio" | "m365") {
+    activePlatform = platform;
     activeTab = "setup";
   }
 
@@ -155,11 +163,15 @@
             {#if agent.skills.length > 4}<span>+{agent.skills.length - 4}</span>{/if}
           </div>
           <div class="card-actions">
-            <button class="details-button" onclick={() => openAgent(agent)}>Deployment details <ChevronRight size={17} /></button>
-            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-            <a class="download-button" href={downloadUrl(agent)} aria-label={`Download ${agent.title} package`} title="Download latest package">
-              <Download size={18} />
-            </a>
+            <div class="package-choices" aria-label={`${agent.title} package downloads`}>
+              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+              <a class="package-link" href={downloadUrl(agent)}><Download size={16} /> Copilot Studio agent</a>
+              {#if agent.m365PackageFile}
+                <span class="choice-separator">OR</span>
+                <a class="package-link" href={`${resolve("/")}m365/${agent.m365PackageFile}`} download={agent.m365PackageFile}><Download size={16} /> Teams / M365 agent</a>
+              {/if}
+            </div>
+            <button class="details-button" onclick={() => openAgent(agent)}>Setup details <ChevronRight size={16} /></button>
           </div>
         </article>
       {/each}
@@ -173,7 +185,7 @@
     <p class="section-index">02 / Deployment path</p>
     <h2 id="deploy-heading">From package to working agent</h2>
     <ol>
-      <li><span>01</span><div><strong>Choose and download</strong><p>Select the agent closest to the operational role and download its latest ZIP package.</p></div></li>
+      <li><span>01</span><div><strong>Choose and download</strong><p>Select the agent closest to the operational role and download its latest Copilot Studio ZIP package.</p></div></li>
       <li><span>02</span><div><strong>Configure in development</strong><p>Use the included BotDefinition where available, or follow the manual Copilot Studio setup guide.</p></div></li>
       <li><span>03</span><div><strong>Connect the MCP tool</strong><p>Add the PDS Project AI endpoint, use end-user authentication, and confirm its operations are available.</p></div></li>
       <li><span>04</span><div><strong>Test, then publish</strong><p>Run the packaged evaluation cases against non-production MPP files before publishing.</p></div></li>
@@ -184,17 +196,21 @@
 {#if selected}
   {@const agent = selected}
   <div class="scrim" role="presentation" onclick={(event) => { if (event.target === event.currentTarget) selected = null; }}>
-    <div class:skills-active={activeTab === "skills"} class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class:skills-active={activePlatform === "studio" && activeTab === "skills"} class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
       <header class="drawer-header">
         <div><p class="eyebrow">Deployment package</p><h2 id="drawer-title">{agent.title}</h2></div>
         <button class="icon-button" onclick={() => selected = null} aria-label="Close deployment details" title="Close"><X size={20} /></button>
       </header>
+      <nav class="platform-selector" aria-label="Agent platform">
+        <button aria-pressed={activePlatform === "studio"} class:active={activePlatform === "studio"} onclick={() => selectPlatform("studio")}>Copilot Studio Agent</button>
+        {#if agent.m365PackageFile}<button aria-pressed={activePlatform === "m365"} class:active={activePlatform === "m365"} onclick={() => selectPlatform("m365")}>Teams / M365 Agent</button>{/if}
+      </nav>
       <div class="drawer-meta">
         <span>{agent.access === "commit" ? "Guarded commit workflows" : "Read-only workflows"}</span>
         <span>{agent.skills.length} workflows</span>
         <span>{agent.authoringTargets.join(" + ")}</span>
       </div>
-      {#if activeTab !== "skills"}
+      {#if activePlatform === "studio" && activeTab !== "skills"}
         <section class="drawer-skills" aria-labelledby="drawer-skills-title">
           <h3 id="drawer-skills-title">Included skills</h3>
           <ul>
@@ -209,19 +225,32 @@
         </section>
       {/if}
       <div class="drawer-actions">
-        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-        <a class="primary-action" href={downloadUrl(agent)}><Download size={17} /> Download package</a>
         <button onclick={() => copyText("description", agent.description)}>
           {#if copied === "description"}<Check size={17} /> Copied{:else}<Copy size={17} /> Copy description{/if}
         </button>
       </div>
-      <nav class="tabs" aria-label="Agent deployment content">
-        <button aria-pressed={activeTab === "setup"} class:active={activeTab === "setup"} onclick={() => activeTab = "setup"}>Setup guide</button>
-        <button aria-pressed={activeTab === "instructions"} class:active={activeTab === "instructions"} onclick={() => activeTab = "instructions"}>Agent Instructions</button>
-        <button aria-pressed={activeTab === "skills"} class:active={activeTab === "skills"} onclick={() => activeTab = "skills"}>Skills ({agent.skills.length})</button>
-        {#if agent.agentTemplate}<button aria-pressed={activeTab === "template"} class:active={activeTab === "template"} onclick={() => activeTab = "template"}>Agent YAML</button>{/if}
-      </nav>
-      {#if activeTab === "skills"}
+      {#if activePlatform === "studio"}
+        <nav class="tabs" aria-label="Copilot Studio content">
+          <button aria-pressed={activeTab === "setup"} class:active={activeTab === "setup"} onclick={() => activeTab = "setup"}>Setup</button>
+          <button aria-pressed={activeTab === "instructions"} class:active={activeTab === "instructions"} onclick={() => activeTab = "instructions"}>Instructions</button>
+          <button aria-pressed={activeTab === "skills"} class:active={activeTab === "skills"} onclick={() => activeTab = "skills"}>Skills ({agent.skills.length})</button>
+          {#if agent.agentTemplate}<button aria-pressed={activeTab === "template"} class:active={activeTab === "template"} onclick={() => activeTab = "template"}>Agent YAML</button>{/if}
+        </nav>
+      {/if}
+      {#if activePlatform === "m365" && agent.m365PackageFile}
+        <section class="m365-install-panel" aria-labelledby="m365-install-title">
+          <h3 id="m365-install-title">Install in Microsoft Teams</h3>
+          <p>This is a development package configured for the PDS Project AI test Microsoft 365 tenant. Install and test it using an account in that tenant. It is not a production release.</p>
+          <a class="m365-download-link" href={`${resolve("/")}m365/${agent.m365PackageFile}`} download={agent.m365PackageFile}>
+            <Download size={18} /> Download Teams app package
+          </a>
+          <p><code>{agent.m365PackageFile}</code></p>
+          <ol>
+            <li>In Teams, open <strong>Apps</strong> &gt; <strong>Manage your apps</strong> &gt; <strong>Upload an app</strong> &gt; <strong>Upload a custom app</strong>, then choose the downloaded ZIP.</li>
+          </ol>
+          <p>Custom app upload must be enabled by your Teams administrator. A personal install is only for the current account. Organization rollout requires separate admin review and approval.</p>
+        </section>
+      {:else if activeTab === "skills"}
         <div class="skills-browser">
           <ul class="skill-selector" aria-label="Select a skill to preview">
             {#each agent.skills as skill (`${skill.category}:${skill.name}`)}
@@ -251,10 +280,20 @@
           {/if}
         </div>
       {:else}
-        <div class="copy-panel">
-          <button class="copy-button" onclick={() => copyText(activeTab, tabContent(agent))}>
-            {#if copied === activeTab}<Check size={16} /> Copied{:else}<Copy size={16} /> Copy all{/if}
-          </button>
+        <div class:setup-panel={activeTab === "setup"} class="copy-panel">
+          {#if activeTab === "setup"}
+            <div class="setup-actions">
+              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+              <a class="copilot-download-link" href={downloadUrl(agent)}><Download size={17} /> Download Copilot Studio agent</a>
+              <button class="copy-button" onclick={() => copyText(activeTab, tabContent(agent))}>
+                {#if copied === activeTab}<Check size={16} /> Copied{:else}<Copy size={16} /> Copy all{/if}
+              </button>
+            </div>
+          {:else}
+            <button class="copy-button" onclick={() => copyText(activeTab, tabContent(agent))}>
+              {#if copied === activeTab}<Check size={16} /> Copied{:else}<Copy size={16} /> Copy all{/if}
+            </button>
+          {/if}
           {#if activeTab === "template"}
             <pre class="source-code">{tabContent(agent)}</pre>
           {:else}
@@ -303,7 +342,7 @@
   .result-count { margin: 28px 0 12px; color: #65706b; font-size: 13px; }
   .agent-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #7e8680; border-left: 1px solid #c2c5bf; }
   .agent-card { min-height: 330px; padding: 24px; display: flex; flex-direction: column; border-right: 1px solid #c2c5bf; border-bottom: 1px solid #c2c5bf; background: rgba(250, 249, 245, 0.72); }
-  .card-topline, .card-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .card-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .access-badge { display: inline-flex; align-items: center; gap: 5px; color: #185845; font-size: 12px; font-weight: 700; }
   .access-badge.commit { color: #a14322; }
   .target-count { color: #717a75; font-size: 12px; }
@@ -311,9 +350,13 @@
   .agent-card > p { margin: 0; color: #56615c; line-height: 1.5; }
   .skill-list { margin: 22px 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .skill-list span { padding: 4px 7px; background: #e6e7e1; color: #4f5a55; font-size: 11px; }
-  .card-actions { margin-top: auto; padding-top: 18px; border-top: 1px solid #d1d3ce; }
-  .details-button, .download-button, .drawer-actions a, .drawer-actions button { border: 0; background: transparent; color: #17201d; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
-  .download-button { width: 38px; height: 38px; justify-content: center; border: 1px solid #aeb3ad; }
+  .card-actions { margin-top: auto; padding-top: 18px; display: flex; flex-direction: column; align-items: stretch; gap: 12px; border-top: 1px solid #d1d3ce; }
+  .package-choices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .package-link, .drawer-actions button { border: 1px solid #aeb3ad; background: transparent; color: #17201d; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-weight: 700; }
+  .package-link { min-height: 38px; padding: 7px 9px; font-size: 12px; }
+  .package-link:hover { background: #e8eae4; }
+  .choice-separator { color: #707973; font-size: 10px; font-weight: 700; }
+  .details-button { align-self: flex-end; padding: 0; border: 0; background: transparent; color: #52615a; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; }
   .empty-state { padding: 70px; text-align: center; border: 1px solid #c2c5bf; }
   .empty-state button { border: 0; border-bottom: 1px solid; background: none; cursor: pointer; }
   .deployment-band { margin: 0 5vw 72px; padding: 48px; background: #173f35; color: #f7f4e9; }
@@ -330,6 +373,9 @@
   .icon-button { width: 40px; height: 40px; border: 1px solid #b8bcb6; display: grid; place-items: center; background: transparent; cursor: pointer; }
   .drawer-meta { margin: 22px 0; display: flex; flex-wrap: wrap; gap: 8px; }
   .drawer-meta span { padding: 6px 9px; background: #e3e5de; font-size: 12px; }
+  .platform-selector { min-width: 0; margin-top: 14px; display: flex; flex: 0 0 auto; overflow-x: auto; border-bottom: 1px solid #afb4ae; }
+  .platform-selector button { min-height: 48px; padding: 0 18px; flex: 0 0 auto; border: 0; border-bottom: 4px solid transparent; background: transparent; color: #56615c; font-size: 15px; cursor: pointer; white-space: nowrap; }
+  .platform-selector button.active { border-bottom-color: #185845; color: #17201d; font-weight: 700; }
   .drawer-skills { margin: 0 0 24px; padding: 18px 0; border-top: 1px solid #c9ccc6; border-bottom: 1px solid #c9ccc6; }
   .drawer-skills h3 { margin: 0 0 12px; font: 16px "Aptos", "Segoe UI", sans-serif; font-weight: 700; }
   .drawer-skills ul { margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; list-style: none; }
@@ -337,13 +383,27 @@
   .drawer-skills li button { padding: 7px 9px; display: inline-flex; align-items: center; gap: 7px; border: 0; background: #e3e5de; color: inherit; font-size: 12px; cursor: pointer; }
   .drawer-skills li button:hover { background: #d5dad3; }
   .drawer-skills li span { color: #68726d; text-transform: uppercase; font-size: 10px; }
-  .drawer-actions { display: flex; gap: 10px; }
-  .drawer-actions a, .drawer-actions button { min-height: 42px; padding: 0 14px; border: 1px solid #9da39d; }
-  .drawer-actions .primary-action { background: #185845; border-color: #185845; color: white; }
+  .drawer-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .drawer-actions button { min-height: 42px; padding: 0 14px; border: 1px solid #9da39d; }
   .tabs { margin-top: 30px; display: flex; border-bottom: 1px solid #afb4ae; }
   .tabs button { padding: 13px 16px; border: 0; border-bottom: 3px solid transparent; background: transparent; cursor: pointer; }
   .tabs button.active { border-color: #a14322; font-weight: 700; }
   .copy-panel { position: relative; flex: 1; min-height: 0; margin-top: 18px; }
+  .copy-panel.setup-panel { display: flex; flex-direction: column; }
+  .setup-actions { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .copilot-download-link { min-height: 40px; padding: 0 12px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #185845; background: #185845; color: white; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .copilot-download-link:hover { background: #104d3c; }
+  .setup-actions .copy-button { position: static; flex: 0 0 auto; }
+  .copy-panel.setup-panel > .markdown-content { height: auto; flex: 1; min-height: 0; }
+  .m365-install-panel { flex: 1; min-height: 0; margin-top: 18px; padding: 28px 34px 36px; overflow: auto; border: 1px solid #b8bcb6; background: #fcfbf7; color: #2d3834; font-size: 15px; line-height: 1.68; }
+  .m365-install-panel h3 { margin: 0 0 18px; color: #17201d; font: 24px Georgia, "Times New Roman", serif; }
+  .m365-install-panel p { margin: 0 0 14px; }
+  .m365-install-panel ol { margin: 0 0 18px; padding-left: 26px; }
+  .m365-install-panel li { margin: 5px 0; padding-left: 3px; }
+  .m365-install-panel a { color: #14624c; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .m365-install-panel .m365-download-link { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 8px; padding: 11px 16px; border: 1px solid #14624c; background: #14624c; color: #fff; font-weight: 700; text-decoration: none; }
+  .m365-install-panel .m365-download-link:hover { background: #104d3c; }
+  .m365-install-panel code { padding: 2px 5px; background: #e7e9e3; color: #8c3d22; font: 0.88em/1.5 Consolas, monospace; overflow-wrap: anywhere; }
   .copy-button { position: absolute; top: 10px; right: 10px; padding: 8px 10px; display: flex; gap: 6px; border: 1px solid #5c6964; background: #f7f5ef; cursor: pointer; }
   .copy-panel > .markdown-content, .copy-panel > .source-code { height: 100%; }
   .skills-browser { flex: 1; min-height: 0; margin-top: 18px; display: grid; grid-template-columns: minmax(250px, 28%) minmax(0, 1fr); gap: 18px; }
@@ -363,6 +423,7 @@
   .skill-placeholder { margin: 0; padding: 30px; border: 1px solid #b8bcb6; color: #68726d; }
   .source-code { min-height: 260px; margin: 0; padding: 58px 20px 24px; overflow: auto; border: 1px solid #b8bcb6; background: #e9e9e3; color: #26322e; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 Consolas, monospace; }
   .markdown-content { min-height: 260px; padding: 28px 34px 48px; overflow: auto; border: 1px solid #b8bcb6; background: #fcfbf7; color: #2d3834; font-size: 15px; line-height: 1.68; }
+  .m365-install-panel { min-height: 260px; }
   .markdown-content :global(h1), .markdown-content :global(h2), .markdown-content :global(h3), .markdown-content :global(h4) { color: #17201d; font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   .markdown-content :global(h1) { margin: 0 0 24px; padding-bottom: 15px; border-bottom: 2px solid #185845; font-size: 32px; line-height: 1.15; }
   .markdown-content :global(h2) { margin: 36px 0 15px; padding-bottom: 9px; border-bottom: 1px solid #c7cbc5; font-size: 24px; line-height: 1.2; }
@@ -387,5 +448,5 @@
   .copy-status { min-height: 20px; color: #a14322; font-size: 12px; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
   @media (max-width: 980px) { .intro { grid-template-columns: 1fr; } .catalog-facts { max-width: 460px; } .toolbar, .controls { align-items: stretch; flex-direction: column; } .search-field { width: 100%; } .agent-grid { grid-template-columns: repeat(2, 1fr); } .deployment-band ol { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 640px) { .masthead { padding: 0 20px; } .repo-link { font-size: 0; } .intro { min-height: 0; padding: 54px 20px 40px; } h1 { font-size: 48px; } .lede { font-size: 16px; } .workspace { padding: 44px 20px 60px; } .segments { width: 100%; } .segments button { flex: 1; padding: 0 7px; } .agent-grid { grid-template-columns: 1fr; } .agent-card { min-height: 300px; } .deployment-band { margin: 0; padding: 42px 20px; } .deployment-band ol { grid-template-columns: 1fr; } .scrim { padding: 0; } .drawer { width: 100%; height: 100dvh; padding: 24px 18px; } .drawer.skills-active .drawer-meta, .drawer.skills-active .drawer-actions { display: none; } .drawer-actions { flex-wrap: wrap; } .tabs { overflow-x: auto; flex: 0 0 auto; } .tabs button { white-space: nowrap; } .drawer-skills { max-height: 26dvh; overflow: auto; } .skills-browser { overflow: hidden; grid-template-columns: 1fr; grid-template-rows: 160px minmax(0, 1fr); } .skill-preview header { align-items: center; } .markdown-content { padding: 22px 18px 36px; font-size: 14px; } .markdown-content :global(table) { display: block; overflow-x: auto; } }
+  @media (max-width: 640px) { .masthead { padding: 0 20px; } .repo-link { font-size: 0; } .intro { min-height: 0; padding: 54px 20px 40px; } h1 { font-size: 48px; } .lede { font-size: 16px; } .workspace { padding: 44px 20px 60px; } .segments { width: 100%; } .segments button { flex: 1; padding: 0 7px; } .agent-grid { grid-template-columns: 1fr; } .agent-card { min-height: 300px; } .package-choices { align-items: stretch; } .package-link { flex: 1 1 140px; } .choice-separator { flex: 0 0 100%; text-align: center; } .deployment-band { margin: 0; padding: 42px 20px; } .deployment-band ol { grid-template-columns: 1fr; } .scrim { padding: 0; } .drawer { width: 100%; height: 100dvh; padding: 24px 18px; } .drawer.skills-active .drawer-meta, .drawer.skills-active .drawer-actions { display: none; } .drawer-actions { gap: 8px; } .drawer-actions button { min-height: 40px; padding: 0 10px; font-size: 12px; } .platform-selector { overflow-x: auto; } .tabs { overflow-x: auto; flex: 0 0 auto; } .tabs button { white-space: nowrap; } .drawer-skills { max-height: 26dvh; overflow: auto; } .skills-browser { overflow: hidden; grid-template-columns: 1fr; grid-template-rows: 160px minmax(0, 1fr); } .skill-preview header { align-items: center; } .markdown-content, .m365-install-panel { padding: 22px 18px 36px; font-size: 14px; } .markdown-content :global(table) { display: block; overflow-x: auto; } }
 </style>

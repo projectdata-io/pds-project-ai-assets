@@ -21,7 +21,7 @@ argument-hint: "Provide the source MPP driveId/itemId or authorized reference an
 
 1. Accept the request: the source MPP identity and the configured intake list identity, plus the reporting window when the caller overrides the default.
 2. Open the source file with `create_session_from_onedrive` or `create_session_from_reference`. Call `get_project` for the title and status date, and retrieve the complete task, resource, and assignment collections with `list_tasks`, `list_resources`, and `list_assignments`, following pagination to the end.
-3. Derive the reportable set: non-summary, non-milestone, incomplete tasks that are in progress or due within the reporting window, joined to their assigned resources.
+3. Derive the reportable set: non-summary, non-milestone, incomplete tasks that are in progress or due within the reporting window, joined to their assigned resources by UID. Verify the required status/date/assignment fields are present before filtering; missing evidence is not false or zero. Report tasks that cannot be classified rather than guessing request rows.
 4. Read the intake list's existing rows for the same file identity and skip any task/resource pair that already has a pending row.
 5. Create one pending intake row per remaining task/resource pair, carrying the file identity, task UID, task name, resource name, and empty progress fields. Follow the field mapping in the owning agent instructions.
 6. Close the PDS Project AI session after producing the result.

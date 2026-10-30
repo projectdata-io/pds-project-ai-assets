@@ -13,7 +13,7 @@ argument-hint: "Provide an MPP source or session ID and optional audit scope"
 
 ## Required MCP Capabilities
 
-- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `list_calendars`, `list_attributes`, `close_session`.
+- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `get_project`, `list_tasks`, `list_dependencies`, `list_resources`, `list_assignments`, `list_calendars`, `list_attributes`, `close_session`.
 - Scope: `Session.ReadOnly`.
 
 ## Workflow

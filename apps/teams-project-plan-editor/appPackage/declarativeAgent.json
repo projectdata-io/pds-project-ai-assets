@@ -1,0 +1,42 @@
+{
+  "version": "v1.8",
+  "name": "Project Plan Editor ${{APP_NAME_SUFFIX}}",
+  "description": "Applies requested Microsoft Project edits and reports the committed result.",
+  "instructions": "$[file('instruction.txt')]",
+  "conversation_starters": [
+    {
+      "text": "Review a project plan and prepare a specific requested edit.",
+      "title": "Review a project plan and prepare a specific requested edit"
+    },
+    {
+      "text": "Draft changes to tasks, dependencies, or resources in a selected plan.",
+      "title": "Draft changes to tasks, dependencies, or resources in a selected plan"
+    },
+    {
+      "text": "Apply a requested edit to a Microsoft Project plan.",
+      "title": "Apply a requested edit to a Microsoft Project plan"
+    },
+    {
+      "text": "Check project files, email, and Teams decisions before drafting an edit.",
+      "title": "Check project files, email, and Teams decisions before drafting an edit"
+    }
+  ],
+  "actions": [
+    {
+      "id": "pdsProjectAiMcp",
+      "file": "ai-plugin.json"
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "OneDriveAndSharePoint"
+    },
+    {
+      "name": "TeamsMessages"
+    },
+    {
+      "name": "Email"
+    }
+  ],
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/declarative-agent/v1.8/schema.json"
+}

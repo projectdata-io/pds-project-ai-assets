@@ -23,25 +23,25 @@ argument-hint: "Provide the MPP source or session ID and exact schedule changes"
 3. Resolve targets by UID. Construct only supported `createTask`, `updateTask`, `deleteTask`, `linkTasks`, and `unlinkTasks` operations.
 4. For created sibling order, use unique `opId` and `afterTaskOpId`. Do not combine `afterTaskUid` and `afterTaskOpId`.
 5. Express durations with explicit units. Preserve requested link type and lag without conversion unless the contract defines it.
-6. Preview and validate. Report downstream recalculation effects and destructive deletions.
-7. Stop before commit and hand off the unchanged validated draft to `mpp-safe-commit`.
+6. Reuse a supplied uncommitted draft or call `create_edit_draft`. If it already contains the requested changes, do not append them again; ask for draft context if its operations are unknown. Otherwise call `add_edit_operations` once with the ordered changes. Preview and validate; repair unchanged intent using `replace_edit_operations` and repeat both checks.
+7. Return `sessionId`, `editId`, validation status, intended changes, and session ownership. For a requested write, pass that existing draft to `mpp-safe-commit`; for a draft-only request, stop without committing.
 
 ## Guardrails
 
 - Do not invent dependencies or constraints to make dates fit.
-- Do not delete a task without showing its UID and previewed impact.
+- Target deletions by UID and report material effects in the result.
 - Do not edit protected master-project, external, cross-project, or read-only tasks.
 - Never call `commit_edit_draft`.
 
 ## Output Format
 
-Return ordered operations, target UIDs/opIds, previewed schedule effects, validation result, destructive impacts, and explicit not-yet-committed status.
+Return the validated draft and material effects, not a claim of persisted changes.
 
 ## Error Handling
 
-- Replace invalid operation lists only with a complete corrected list, then preview and validate again.
+- Replace invalid operation lists with complete corrections when intent is unchanged, then preview and validate again.
 - On unresolved targets or cycles, stop and request clarification.
-- Keep a skill-owned session open for safe-commit handoff; close it when abandoned.
+- Pass session ownership with the draft to `mpp-safe-commit`. Keep the session open for commit, download, or follow-up; close only a session you created when abandoned or no longer needed.
 
 ## Compatibility
 

@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { extname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,6 +36,18 @@ function visitFiles(directory) {
     }
   }
   return files;
+}
+
+function isGitIgnored(repositoryPath) {
+  try {
+    execFileSync("git", ["check-ignore", "-q", "--", repositoryPath], {
+      cwd: rootPath,
+      stdio: "ignore"
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function loadJson(repositoryPath) {
@@ -155,6 +168,19 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
     if (!sameValues(skill.tools, declaredTools)) {
       failures.push(`Catalog tools do not match SKILL.md declaration for ${skill.name}`);
     }
+    const workflow = skillContent.split(/^## Workflow[ \t]*\r?$/m)[1]?.split(/^##[ \t]+/m)[0];
+    if (!workflow?.trim()) {
+      failures.push(`Skill ${skill.name} must contain a non-empty Workflow section`);
+    } else {
+      const referencedTools = sortedUnique([...workflow.matchAll(/`([a-z][a-z0-9_]*)`/g)]
+        .map((match) => match[1])
+        .filter((name) => contractTools.has(name)));
+      for (const tool of referencedTools) {
+        if (!declaredTools.includes(tool)) {
+          failures.push(`Skill ${skill.name} workflow references undeclared MCP tool ${tool}`);
+        }
+      }
+    }
   }
 
   for (const skillName of skillFiles.keys()) {
@@ -228,8 +254,9 @@ if (!catalog || !Array.isArray(catalog.skills) || !Array.isArray(catalog.agents)
 }
 
 const commitSkills = [...catalogSkills.values()].filter((skill) => skill.tools.includes("commit_edit_draft"));
-if (commitSkills.length !== 1 || commitSkills[0]?.name !== "mpp-safe-commit" || commitSkills[0]?.access !== "commit") {
-  failures.push("mpp-safe-commit must be the only catalog skill allowed to call commit_edit_draft");
+const expectedCommitSkills = new Set(["mpp-create-project", "mpp-safe-commit"]);
+if (commitSkills.length !== expectedCommitSkills.size || commitSkills.some((skill) => !expectedCommitSkills.has(skill.name) || skill.access !== "commit")) {
+  failures.push("Only mpp-create-project and mpp-safe-commit may call commit_edit_draft, and both must be commit-capable");
 }
 
 const readme = readFileSync(join(rootPath, "README.md"), "utf8");
@@ -287,6 +314,10 @@ if (!evaluations || !Array.isArray(evaluations.cases)) {
 
 for (const file of visitFiles(rootPath)) {
   const repositoryPath = relative(rootPath, file).replaceAll("\\", "/");
+  if (isGitIgnored(repositoryPath)) {
+    continue;
+  }
+
   const fileName = repositoryPath.split("/").at(-1) ?? repositoryPath;
   if (prohibitedExtensions.has(extname(fileName).toLowerCase()) || prohibitedFileNames.some((pattern) => pattern.test(fileName))) {
     failures.push(`Prohibited public artifact: ${repositoryPath}`);

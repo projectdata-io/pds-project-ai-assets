@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
+  "schema_version": "v2.4",
+  "name_for_human": "PDS Project AI",
+  "description_for_human": "Project Plan Editor Microsoft Project plan creation and editing.",
+  "description_for_model": "Use these PDS Project AI tools to edit real Microsoft Project MPP files. Discover capabilities, stage and validate a draft, commit only an authorized write, and use the host download app when no provider target is requested. Tool discovery is not execution; never claim an operation succeeded without its actual tool result. Do not return raw signed URLs.",
+  "contact_email": "support@projectdata.io",
+  "namespace": "pdsprojectaiprojectplaneditor",
+  "functions": [],
+  "runtimes": [
+    {
+      "type": "RemoteMCPServer",
+      "spec": {
+        "url": "https://mcp.projectdata.ai/mcp/m365"
+      },
+      "run_for_functions": [
+        "*"
+      ],
+      "auth": {
+        "type": "OAuthPluginVault",
+        "reference_id": "${{MCP_DA_AUTH_ID_PROJECT_PLAN_EDITOR}}"
+      }
+    }
+  ]
+}

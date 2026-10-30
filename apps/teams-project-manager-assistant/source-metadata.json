@@ -1,0 +1,22 @@
+{
+  "packageSlug": "teams-project-manager-assistant",
+  "role": "project-manager-assistant",
+  "title": "PDS Project AI: Project Manager Assistant",
+  "shortName": "PDS Project Manager",
+  "shortDescription": "Understand delivery status, risks, milestones, and next steps.",
+  "version": "2.3.9",
+  "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
+  "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email",
+    "CodeInterpreter"
+  ],
+  "conversationStarters": [
+    "Select a Microsoft Project plan to analyze.",
+    "Summarize the current project delivery status with traceable task evidence.",
+    "Assess schedule health and identify the most important delivery risks.",
+    "Prepare a concise project-manager brief for the current reporting window."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "packageSlug": "teams-mpp-data-auditor",
+  "role": "mpp-data-auditor",
+  "title": "PDS Project AI: MPP Data Auditor",
+  "shortName": "PDS Data Auditor",
+  "shortDescription": "Check Microsoft Project data quality and consistency.",
+  "version": "2.3.9",
+  "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
+  "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_MPP_DATA_AUDITOR",
+  "capabilities": [
+    "OneDriveAndSharePoint",
+    "TeamsMessages",
+    "Email",
+    "CodeInterpreter"
+  ],
+  "conversationStarters": [
+    "Select a Microsoft Project plan to analyze.",
+    "Audit MPP data quality, hierarchy, and progress consistency.",
+    "Review custom fields and structural defects with supporting evidence."
+  ]
+}

@@ -45,6 +45,9 @@ const agents = catalog.agents.map((agent) => {
     ...metadata,
     authoringTargets: agent.authoringTargets,
     packageFile: `PDS${toPascalCase(agent.name)}.zip`,
+    m365PackageFile: existsSync(join(rootPath, "site", "static", "m365", `teams-${agent.name}.zip`))
+      ? `teams-${agent.name}.zip`
+      : null,
     instructions: readUtf8(join(packagePath, "instructions.md")),
     setupGuide: readUtf8(join(packagePath, "README.md")),
     agentTemplate: existsSync(join(packagePath, "agent.yaml"))
