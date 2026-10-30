@@ -208,11 +208,11 @@ npm run check:teams-packages
 npm run validate:teams-packages
 ```
 
-### CI installable package artifacts
+### Internal dev test packages
 
-On pushes to `main` and manual workflow runs, the Build agent assets workflow builds and validates one sideloadable M365 app ZIP for each of the four active Teams agents, then uploads them as the `m365-agent-installable-packages` artifact. Pull requests continue to run source validation without requiring tenant-specific configuration. This CI step only packages and validates; it does not provision, install, share, or publish apps.
+Only a manually dispatched Build agent assets workflow creates M365 dev test ZIPs. The short-lived `m365-agent-dev-test-packages` artifact is bound to the configured dev tenant and is for internal testing only; it is not customer-ready and must not be distributed to customer tenants. Pull requests and pushes to `main` run source validation and general agent packaging without dev credentials. The public catalog stages M365 downloads only from production ZIPs created by the Marketplace packaging flow after the external-tenant release gates pass.
 
-Configure these four GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
+Only if internal dev test ZIPs are needed, configure these four GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file. These secrets are not used to create customer releases:
 
 - `M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT`
 - `M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR`
@@ -221,13 +221,13 @@ Configure these four GitHub Actions repository or organization secrets with the 
 
 Each file must contain that package's provisioned dev app ID and PDS auth configuration ID. No Work IQ auth configuration is needed. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
 
-### Build and download the CI artifacts
+### Build and download internal dev test artifacts
 
-To build on demand, open the repository's **Actions** tab, select **Build agent assets**, choose **Run workflow**, select the branch, and start the run. Pushes to `main` also build the artifacts automatically; pull requests validate the source but do not produce the M365 app ZIP artifact.
+To build internal dev test packages, open the repository's **Actions** tab, select **Build agent assets**, choose **Run workflow**, select the branch, and start the run. Pull requests and pushes to `main` do not build or publish tenant-bound M365 ZIPs.
 
-After the workflow succeeds, open that run and download **`m365-agent-installable-packages`** from its **Artifacts** section. It contains one installable app ZIP per role, named for its `teams-*` package, plus `DEPLOYMENT.md` with testing and organization rollout steps. Extract the downloaded artifact and upload individual package ZIPs, not the outer artifact archive. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains the Copilot Studio agent asset bundles. Artifacts are retained for 14 days.
+After the workflow succeeds, open that run and download **`m365-agent-dev-test-packages`** from its **Artifacts** section. It contains four dev-tenant app ZIPs plus `DEPLOYMENT.md`; use them only in the configured development tenant. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains Copilot Studio setup assets and is the only package set attached to automated GitHub Releases. Dev M365 ZIP artifacts are retained for three days.
 
-The downloaded M365 ZIPs are packaged for the dev tenant configured by the four secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
+The manual dev test ZIPs are packaged for the dev tenant configured by the four secrets above. They are not customer releases. Building the artifact does not install the apps or submit them for organization approval; use the separate internal development workflow below. Customer distribution requires production identities, cross-tenant authentication, external-tenant verification, and the public-release checklist gates.
 
 ### Development provisioning and organization submission
 

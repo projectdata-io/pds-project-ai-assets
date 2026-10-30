@@ -1,15 +1,17 @@
-# PDS Project AI M365 Agent Deployment
+# PDS Project AI Internal Dev Agent Testing
+
+This guide covers internal dev-tenant packages only. The ZIPs produced from `env/.env.dev` are tenant-bound test artifacts, not customer releases; do not distribute them to external tenants. Customer packages require separate production identities, cross-tenant authentication, external-tenant acceptance, and the gates in [the public release checklist](docs/public-marketplace-release-checklist.md).
 
 ## What is in this download
 
-The `m365-agent-installable-packages` artifact contains this guide and four active Microsoft 365 app packages:
+The manually dispatched `m365-agent-dev-test-packages` artifact contains this guide and four dev-tenant Microsoft 365 test packages:
 
 - `teams-project-manager-assistant.zip`
 - `teams-mpp-data-auditor.zip`
 - `teams-project-plan-editor.zip`
 - `teams-project-schedule-generator.zip`
 
-Download and extract the artifact, then use an individual package ZIP. Do not upload the outer artifact archive. Each package is built with the dev app ID and PDS authentication binding configured in GitHub Actions. All four packages use native Microsoft 365 capabilities to search SharePoint and OneDrive files, email, and Teams conversations the signed-in user can access; none has email or Teams write actions. Project Manager Assistant and MPP Data Auditor generate requested reports with Code Interpreter as temporary download attachments. Users save reports to OneDrive or SharePoint manually. No Work IQ actions or report-upload connections are included. Project Plan Editor and Project Schedule Generator do not generate or save reports or documents. These are dev-tenant packages, not production or public Marketplace packages.
+Download and extract the artifact, then use an individual package ZIP only in the configured dev tenant. Do not upload the outer artifact archive. Each package is built with the dev app ID and PDS authentication binding configured in GitHub Actions. These packages are not suitable for external customer tenants. For customer distribution, use production identities and complete cross-tenant authentication and acceptance gates before creating or publishing customer packages.
 
 ## Personal test in Teams
 
@@ -22,7 +24,7 @@ Custom app upload must be enabled by your Teams administrator. Sign in to Teams 
 3. Open the app in personal scope and complete its sign-in and project-plan selection flow.
 4. Ask Project Manager Assistant or MPP Data Auditor to answer a plan question using relevant SharePoint/OneDrive files, email, and Teams context; verify source citations, manual report downloads when requested, and that project data is never changed. For Project Plan Editor and Project Schedule Generator, verify relevant M365 context can inform a draft and clear write requests proceed without another approval loop. Email and Teams activity must remain read-only. Repeat with another active package ZIP to test another role.
 
-This installs the selected app for your account only. It does not make the app available to other users. If custom app upload is unavailable, ask your Teams administrator to enable or perform the test deployment.
+These dev packages work only with the configured development tenant and are not for customer tenants. This installs the selected app for your account only. It does not make the app available to other users. If custom app upload is unavailable, ask your Teams administrator to enable or perform the test deployment.
 
 See Microsoft's [custom app upload instructions](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload) for the current Teams UI and tenant requirements.
 

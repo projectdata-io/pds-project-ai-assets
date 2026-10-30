@@ -38,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Configure M365 dev package environments
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         env:
           M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT }}
@@ -71,8 +71,8 @@ jobs:
       - name: Verify Agent templates
         run: npm run verify:agents
 
-      - name: Build and validate installable M365 agent packages
-        if: github.event_name != 'pull_request'
+      - name: Build and validate internal M365 dev test packages
+        if: github.event_name == 'workflow_dispatch'
         shell: pwsh
         env:
           ATK_CLI_SKILL: "true"
@@ -151,14 +151,14 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload installable M365 agent packages
-        if: github.event_name != 'pull_request'
+      - name: Upload internal M365 dev test packages
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
-          name: m365-agent-installable-packages
+          name: m365-agent-dev-test-packages
           path: dist/m365-agent-packages/
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 3
 
   release:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
@@ -202,12 +202,6 @@ jobs:
 
       - name: Install website dependencies
         run: npm ci --prefix site
-
-      - name: Download installable M365 agent packages
-        uses: actions/download-artifact@v4
-        with:
-          name: m365-agent-installable-packages
-          path: dist/m365-agent-packages
 
       - name: Build static website
         env:
