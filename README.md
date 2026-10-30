@@ -159,17 +159,14 @@ The same workflow builds and deploys the static agent catalog to GitHub Pages on
 
 ## Microsoft 365 Declarative-Agent Packages
 
-`apps/` contains seven independently deployable `PDS Project AI` packages:
+`apps/` contains four active, independently deployable `PDS Project AI` M365 packages:
 
 - `teams-project-manager-assistant`
-- `teams-schedule-quality-analyst`
-- `teams-portfolio-executive-analyst`
-- `teams-resource-manager`
 - `teams-mpp-data-auditor`
 - `teams-project-plan-editor`
 - `teams-project-schedule-generator`
 
-Every package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, and role-specific generated instructions and artwork. All seven use native, read-only Microsoft 365 capabilities to search the signed-in user's accessible SharePoint and OneDrive files, email, and Teams conversations for relevant project context. The five analysis packages use PDS for analysis and Code Interpreter for user-requested report attachments. Their instructions prohibit project-data changes; discovered tool availability is not restricted by a package allowlist. Project Plan Editor and Project Schedule Generator use PDS tools and execute clear requests after internally validating them; they ask only for missing or ambiguous inputs. They do not generate reports or documents. All seven reuse the PDS MCP endpoint and metadata-only project-plan picker.
+Each active package has exactly one `copilotAgents.declarativeAgents` manifest entry, one package-local `m365agents.yml` lifecycle, a unique `MCP_DA_AUTH_ID_*` DCR binding, and role-specific generated instructions and artwork. All four use native Microsoft 365 capabilities to search the signed-in user's accessible SharePoint and OneDrive files, email, and Teams conversations for relevant project context. Project Manager Assistant and MPP Data Auditor are read-only and use Code Interpreter for requested report attachments. Project Plan Editor and Project Schedule Generator can commit authorized changes; the agents do not generate reports or documents. All four reuse the PDS MCP endpoint and metadata-only project-plan picker. Other catalog roles remain available through their non-M365 authoring targets.
 
 ### Editor workflow structure
 
@@ -187,19 +184,19 @@ The five read-only Teams agents receive concise role-specific analysis criteria,
 
 Use Code Interpreter to generate requested Word (.docx), PDF, Excel, and PowerPoint reports. Verify the actual file exists, is non-empty, and matches the requested format before returning its attachment. If generation fails, report the actual error rather than claiming a file exists. Reports are temporary downloads; users save them to OneDrive or SharePoint manually. Do not ask for report destinations or claim automatic cloud saving. Skill files remain available unchanged to skill-capable hosts and generated native-skill templates.
 
-All five analytics role prompts include tailored PMI-aligned recommendations for their discipline, with an explicit public PMBOK Guide reference basis and no invented PMI thresholds, clause citations, or certification claims. The same role guidance reaches Teams packages, Copilot Studio instruction bundles, and native-skill templates. See [PMI-Aligned Analytics](docs/pmi-analysis-guidance.md) for verified public sources, role applications, and live acceptance scenarios.
+All five analytics role prompts include tailored PMI-aligned recommendations for their discipline, with an explicit public PMBOK Guide reference basis and no invented PMI thresholds, clause citations, or certification claims. The same guidance reaches the active M365 packages where applicable, Copilot Studio instruction bundles, and native-skill templates. See [PMI-Aligned Analytics](docs/pmi-analysis-guidance.md) for verified public sources, role applications, and live acceptance scenarios.
 
 Project Schedule Generator and its creation skill also apply PMI-aligned planning to agreed scope/deliverables, dependency logic, estimates, resource/calendar assumptions, and decision milestones. This does not change the authorized MCP workflow or make a committed MPP an approved baseline. Unsupported planning features and remaining governance decisions are disclosed explicitly.
 
-On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the seven Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
+On Windows, run `./scripts/build-teams-icons.ps1` to render the canonical role icon pairs in `shared/agent-icons/` from the original `shared/user-ui-icons/` artwork. Run `npm run generate:teams-packages` afterward to copy them into the four active Teams packages. The 192-pixel color and 32-pixel white-on-transparent outline PNGs are committed so package generation does not require image tooling.
 
 The former five-agent `teams-project-manager-assistant` suite is retired. This is a breaking migration: install each replacement as a separate Microsoft 365 app and do not reuse the former suite's generated `TEAMS_APP_ID` or `MCP_DA_AUTH_ID_PDSPROJECTAI` values. The shared endpoint remains unchanged; the picker returns `{ selectionReference, fileName }`, which is passed to `create_session_from_onedrive`. Legacy callers may continue passing `{ driveId, itemId }`.
 
 ### Report generation and PDS setup
 
-All seven Teams/M365 packages use the PDS compatibility endpoint `https://mcp.projectdata.ai/mcp/m365`, configured in each package's `source-metadata.json` and emitted into `appPackage/ai-plugin.json`. Deploy service support for this path before rolling out the updated packages. OAuth discovery and DCR target URL prefixes remain at the service origin; existing origin-scoped bindings cover the new path. Other clients can continue using the normal MCP endpoint.
+All four active Teams/M365 packages use the PDS compatibility endpoint `https://mcp.projectdata.ai/mcp/m365`, configured in each package's `source-metadata.json` and emitted into `appPackage/ai-plugin.json`. Deploy service support for this path before rolling out the updated packages. OAuth discovery and DCR target URL prefixes remain at the service origin; existing origin-scoped bindings cover the new path. Other clients can continue using the normal MCP endpoint.
 
-The five analysis packages retain the native Code Interpreter capability for report attachments. Work IQ Word, conversion, and report-storage actions and OAuth provisioning are removed; no Work IQ tenant or auth IDs are needed for packaging. Existing ignored environment values and tenant vault registrations are unused and are not automatically deleted. Installed agents require an updated package release before the removed actions disappear. This change does not remove native M365 search, PDS project-file access, or authorized MPP commit destinations.
+The two active analysis packages retain the native Code Interpreter capability for report attachments. Work IQ Word, conversion, and report-storage actions and OAuth provisioning are removed; no Work IQ tenant or auth IDs are needed for packaging. Existing ignored environment values and tenant vault registrations are unused and are not automatically deleted. Installed agents require an updated package release before the removed actions disappear. This change does not remove native M365 search, PDS project-file access, or authorized MPP commit destinations.
 
 ### Safe local package checks
 
@@ -213,14 +210,11 @@ npm run validate:teams-packages
 
 ### CI installable package artifacts
 
-On pushes to `main` and manual workflow runs, the Build agent assets workflow builds and validates one sideloadable M365 app ZIP for each Teams agent, then uploads them as the `m365-agent-installable-packages` artifact. Pull requests continue to run source validation without requiring tenant-specific configuration. This CI step only packages and validates; it does not provision, install, share, or publish apps.
+On pushes to `main` and manual workflow runs, the Build agent assets workflow builds and validates one sideloadable M365 app ZIP for each of the four active Teams agents, then uploads them as the `m365-agent-installable-packages` artifact. Pull requests continue to run source validation without requiring tenant-specific configuration. This CI step only packages and validates; it does not provision, install, share, or publish apps.
 
-Configure these seven GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
+Configure these four GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file:
 
 - `M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT`
-- `M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST`
-- `M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST`
-- `M365_AGENT_DEV_ENV_RESOURCE_MANAGER`
 - `M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR`
 - `M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR`
 - `M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR`
@@ -233,7 +227,7 @@ To build on demand, open the repository's **Actions** tab, select **Build agent 
 
 After the workflow succeeds, open that run and download **`m365-agent-installable-packages`** from its **Artifacts** section. It contains one installable app ZIP per role, named for its `teams-*` package, plus `DEPLOYMENT.md` with testing and organization rollout steps. Extract the downloaded artifact and upload individual package ZIPs, not the outer artifact archive. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains the Copilot Studio agent asset bundles. Artifacts are retained for 14 days.
 
-The downloaded M365 ZIPs are packaged for the dev tenant configured by the seven secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
+The downloaded M365 ZIPs are packaged for the dev tenant configured by the four secrets above. Building the artifact does not install the apps or submit them for organization approval; use the separate development installation or organization submission steps below.
 
 ### Development provisioning and organization submission
 
@@ -262,7 +256,7 @@ npm run generate:teams-packages
 npm test
 npm run manage:teams-packages -- all --env dev
 npm run manage:teams-packages -- provision --env dev --execute
-# After provisioning, install the seven dev agents for your signed-in account:
+# After provisioning, install the four active dev agents for your signed-in account:
 npm run manage:teams-packages -- install --env dev
 npm run manage:teams-packages -- install --env dev --execute
 # For a new release, bump versions and regenerate once, then freeze tested ZIPs:
@@ -275,7 +269,7 @@ npm run manage:teams-packages -- publish --env dev
 npm run manage:teams-packages -- publish --env dev --execute --portal-verified
 ```
 
-`provision` creates or updates seven separate dev Teams apps and PDS DCR configurations and extends each app to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. Test every agent in Copilot, including per-user PDS sign-in and MPP selection. Verify downloadable report generation only on the five analysis agents, manual saving, no Work IQ prompts, and no project-data changes. Verify the two write agents execute clear requests and ask only for genuinely missing or ambiguous inputs. A dry-run `all` lists provisioning and publication; `all --execute` is blocked so a human can verify the exact ZIP in Developer Portal between stages.
+`provision` creates or updates four separate dev Teams apps and PDS DCR configurations and extends each app to Microsoft 365. `install` then builds, validates, and sideloads each dev ZIP in **Personal** scope for the signed-in account; it does not install for other tenant users. It requires successful provisioning and package-local generated IDs first. Toolkit's `install --scope Shared` is also **not** a tenant-wide install. Test all four active agents in Copilot, including per-user PDS sign-in and MPP selection. Verify downloadable report generation only on Project Manager Assistant and MPP Data Auditor, manual saving, no Work IQ prompts, and no project-data changes. Verify Project Plan Editor and Project Schedule Generator execute clear requests and ask only for genuinely missing or ambiguous inputs. A dry-run `all` lists provisioning and publication; `all --execute` is blocked so a human can verify the exact ZIP in Developer Portal between stages.
 
 For managed rollout or automatic installation for selected users, use `publish` after `prepare` and Developer Portal verification: it submits each frozen ZIP to the Teams admin center without rebuilding it. It does **not** make agents available to everyone: an administrator must approve each submission, choose the audience, and optionally preinstall them. Check **Teams admin center > Teams apps > Manage apps** for prior submissions by app ID before publishing. If a submission fails, rerun only `publish` with `--portal-verified`; the coordinator checks the same ZIP checksums and will reject changed artifacts. None of these modes deploys the PDS API or publishes to the public Microsoft Store.
 

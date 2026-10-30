@@ -8,19 +8,11 @@ import { strFromU8, unzipSync } from "fflate";
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const allPackages = [
   "teams-project-manager-assistant",
-  "teams-schedule-quality-analyst",
-  "teams-portfolio-executive-analyst",
-  "teams-resource-manager",
   "teams-mpp-data-auditor",
   "teams-project-plan-editor",
   "teams-project-schedule-generator"
 ];
-const activePublishedPackages = [
-  "teams-project-manager-assistant",
-  "teams-mpp-data-auditor",
-  "teams-project-plan-editor",
-  "teams-project-schedule-generator"
-];
+const activePublishedPackages = allPackages;
 const releaseManifestPath = join(rootPath, "dist", "teams-package-release.json");
 const rawArgs = process.argv.slice(2);
 const mode = rawArgs[0];

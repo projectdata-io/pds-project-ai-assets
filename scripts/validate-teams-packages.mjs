@@ -7,9 +7,6 @@ const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const m365McpEndpoint = "https://mcp.projectdata.ai/mcp/m365";
 const expected = new Map([
   ["teams-project-manager-assistant", "project-manager-assistant"],
-  ["teams-schedule-quality-analyst", "schedule-quality-analyst"],
-  ["teams-portfolio-executive-analyst", "portfolio-executive-analyst"],
-  ["teams-resource-manager", "resource-manager"],
   ["teams-mpp-data-auditor", "mpp-data-auditor"],
   ["teams-project-plan-editor", "project-plan-editor"],
   ["teams-project-schedule-generator", "project-schedule-generator"]
@@ -195,7 +192,7 @@ for (const [packageSlug, role] of expected) {
   if (excluded.test(readFileSync(manifestPath, "utf8")) || excluded.test(readFileSync(metadataPath, "utf8"))) failures.push(`${packageSlug} references an excluded write-capable role or tool.`);
 }
 for (const [name, variants] of iconVariants) {
-  if (variants.size !== expected.size) failures.push(`All seven packages must have distinct ${name} artwork.`);
+  if (variants.size !== expected.size) failures.push(`All active M365 packages must have distinct ${name} artwork.`);
 }
 
 const legacyAgentDirectories = join(rootPath, "apps", "teams-project-manager-assistant", "appPackage", "agents");
@@ -212,6 +209,12 @@ const malformedPackageSelections = [
   ["--packages"], ["--packages", "--all-packages"], ["--packages", ""], ["--packages", "manager,,auditor"]
 ].map((selection) => spawnSync(process.execPath, [coordinator, "publish", "--env", "dev", ...selection], { encoding: "utf8" }));
 const coordinatorSource = readFileSync(coordinator, "utf8");
+const buildWorkflowSource = readFileSync(join(rootPath, ".github", "workflows", "build-solutions.yml"), "utf8");
+const retiredM365Packages = [
+  ["teams-schedule-quality-analyst", "M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST"],
+  ["teams-portfolio-executive-analyst", "M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST"],
+  ["teams-resource-manager", "M365_AGENT_DEV_ENV_RESOURCE_MANAGER"]
+];
 const marketplace = join(rootPath, "scripts", "package-marketplace.mjs");
 const marketplacePlan = spawnSync(process.execPath, [marketplace], { encoding: "utf8" });
 const marketplaceWithoutIdentity = [...marketplacePackages].every((slug) => !existsSync(join(rootPath, "apps", slug, "env", ".env.prod")))
@@ -220,8 +223,8 @@ const marketplaceWithoutIdentity = [...marketplacePackages].every((slug) => !exi
 const installSteps = installPlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 const tenantShareSteps = tenantSharePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 const marketplaceSteps = marketplacePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
-if (installPlan.status !== 0 || installSteps.length !== expected.size * 3 || [...expected.keys()].some((slug) => !installSteps.some((step) => step.includes(`${slug} - atk install --file-path ./appPackage/build/appPackage.dev.zip --scope Personal`))) || installSteps.some((step) => step.includes(" - atk package --env dev") && !step.includes("--manifest-file ./appPackage/manifest.json"))) failures.push("Batch install must build, validate, and personally install all seven dev packages in a dry run.");
-if (tenantSharePlan.status !== 0 || tenantShareSteps.length !== expected.size || [...expected.keys()].some((slug) => !tenantShareSteps.some((step) => step.includes(`${slug} - atk share --env dev --scope tenant`))) || tenantShareSteps.some((step) => step.includes(" - atk install "))) failures.push("Batch tenant sharing must share all seven without installing them.");
+if (installPlan.status !== 0 || installSteps.length !== expected.size * 3 || [...expected.keys()].some((slug) => !installSteps.some((step) => step.includes(`${slug} - atk install --file-path ./appPackage/build/appPackage.dev.zip --scope Personal`))) || installSteps.some((step) => step.includes(" - atk package --env dev") && !step.includes("--manifest-file ./appPackage/manifest.json"))) failures.push("Batch install must build, validate, and personally install all four active dev packages in a dry run.");
+if (tenantSharePlan.status !== 0 || tenantShareSteps.length !== expected.size || [...expected.keys()].some((slug) => !tenantShareSteps.some((step) => step.includes(`${slug} - atk share --env dev --scope tenant`))) || tenantShareSteps.some((step) => step.includes(" - atk install "))) failures.push("Batch tenant sharing must share all four active packages without installing them.");
 if (allPlan.status !== 0 || allPlan.stdout?.includes(" - atk install ") || allPlan.stdout?.includes(" - atk share ")) failures.push("Batch all mode must not implicitly install or share packages.");
 const prepareSteps = preparePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 const publishSteps = publishPlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
@@ -230,7 +233,8 @@ if (publishPlan.status !== 0 || publishSteps.length !== marketplacePackages.size
 if (unsafePublish.status === 0 || !unsafePublish.stderr?.includes("--portal-verified")) failures.push("Executed publication must stop until Developer Portal synchronization/readback is acknowledged.");
 if (malformedPackageSelections.some((result) => result.status === 0 || !/requires (?:a non-empty|a comma-separated)|cannot contain empty/.test(result.stderr ?? ""))) failures.push("Publication must reject missing, blank, or incomplete package-selection arguments instead of falling back to default agents.");
 if (!coordinatorSource.includes("rev-parse") || !coordinatorSource.includes("--porcelain=v1") || !coordinatorSource.includes("source: captureSourceProvenance()")) failures.push("The prepared release record must capture its source commit and dirty-tree changes.");
+if (retiredM365Packages.some(([packageSlug, secretName]) => buildWorkflowSource.includes(packageSlug) || buildWorkflowSource.includes(secretName))) failures.push("The M365 CI workflow must not package retired agents or require their dev environment secrets.");
 if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the four active production M365 agents.");
 if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);
-console.log("All seven PDS Project AI packages have role-scoped tools, guarded access instructions, and validated agent capabilities.");
+console.log("All four active PDS Project AI packages have role-scoped tools, guarded access instructions, and validated agent capabilities.");

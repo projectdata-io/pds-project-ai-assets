@@ -19,24 +19,6 @@ function Draw-Glyph($graphics, $role, $originX, $originY, $scale) {
                 $graphics.DrawLine($pen, 10, 20, 24, 6)
                 $graphics.DrawLine($pen, 15, 24, 25, 24)
             }
-            'teams-schedule-quality-analyst' {
-                $graphics.DrawEllipse($pen, 4, 4, 22, 22)
-                $graphics.DrawLine($pen, 15, 7, 15, 15)
-                $graphics.DrawLine($pen, 15, 15, 21, 18)
-            }
-            'teams-portfolio-executive-analyst' {
-                $graphics.FillRectangle($brush, 4, 18, 5, 8)
-                $graphics.FillRectangle($brush, 12, 12, 5, 14)
-                $graphics.FillRectangle($brush, 20, 5, 5, 21)
-            }
-            'teams-resource-manager' {
-                $graphics.FillEllipse($brush, 10, 3, 9, 9)
-                $graphics.FillEllipse($brush, 2, 11, 6, 6)
-                $graphics.FillEllipse($brush, 21, 11, 6, 6)
-                $graphics.DrawArc($pen, 5, 13, 19, 17, 200, 140)
-                $graphics.DrawLine($pen, 2, 24, 7, 23)
-                $graphics.DrawLine($pen, 22, 23, 27, 24)
-            }
             'teams-mpp-data-auditor' {
                 $graphics.DrawEllipse($pen, 4, 3, 18, 18)
                 $graphics.DrawLine($pen, 19, 20, 27, 28)
@@ -65,9 +47,6 @@ function Draw-Glyph($graphics, $role, $originX, $originY, $scale) {
 
 $roles = [ordered]@{
     'teams-project-manager-assistant' = '#E8A639'
-    'teams-schedule-quality-analyst' = '#C65D50'
-    'teams-portfolio-executive-analyst' = '#347DB4'
-    'teams-resource-manager' = '#159C94'
     'teams-mpp-data-auditor' = '#A64E83'
     'teams-project-plan-editor' = '#407A61'
     'teams-project-schedule-generator' = '#D0823F'

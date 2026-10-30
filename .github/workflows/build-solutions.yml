@@ -42,18 +42,12 @@ jobs:
         shell: pwsh
         env:
           M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT }}
-          M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST: ${{ secrets.M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST }}
-          M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST: ${{ secrets.M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST }}
-          M365_AGENT_DEV_ENV_RESOURCE_MANAGER: ${{ secrets.M365_AGENT_DEV_ENV_RESOURCE_MANAGER }}
           M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR: ${{ secrets.M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR }}
           M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR }}
           M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR }}
         run: |
           $packageEnvironments = @(
             @{ Slug = 'teams-project-manager-assistant'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT },
-            @{ Slug = 'teams-schedule-quality-analyst'; SecretName = 'M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST'; Content = $env:M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST },
-            @{ Slug = 'teams-portfolio-executive-analyst'; SecretName = 'M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST'; Content = $env:M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST },
-            @{ Slug = 'teams-resource-manager'; SecretName = 'M365_AGENT_DEV_ENV_RESOURCE_MANAGER'; Content = $env:M365_AGENT_DEV_ENV_RESOURCE_MANAGER },
             @{ Slug = 'teams-mpp-data-auditor'; SecretName = 'M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR'; Content = $env:M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR },
             @{ Slug = 'teams-project-plan-editor'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR },
             @{ Slug = 'teams-project-schedule-generator'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR }
@@ -85,9 +79,6 @@ jobs:
         run: |
           $packageSlugs = @(
             'teams-project-manager-assistant',
-            'teams-schedule-quality-analyst',
-            'teams-portfolio-executive-analyst',
-            'teams-resource-manager',
             'teams-mpp-data-auditor',
             'teams-project-plan-editor',
             'teams-project-schedule-generator'
@@ -116,7 +107,7 @@ jobs:
 
           $packageFiles = @(Get-ChildItem -LiteralPath $outputDirectory -Filter '*.zip' -File)
           if ($packageFiles.Count -ne $packageSlugs.Count) {
-            throw "Expected $($packageSlugs.Count) installable M365 agent ZIP files, found $($packageFiles.Count)."
+            throw "Expected $($packageSlugs.Count) active M365 agent ZIP files, found $($packageFiles.Count)."
           }
           Copy-Item -LiteralPath 'M365-AGENT-DEPLOYMENT.md' -Destination (Join-Path $outputDirectory 'DEPLOYMENT.md') -Force
 

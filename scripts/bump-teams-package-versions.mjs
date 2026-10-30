@@ -5,9 +5,6 @@ import { fileURLToPath } from "node:url";
 const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const packageSlugs = [
   "teams-project-manager-assistant",
-  "teams-schedule-quality-analyst",
-  "teams-portfolio-executive-analyst",
-  "teams-resource-manager",
   "teams-mpp-data-auditor",
   "teams-project-plan-editor",
   "teams-project-schedule-generator"
