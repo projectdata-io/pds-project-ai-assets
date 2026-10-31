@@ -7,7 +7,11 @@ const rootPath = fileURLToPath(new URL("../", import.meta.url));
 const catalog = JSON.parse(readFileSync(join(rootPath, "catalog.json"), "utf8"));
 const args = process.argv.slice(2);
 const confirmed = args.includes("--confirm");
-const selectedAgent = args.includes("--agent") ? args[args.indexOf("--agent") + 1] : undefined;
+const agentFlagIndex = args.indexOf("--agent");
+const selectedAgent = agentFlagIndex >= 0 ? args[agentFlagIndex + 1] : undefined;
+if (agentFlagIndex >= 0 && (!selectedAgent || selectedAgent.startsWith("--"))) {
+  throw new Error("--agent requires an agent name.");
+}
 const environment = process.env.PDS_POWER_PLATFORM_ENVIRONMENT;
 const solution = process.env.PDS_POWER_PLATFORM_AGENT_SOLUTION;
 const connectionId = process.env.PDS_AGENT_CONNECTION_ID;

@@ -14,7 +14,7 @@ submission for Teams Store validation. Microsoft says Teams Store apps are also
 listed on Microsoft commercial Marketplace after publication. Submission does
 not mean approval or public availability.
 
-## Current status (2026-10-23)
+## Current status (2026-10-31)
 
 - [x] Confirm the four-agent public scope.
 - [x] Update `npm run package:marketplace` to target only these four agents.
@@ -26,11 +26,10 @@ not mean approval or public availability.
 - [ ] Complete Partner Center submission and Microsoft certification.
 - [ ] Verify public listings and customer installation.
 
-At the last check, none of the four packages had an ignored `env/.env.prod`.
-Production package execution therefore stops safely before building. The asset
-`npm test` also has existing generated instruction-content validation failures;
-resolve them without weakening the validator before treating asset validation as
-green. The root `pnpm run test` passed (497 passed, 1 skipped) on 2026-10-23.
+None of the four packages currently has an ignored `env/.env.prod`. Production
+package execution stops before building until those identities are configured.
+The asset `pnpm test` and strict publication-script TypeScript check pass; these
+checks do not establish cross-tenant authentication or customer readiness.
 
 ## 1. Publisher and offer readiness
 
@@ -149,8 +148,10 @@ From the `external/pds-project-ai-assets` repository root:
 - [ ] Run `npm run package:marketplace` and review the four-agent plan.
 - [ ] Run `npm run package:marketplace -- --prepare` to inspect production
   templates without tenant calls.
-- [ ] After identity configuration and security gates pass, run
-  `npm run package:marketplace -- --execute` to package and Toolkit-validate.
+- [ ] After cross-tenant authentication and external-tenant security/acceptance
+  gates pass, run
+  `npm run package:marketplace -- --execute --external-tenant-verified` to package and Toolkit-validate. This flag is an
+  operator acknowledgment; retain the external-test evidence with the release.
 - [ ] Inspect each `apps/<agent>/appPackage/build/appPackage.prod.zip`: verify
   app ID, version, branding, PDS endpoint, auth reference, included files,
   capabilities, and absence of dev identities or secrets.

@@ -2,16 +2,22 @@
 
 This guide covers internal dev-tenant packages only. The ZIPs produced from `env/.env.dev` are tenant-bound test artifacts, not customer releases; do not distribute them to external tenants. Customer packages require separate production identities, cross-tenant authentication, external-tenant acceptance, and the gates in [the public release checklist](docs/public-marketplace-release-checklist.md).
 
-## What is in this download
+## Active dev packages
 
-The manually dispatched `m365-agent-dev-test-packages` artifact contains this guide and four dev-tenant Microsoft 365 test packages:
+The four active dev packages are:
 
 - `teams-project-manager-assistant.zip`
 - `teams-mpp-data-auditor.zip`
 - `teams-project-plan-editor.zip`
 - `teams-project-schedule-generator.zip`
 
-Download and extract the artifact, then use an individual package ZIP only in the configured dev tenant. Do not upload the outer artifact archive. Each package is built with the dev app ID and PDS authentication binding configured in GitHub Actions. These packages are not suitable for external customer tenants. For customer distribution, use production identities and complete cross-tenant authentication and acceptance gates before creating or publishing customer packages.
+Configure each package's ignored `env/.env.dev` locally, then package and validate the four ZIPs from the assets repository root:
+
+```powershell
+npm run manage:teams-packages -- prepare --env dev --execute
+```
+
+Use the ZIPs only in the configured dev tenant. They are not suitable for customer tenants. Customer distribution requires production identities, cross-tenant authentication, external-tenant testing, and the public-release checklist gates.
 
 ## Personal test in Teams
 
@@ -28,9 +34,9 @@ These dev packages work only with the configured development tenant and are not 
 
 See Microsoft's [custom app upload instructions](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload) for the current Teams UI and tenant requirements.
 
-## Organization rollout
+## Internal dev-tenant rollout
 
-The ZIP artifact does not submit or publish apps. For the supported organization-review flow, use a checkout of this assets repository with its package-local `env/.env.dev` files configured. For a new version, bump and generate once, then prepare and validate the four active packages:
+There is no GitHub Actions dev ZIP artifact. For internal testing or organization rollout in the configured dev tenant, use a checkout of this assets repository with its package-local `env/.env.dev` files configured. For a new version, bump and generate once, then prepare and validate the four active packages locally:
 
 ```powershell
 npm run bump:teams-package-versions

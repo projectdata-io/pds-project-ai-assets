@@ -11,11 +11,14 @@ const packages = [
   "teams-project-plan-editor",
   "teams-project-schedule-generator"
 ];
-const execute = process.argv.slice(2).includes("--execute");
-const prepareOnly = process.argv.slice(2).includes("--prepare");
-if ((execute && prepareOnly) || process.argv.slice(2).some((argument) => argument !== "--execute" && argument !== "--prepare")) {
-  throw new Error("Usage: node scripts/package-marketplace.mjs [--prepare|--execute]");
+const args = process.argv.slice(2);
+const execute = args.includes("--execute");
+const prepareOnly = args.includes("--prepare");
+const externalTenantVerified = args.includes("--external-tenant-verified");
+if ((execute && prepareOnly) || args.some((argument) => !["--execute", "--prepare", "--external-tenant-verified"].includes(argument))) {
+  throw new Error("Usage: node scripts/package-marketplace.mjs [--prepare|--execute [--external-tenant-verified]]");
 }
+if (execute && !externalTenantVerified) throw new Error("Customer package execution is blocked until cross-tenant authentication and external-tenant acceptance checks pass; then pass --external-tenant-verified.");
 
 const identities = packages.map((packageName) => {
   const folder = join(rootPath, "apps", packageName);

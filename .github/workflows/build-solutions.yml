@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -37,79 +35,17 @@ jobs:
       - name: Install root dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Configure M365 dev package environments
-        if: github.event_name == 'workflow_dispatch'
-        shell: pwsh
-        env:
-          M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT }}
-          M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR: ${{ secrets.M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR }}
-          M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR }}
-          M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR: ${{ secrets.M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR }}
-        run: |
-          $packageEnvironments = @(
-            @{ Slug = 'teams-project-manager-assistant'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT },
-            @{ Slug = 'teams-mpp-data-auditor'; SecretName = 'M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR'; Content = $env:M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR },
-            @{ Slug = 'teams-project-plan-editor'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR },
-            @{ Slug = 'teams-project-schedule-generator'; SecretName = 'M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR'; Content = $env:M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR }
-          )
-          $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-          foreach ($packageEnvironment in $packageEnvironments) {
-            if ([string]::IsNullOrWhiteSpace($packageEnvironment.Content)) {
-              throw "Required GitHub Actions secret $($packageEnvironment.SecretName) is not configured."
-            }
-            $environmentDirectory = Join-Path 'apps' "$($packageEnvironment.Slug)/env"
-            New-Item -ItemType Directory -Path $environmentDirectory -Force | Out-Null
-            [System.IO.File]::WriteAllText((Join-Path $environmentDirectory '.env.dev'), $packageEnvironment.Content, $utf8NoBom)
-          }
-
       - name: Validate source assets
         run: pnpm test
 
+    permissions:
+      pages: write
+      id-token: write
       - name: Build agent packages
         run: npm run package:agents
 
       - name: Verify Agent templates
         run: npm run verify:agents
-
-      - name: Build and validate internal M365 dev test packages
-        if: github.event_name == 'workflow_dispatch'
-        shell: pwsh
-        env:
-          ATK_CLI_SKILL: "true"
-        run: |
-          $packageSlugs = @(
-            'teams-project-manager-assistant',
-            'teams-mpp-data-auditor',
-            'teams-project-plan-editor',
-            'teams-project-schedule-generator'
-          )
-          $outputDirectory = 'dist/m365-agent-packages'
-          New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
-
-          foreach ($packageSlug in $packageSlugs) {
-            $packageDirectory = Join-Path 'apps' $packageSlug
-            Push-Location $packageDirectory
-            try {
-              npx --yes @microsoft/m365agentstoolkit-cli@beta package --env dev --manifest-file ./appPackage/manifest.json --interactive false
-              if ($LASTEXITCODE -ne 0) { throw "Toolkit package failed for $packageSlug." }
-              npx --yes @microsoft/m365agentstoolkit-cli@beta validate --env dev --manifest-file ./appPackage/manifest.json --interactive false
-              if ($LASTEXITCODE -ne 0) { throw "Toolkit validation failed for $packageSlug." }
-            } finally {
-              Pop-Location
-            }
-
-            $packageZip = Join-Path $packageDirectory 'appPackage/build/appPackage.dev.zip'
-            if (-not (Test-Path -LiteralPath $packageZip -PathType Leaf)) {
-              throw "Toolkit did not create the expected package ZIP for $packageSlug."
-            }
-            Copy-Item -LiteralPath $packageZip -Destination (Join-Path $outputDirectory "$packageSlug.zip") -Force
-          }
-
-          $packageFiles = @(Get-ChildItem -LiteralPath $outputDirectory -Filter '*.zip' -File)
-          if ($packageFiles.Count -ne $packageSlugs.Count) {
-            throw "Expected $($packageSlugs.Count) active M365 agent ZIP files, found $($packageFiles.Count)."
-          }
-          Copy-Item -LiteralPath 'M365-AGENT-DEPLOYMENT.md' -Destination (Join-Path $outputDirectory 'DEPLOYMENT.md') -Force
 
       - name: Verify packages and stamp version
         shell: pwsh
@@ -151,15 +87,6 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload internal M365 dev test packages
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: m365-agent-dev-test-packages
-          path: dist/m365-agent-packages/
-          if-no-files-found: error
-          retention-days: 3
-
   release:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     needs: build-packages
@@ -191,6 +118,9 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     needs: build-packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -220,6 +150,9 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     needs: build-site
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

@@ -211,6 +211,9 @@ const malformedPackageSelections = [
 const coordinatorSource = readFileSync(coordinator, "utf8");
 const buildWorkflowSource = readFileSync(join(rootPath, ".github", "workflows", "build-solutions.yml"), "utf8");
 const sitePackageStagerSource = readFileSync(join(rootPath, "scripts", "stage-teams-site-packages.mjs"), "utf8");
+const workflowTopLevel = buildWorkflowSource.split(/^jobs:\s*$/m)[0];
+const packageScripts = JSON.parse(readFileSync(join(rootPath, "package.json"), "utf8")).scripts;
+const deployMissingAgent = spawnSync(process.execPath, [join(rootPath, "scripts", "deploy-agents.mjs"), "--confirm", "--agent"], { encoding: "utf8" });
 const retiredM365Packages = [
   ["teams-schedule-quality-analyst", "M365_AGENT_DEV_ENV_SCHEDULE_QUALITY_ANALYST"],
   ["teams-portfolio-executive-analyst", "M365_AGENT_DEV_ENV_PORTFOLIO_EXECUTIVE_ANALYST"],
@@ -218,8 +221,9 @@ const retiredM365Packages = [
 ];
 const marketplace = join(rootPath, "scripts", "package-marketplace.mjs");
 const marketplacePlan = spawnSync(process.execPath, [marketplace], { encoding: "utf8" });
+const marketplaceWithoutCustomerGate = spawnSync(process.execPath, [marketplace, "--execute"], { encoding: "utf8" });
 const marketplaceWithoutIdentity = [...marketplacePackages].every((slug) => !existsSync(join(rootPath, "apps", slug, "env", ".env.prod")))
-  ? spawnSync(process.execPath, [marketplace, "--execute"], { encoding: "utf8" })
+  ? spawnSync(process.execPath, [marketplace, "--execute", "--external-tenant-verified"], { encoding: "utf8" })
   : null;
 const installSteps = installPlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
 const tenantShareSteps = tenantSharePlan.stdout?.split("\n").filter((line) => line.startsWith("Dry run:") && line.includes(" - atk ")) ?? [];
@@ -232,11 +236,15 @@ const publishSteps = publishPlan.stdout?.split("\n").filter((line) => line.start
 if (preparePlan.status !== 0 || prepareSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !prepareSteps.some((step) => step.includes(`${slug} - atk package --env dev`)) || !prepareSteps.some((step) => step.includes(`${slug} - atk validate --env dev`)))) failures.push("Prepare must package and validate only the four active dev agents before freezing their ZIPs.");
 if (publishPlan.status !== 0 || publishSteps.length !== marketplacePackages.size || publishSteps.some((step) => !step.includes(" - atk publish ")) || coordinatorSource.includes("bump-teams-package-versions.mjs") || coordinatorSource.includes("generate-teams-packages.mjs")) failures.push("Publish must submit prepared ZIPs only and must not bump versions or regenerate packages.");
 if (unsafePublish.status === 0 || !unsafePublish.stderr?.includes("--portal-verified")) failures.push("Executed publication must stop until Developer Portal synchronization/readback is acknowledged.");
+if (deployMissingAgent.status === 0 || !deployMissingAgent.stderr?.includes("--agent requires an agent name")) failures.push("Deployment must reject a missing --agent value instead of deploying every agent.");
 if (malformedPackageSelections.some((result) => result.status === 0 || !/requires (?:a non-empty|a comma-separated)|cannot contain empty/.test(result.stderr ?? ""))) failures.push("Publication must reject missing, blank, or incomplete package-selection arguments instead of falling back to default agents.");
 if (!coordinatorSource.includes("rev-parse") || !coordinatorSource.includes("--porcelain=v1") || !coordinatorSource.includes("source: captureSourceProvenance()")) failures.push("The prepared release record must capture its source commit and dirty-tree changes.");
 if (retiredM365Packages.some(([packageSlug, secretName]) => buildWorkflowSource.includes(packageSlug) || buildWorkflowSource.includes(secretName))) failures.push("The M365 CI workflow must not package retired agents or require their dev environment secrets.");
-if (!/name: Configure M365 dev package environments\s+if: github.event_name == 'workflow_dispatch'/.test(buildWorkflowSource) || !/name: Build and validate internal M365 dev test packages\s+if: github.event_name == 'workflow_dispatch'/.test(buildWorkflowSource) || !/name: Upload internal M365 dev test packages\s+if: github.event_name == 'workflow_dispatch'/.test(buildWorkflowSource) || !buildWorkflowSource.includes("name: m365-agent-dev-test-packages") || buildWorkflowSource.includes("m365-agent-installable-packages") || buildWorkflowSource.includes("Download installable M365 agent packages")) failures.push("Tenant-bound M365 dev ZIPs must be available only as manual internal test artifacts, not customer-facing release or Pages artifacts.");
+if (buildWorkflowSource.includes("M365_AGENT_DEV_ENV_") || buildWorkflowSource.includes("m365-agent-dev-test-packages") || buildWorkflowSource.includes("m365-agent-installable-packages") || buildWorkflowSource.includes("appPackage.dev.zip") || buildWorkflowSource.includes("dist/m365-agent-packages")) failures.push("Public GitHub Actions must not consume dev M365 secrets or build/upload tenant-bound M365 ZIPs.");
 if (sitePackageStagerSource.includes("appPackage.dev.zip") || !sitePackageStagerSource.includes("appPackage.prod.zip")) failures.push("The public site must stage only production M365 ZIPs, never dev-tenant packages.");
+if (workflowTopLevel.includes("pages: write") || workflowTopLevel.includes("id-token: write")) failures.push("Pages and OIDC permissions must not be granted workflow-wide to the package job.");
+if (!packageScripts.test.includes("check:agents:publication")) failures.push("The standard test gate must run the strict publication-script TypeScript check.");
+if (marketplaceWithoutCustomerGate.status === 0 || !marketplaceWithoutCustomerGate.stderr?.includes("--external-tenant-verified")) failures.push("Production packaging must stop until cross-tenant auth and external-tenant acceptance are explicitly verified.");
 if (marketplacePlan.status !== 0 || marketplaceSteps.length !== marketplacePackages.size * 2 || [...marketplacePackages].some((slug) => !marketplaceSteps.some((step) => step.includes(`${slug} - atk package --env prod`))) || [...expected.keys()].some((slug) => !marketplacePackages.has(slug) && marketplaceSteps.some((step) => step.includes(`${slug} - atk `))) || marketplaceSteps.some((step) => / - atk (?:publish|provision|share|install) /.test(step))) failures.push("Marketplace dry run must package and validate only the four active production M365 agents.");
 if (marketplaceWithoutIdentity && (marketplaceWithoutIdentity.status === 0 || !marketplaceWithoutIdentity.stderr?.includes("needs separate ignored prod and dev environments"))) failures.push("Marketplace packaging must fail before changes when production identity is absent.");
 if (failures.length) throw new Error(`Teams package validation failed:\n- ${failures.join("\n- ")}`);

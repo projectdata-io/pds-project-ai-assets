@@ -27,7 +27,7 @@
     "check:teams-packages": "node scripts/generate-teams-packages.mjs --check",
     "validate:teams-packages": "node scripts/validate-teams-packages.mjs",
     "verify:agents": "node scripts/verify-agent-templates.mjs",
-    "test": "npm run test:agents:publication && node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run generate:teams-packages && npm run check:generated && npm run check:agents && npm run check:teams-packages && npm run validate:teams-packages && npm run verify:agents"
+    "test": "npm run test:agents:publication && npm run check:agents:publication && node scripts/validate-assets.mjs && npm run compile && npm run compile:agents && npm run generate:teams-packages && npm run check:generated && npm run check:agents && npm run check:teams-packages && npm run validate:teams-packages && npm run verify:agents"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

@@ -12,20 +12,14 @@ of any parent connector repository.
 
 - [x] Playwright publication automation: 14 safety tests and an isolated Edge fixture
   cover identical ZIP uploads, persisted readback, and duplicate-upload avoidance.
-  Submodule-local preflight, strict TypeScript check, and Edge fixture pass.
-  The full asset suite still fails existing Editor/Generator content validation;
-  those checks were not weakened. Real-tenant automation acceptance remains pending;
-  no publication was performed while relocating this tooling.
+  The current full asset suite, strict TypeScript check, and isolated Edge fixture
+  pass. These local checks do not publish or upload packages.
 - [x] Catalog readiness no longer depends on an upload control for readback.
   Explicit login/access/CDN diagnostics and one read-only CDN retry preserve the
   no-upload-retry policy. Regression fixture covers hidden upload controls,
   button-free readback, transient/persistent CDN failures, and login/access denial.
-  Evidence: 14 publication tests, strict TypeScript check, and isolated Edge
-  fixture pass; parent connector suite: 493 passed, 1 skipped. Live read-only
-  verification using the dedicated Edge profile confirms all four catalog
-  versions (Manager/Auditor 2.3.9, Editor 2.3.10, Generator 2.3.15) and Everyone
-  availability. The original timeout was not reproduced; full asset validation
-  still fails existing Editor/Generator wording checks. No live uploads run.
+  Evidence: 14 publication tests, strict TypeScript check, isolated Edge fixture,
+  and current full asset suite pass. No live uploads run.
 - [x] Recognize embedded sign-in and MFA prompts during catalog readiness.
   The user confirmed the Editor timeout occurred on a sign-in/MFA screen;
   read-only diagnosis also reached Microsoft MFA. Added auth-frame/title/MFA
@@ -36,10 +30,9 @@ of any parent connector repository.
   Added a single read-only reload for that runtime failure or a 60-second stalled
   shell, with bounded persistent-failure coverage and listener cleanup. Upload
   retry and journal safety policies are unchanged.
-  Evidence: 14 unit tests, strict TypeScript check, and Edge fixture pass;
-  parent suite: 493 passed, 1 skipped. Asset suite retains existing package-content
-  validation failures. Final live four-agent preflight was blocked separately by
-  Developer Portal sign-in; live recovery is not claimed verified. No uploads run.
+  Evidence: 14 publication tests, strict TypeScript check, isolated Edge fixture,
+  and current full asset suite pass. Production identity and external-tenant
+  acceptance remain separate release gates; no live uploads run here.
 
 - `skills/`: multi-step, reusable workflows packaged as `SKILL.md` files.
 - `agents/`: role-focused agent definitions and Copilot Studio instruction sets.
@@ -210,24 +203,9 @@ npm run validate:teams-packages
 
 ### Internal dev test packages
 
-Only a manually dispatched Build agent assets workflow creates M365 dev test ZIPs. The short-lived `m365-agent-dev-test-packages` artifact is bound to the configured dev tenant and is for internal testing only; it is not customer-ready and must not be distributed to customer tenants. Pull requests and pushes to `main` run source validation and general agent packaging without dev credentials. The public catalog stages M365 downloads only from production ZIPs created by the Marketplace packaging flow after the external-tenant release gates pass.
+GitHub Actions does not receive dev M365 environment secrets and does not build or upload tenant-bound dev ZIPs. For local internal tests, configure each active package's ignored `apps/<package>/env/.env.dev` with its own provisioned dev app ID and PDS auth configuration, then run `npm run manage:teams-packages -- prepare --env dev --execute` from this repository. The ZIPs under `appPackage/build/` are for the configured dev tenant only and must not be distributed to customers.
 
-Only if internal dev test ZIPs are needed, configure these four GitHub Actions repository or organization secrets with the complete contents of each corresponding ignored `apps/<package>/env/.env.dev` file. These secrets are not used to create customer releases:
-
-- `M365_AGENT_DEV_ENV_PROJECT_MANAGER_ASSISTANT`
-- `M365_AGENT_DEV_ENV_MPP_DATA_AUDITOR`
-- `M365_AGENT_DEV_ENV_PROJECT_PLAN_EDITOR`
-- `M365_AGENT_DEV_ENV_PROJECT_SCHEDULE_GENERATOR`
-
-Each file must contain that package's provisioned dev app ID and PDS auth configuration ID. No Work IQ auth configuration is needed. Keep the values package-specific; the resulting ZIPs are bound to the configured dev tenant.
-
-### Build and download internal dev test artifacts
-
-To build internal dev test packages, open the repository's **Actions** tab, select **Build agent assets**, choose **Run workflow**, select the branch, and start the run. Pull requests and pushes to `main` do not build or publish tenant-bound M365 ZIPs.
-
-After the workflow succeeds, open that run and download **`m365-agent-dev-test-packages`** from its **Artifacts** section. It contains four dev-tenant app ZIPs plus `DEPLOYMENT.md`; use them only in the configured development tenant. This artifact is separate from **`pds-project-ai-agent-packages`**, which contains Copilot Studio setup assets and is the only package set attached to automated GitHub Releases. Dev M365 ZIP artifacts are retained for three days.
-
-The manual dev test ZIPs are packaged for the dev tenant configured by the four secrets above. They are not customer releases. Building the artifact does not install the apps or submit them for organization approval; use the separate internal development workflow below. Customer distribution requires production identities, cross-tenant authentication, external-tenant verification, and the public-release checklist gates.
+The public catalog stages M365 downloads only from production ZIPs created after cross-tenant authentication and external-tenant acceptance gates pass. Production package execution is blocked unless the operator passes `--external-tenant-verified` after completing those checks; this acknowledgment is not a substitute for the tests.
 
 ### Development provisioning and organization submission
 
@@ -291,14 +269,14 @@ Public release prerequisites:
 - Test authentication, consent, Graph OBO, plan selection, pagination, and per-user data isolation with a non-admin user in an external test tenant. Verify read-only boundaries for Project Manager Assistant and MPP Data Auditor. For Project Plan Editor and Project Schedule Generator, verify that writes require a clear user request, target the selected project, and are authorized server-side; also test denied, ambiguous, expired-session, and failed-write cases.
 - Prepare the Partner Center publisher account and listing materials: publisher verification, unique names and descriptions, icons/screenshots, privacy statement, terms of use, support contact, customer setup instructions, and any required licensing/consent disclosures. Review the current [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines) and [publishing process](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish).
 
-Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, and the package's `MCP_DA_AUTH_ID_*` key with its separately registered production auth ID. No Work IQ registrations are required. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. The packaging command checks all four identities before it builds anything. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
+Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, and the package's `MCP_DA_AUTH_ID_*` key with its separately registered cross-tenant production auth registration. No Work IQ registrations are required. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. Production execution requires the explicit `--external-tenant-verified` acknowledgment after cross-tenant sign-in, authorization, and acceptance tests pass. This is an operator gate; the script cannot query the remote registration's audience itself. The command also checks all four identities before building. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
 
 ```powershell
 npm run package:marketplace
 # Optional local template check without prod credentials or tenant calls:
 npm run package:marketplace -- --prepare
-# Only once separate production IDs and cross-tenant auth have been verified:
-npm run package:marketplace -- --execute
+# Only after cross-tenant auth and external-tenant acceptance tests pass:
+npm run package:marketplace -- --execute --external-tenant-verified
 ```
 
 Execution performs only local Toolkit `package` and `validate` for `prod`; it cannot provision, publish, install, share, upload, or submit apps. Confirm every ZIP under `apps/<role>/appPackage/build/appPackage.prod.zip` has the intended production identity and auth binding. After the external-tenant tests and listing preparation, submit the Teams app packages through Partner Center for Teams Store validation. Microsoft states that Teams Store apps are also listed on Microsoft commercial Marketplace after publication. Submission is not publication: track certification, address requested changes, and verify each approved offer is publicly available. No production tenant changes are part of this packaging workflow.
