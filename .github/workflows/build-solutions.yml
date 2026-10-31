@@ -38,9 +38,6 @@ jobs:
       - name: Validate source assets
         run: pnpm test
 
-    permissions:
-      pages: write
-      id-token: write
       - name: Build agent packages
         run: npm run package:agents
 
