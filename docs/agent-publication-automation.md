@@ -62,6 +62,11 @@ success. This check requires that app's already-built ZIP. Do not press Enter
 while an MFA approval/code prompt is pending. Authentication can expire again
 later due to tenant policy; a persistent profile does not bypass MFA.
 
+If the execute-time Developer Portal navigation redirects to Microsoft sign-in,
+the publisher pauses in that same Edge context. Complete sign-in/MFA and press
+Enter to retry the read-only check. The all-target preflight still completes
+before any upload begins.
+
 Use one journal per release and do not run concurrent publications. The default
 journal is `tmp/agent-publication.json` (gitignored); a dated `--report` is clearer.
 The journal contains versions, app/catalog IDs, ZIP paths and SHA-256 checksums,
@@ -107,8 +112,9 @@ Catalog readiness uses the expected app identity and published version, not the
 control. Uploads still require the exact upload control (including controls
 excluded from the accessibility tree). A detected `Loading chunk ... failed` or
 `ChunkLoadError` permits one read-only navigation retry, never an upload retry.
-An empty app-detail shell is also reloaded once if it stalls for 60 seconds or
-reports the observed MobX error 35. A second failure stops with the runtime
+An empty app-detail shell is reloaded once if it stalls for 60 seconds. After
+MobX error 35, the publisher gives the detail five seconds to finish hydrating,
+then allows up to two read-only reloads. Further failure stops with the runtime
 classification; this is a rendering failure, not evidence of an MFA prompt.
 Runtime listeners are removed after each read. This shares the same one-reload
 budget as CDN recovery and does not reset journal stages or retry uploads.

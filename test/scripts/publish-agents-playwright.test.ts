@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { strToU8, zipSync } from "fflate";
 import { join } from "node:path";
 import {
-  agents, assertProfileOutsideRepository, catalogState, inspectArtifact, needsUpload, publishStage,
+  agents, assertProfileOutsideRepository, catalogState, inspectArtifact, isMicrosoftSignInUrl, needsUpload, publishStage,
   readVersion, reconcileJournal, selectAgents, verifyReadback
 } from "../../scripts/publish-agents-playwright.js";
 
@@ -15,6 +15,12 @@ function artifact(overrides = {}) {
 const source = { repository: "root-sha", assets: "asset-sha + uncommitted changes" };
 
 describe("agent publication preflight", () => {
+  it("recognizes Microsoft sign-in redirects without matching app surfaces", () => {
+    expect(isMicrosoftSignInUrl("https://login.microsoftonline.com/common/oauth2/authorize?client_id=x")).toBe(true);
+    expect(isMicrosoftSignInUrl("https://login.microsoft.com/")).toBe(true);
+    expect(isMicrosoftSignInUrl("https://dev.teams.microsoft.com/apps")).toBe(false);
+    expect(isMicrosoftSignInUrl("not a url")).toBe(false);
+  });
   it("distinguishes catalog load, authentication, permission, and CDN failures", () => {
     const state = (text: string, origin = "https://admin.teams.microsoft.com") => catalogState({ origin, text, appId: agents[0].appId });
     expect(state("Loading")).toBe("loading");

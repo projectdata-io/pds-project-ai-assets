@@ -12,6 +12,8 @@ import { chromium, type Locator, type Page } from "playwright";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const portalUrl = "https://dev.teams.microsoft.com/apps";
 const adminUrl = "https://admin.teams.microsoft.com/policies/manage-apps";
+const microsoftSignInHosts = new Set(["login.microsoftonline.com", "login.microsoft.com", "login.live.com"]);
+const mobxRecoveryGraceMs = 5000;
 export const agents = [
   { name: "manager", slug: "teams-project-manager-assistant", appId: "95cfebc6-52e0-40e6-baf5-8eca86296294", catalogId: "d55007d3-2462-4220-b49d-d3d0a53c6706" },
   { name: "auditor", slug: "teams-mpp-data-auditor", appId: "0dfe62e8-d6e4-4fb4-8a56-0857ff7e9429", catalogId: "f2fa1cf6-2b2e-4e8e-9076-0d644b0390a4" },
@@ -42,6 +44,23 @@ export function selectAgents(value: string | undefined): Agent[] {
     if (!agent) throw new Error(`Unknown or inactive agent: ${name}. Use manager,auditor,editor,generator.`);
     return agent;
   });
+}
+
+export function isMicrosoftSignInUrl(value: string): boolean {
+  try {
+    return microsoftSignInHosts.has(new URL(value).hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+async function microsoftSignInRequired(page: Page): Promise<boolean> {
+  if (isMicrosoftSignInUrl(page.url())) return true;
+  const [title, text] = await Promise.all([
+    page.title().catch(() => ""),
+    page.locator("body").innerText().catch(() => "")
+  ]);
+  return /Sign in to your account|Pick an account|Stay signed in|Approve sign.in|Request wasn.t sent|Verify your identity|Enter (?:the )?code|More information required/i.test(`${title}\n${text}`);
 }
 
 export function inspectArtifact(agent: Agent, path: string, buffer: Buffer, sourceVersion: string): Artifact {
@@ -152,10 +171,43 @@ async function domClick(locator: Locator): Promise<void> {
 
 export async function openPortal(page: Page, artifact: Artifact): Promise<string> {
   await page.goto(portalUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
-  await page.getByRole("grid").waitFor({ state: "attached", timeout: 60000 });
+  if (await microsoftSignInRequired(page)) {
+    throw new Error(`${artifact.name}: Developer Portal requires Microsoft sign-in.`);
+  }
+  try {
+    await page.getByRole("grid").waitFor({ state: "attached", timeout: 60000 });
+  } catch (error) {
+    if (await microsoftSignInRequired(page)) {
+      throw new Error(`${artifact.name}: Developer Portal requires Microsoft sign-in.`, { cause: error });
+    }
+    throw error;
+  }
   const row = page.getByRole("row").filter({ hasText: artifact.appId });
   await row.waitFor({ state: "attached", timeout: 60000 });
   return readVersion(await row.innerText(), "portal", artifact.appId);
+}
+
+async function promptForMicrosoftSignIn(): Promise<void> {
+  const input = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    await input.question("Developer Portal needs sign-in in the current Edge tab. Complete sign-in/MFA, then press Enter to retry the read-only check. No uploads have run. ");
+  } finally {
+    input.close();
+  }
+}
+
+export async function openPortalWithSignInRecovery(
+  page: Page, artifact: Artifact, confirmSignIn: () => Promise<void> = promptForMicrosoftSignIn
+): Promise<string> {
+  try {
+    return await openPortal(page, artifact);
+  } catch (error) {
+    if (!(await microsoftSignInRequired(page))) {
+      throw error;
+    }
+    await confirmSignIn();
+    return openPortal(page, artifact);
+  }
 }
 
 export function catalogState(input: { origin: string; text: string; appId: string; title?: string; authenticationFrame?: boolean }): "login" | "denied" | "chunk-failure" | "ready" | "loading" {
@@ -214,24 +266,32 @@ export async function openCatalog(page: Page, artifact: Artifact): Promise<strin
 }
 
 async function readCatalog(page: Page, artifact: Artifact, hasRuntimeFailure: () => boolean, resetRuntimeFailure: () => void): Promise<string> {
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     resetRuntimeFailure();
     await page.goto(`${adminUrl}/${artifact.catalogId}`, { waitUntil: "domcontentloaded", timeout: 45000 });
     const deadline = Date.now() + 60000;
     let state: ReturnType<typeof catalogState> = "loading";
+    let runtimeFailureSince: number | undefined;
     while (state === "loading" && Date.now() < deadline) {
       state = await readCatalogState(page, artifact.appId);
-      if (state === "loading" && hasRuntimeFailure()) break;
+      if (state === "loading" && hasRuntimeFailure()) {
+        runtimeFailureSince ??= Date.now();
+        if (Date.now() - runtimeFailureSince >= mobxRecoveryGraceMs) break;
+      } else {
+        runtimeFailureSince = undefined;
+      }
       if (state === "loading") await page.waitForTimeout(250);
     }
-    if ((state === "loading" || state === "chunk-failure") && attempt === 0) {
+    const runtimeFailure = hasRuntimeFailure();
+    const retryLimit = runtimeFailure ? 3 : 2;
+    if ((state === "loading" || state === "chunk-failure") && attempt + 1 < retryLimit) {
       const reason = state === "chunk-failure" ? "CDN chunk load failed" :
-        hasRuntimeFailure() ? "app-detail rendering failed (MobX error 35)" : "app-detail shell stalled for 60 seconds";
-      console.warn(`${artifact.name}: catalog ${reason}; retrying read-only navigation once. No upload is being retried.`);
+        runtimeFailure ? "app-detail rendering failed (MobX error 35)" : "app-detail shell stalled for 60 seconds";
+      console.warn(`${artifact.name}: catalog ${reason}; retrying read-only navigation (${attempt + 1}/${retryLimit - 1}). No upload is being retried.`);
       continue;
     }
     if (state === "loading") {
-      throw new Error(`${artifact.name}: catalog detail did not become ready after one read-only reload; runtimeFailure=${hasRuntimeFailure() ? "MobX-35" : "not-detected"}; ${await catalogDiagnostic(page, artifact.appId)}`);
+      throw new Error(`${artifact.name}: catalog detail did not become ready after ${attempt} read-only reload${attempt === 1 ? "" : "s"}; runtimeFailure=${runtimeFailure ? "MobX-35" : "not-detected"}; ${await catalogDiagnostic(page, artifact.appId)}`);
     }
     if (state !== "ready") throw new Error(`${artifact.name}: catalog ${state}; ${await catalogDiagnostic(page, artifact.appId)}`);
     if (new URL(page.url()).pathname !== `/policies/manage-apps/${artifact.catalogId}`) throw new Error("Catalog identity URL changed.");
@@ -364,22 +424,23 @@ async function main(): Promise<void> {
     const portal = await context.newPage();
     const catalog = await context.newPage();
     const delay = () => new Promise<void>((done) => setTimeout(done, 10000));
+    const readPortal = (artifact: Artifact) => openPortalWithSignInRecovery(portal, artifact);
     // Check every target on both surfaces before the first write.
     for (const artifact of artifacts) {
       const entry = journal.entries.find((candidate) => candidate.name === artifact.name)!;
-      if (needsUpload(await openPortal(portal, artifact), artifact.version)) assertUploadAllowed(entry.portal);
+      if (needsUpload(await readPortal(artifact), artifact.version)) assertUploadAllowed(entry.portal);
       if (needsUpload(await openCatalog(catalog, artifact), artifact.version)) assertUploadAllowed(entry.catalog);
     }
     for (const artifact of artifacts) {
       const entry = journal.entries.find((candidate) => candidate.name === artifact.name)!;
       console.log(`${artifact.name}: synchronizing Developer Portal`);
-      await publishStage(artifact, entry.portal, () => openPortal(portal, artifact), () => uploadPortal(portal, artifact), persist, delay);
+      await publishStage(artifact, entry.portal, () => readPortal(artifact), () => uploadPortal(portal, artifact), persist, delay);
       console.log(`${artifact.name}: synchronizing tenant catalog`);
       await publishStage(artifact, entry.catalog, () => openCatalog(catalog, artifact), () => uploadCatalog(catalog, artifact), persist, delay);
     }
     // Fresh persisted readback after all writes, not just an upload acknowledgement.
     for (const artifact of artifacts) {
-      await verifyReadback(() => openPortal(portal, artifact), artifact.version, delay);
+      await verifyReadback(() => readPortal(artifact), artifact.version, delay);
       await verifyReadback(() => openCatalog(catalog, artifact), artifact.version, delay);
     }
     console.log(`Portal/catalog versions, app identities, and Everyone availability verified. Journal: ${report}\nAlready-current versions are not proof of remote ZIP checksum or live Copilot behavior.`);

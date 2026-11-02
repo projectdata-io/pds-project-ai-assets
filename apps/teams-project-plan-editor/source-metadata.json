@@ -3,9 +3,9 @@
   "role": "project-plan-editor",
   "access": "commit",
   "title": "PDS Project AI: Project Plan Editor",
-  "shortName": "PDS Plan Editor",
+  "shortName": "PDS MPP Plan Editor",
   "shortDescription": "Stage requested plan edits informed by authorized M365 context.",
-  "version": "2.3.10",
+  "version": "2.3.11",
   "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_PLAN_EDITOR",
   "capabilities": [

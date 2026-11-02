@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { chromium } from "playwright";
 import { strToU8, zipSync } from "fflate";
-import { agents, inspectArtifact, openCatalog, openPortal, publishStage, reconcileJournal, uploadCatalog, uploadPortal } from "./publish-agents-playwright.js";
+import { agents, inspectArtifact, openCatalog, openPortal, openPortalWithSignInRecovery, publishStage, reconcileJournal, uploadCatalog, uploadPortal } from "./publish-agents-playwright.js";
 
 const agent = agents[0];
 const artifact = inspectArtifact(agent, "fixture.zip", Buffer.from(zipSync({
@@ -14,8 +14,9 @@ const browser = await chromium.launch({ channel: "msedge", headless: true });
 try {
   const context = await browser.newContext();
   let portalVersion = "2.3.8";
+  let portalRequiresSignIn = false;
   let catalogVersion = "2.3.8";
-  let catalogMode: "normal" | "no-upload" | "chunk-once" | "chunk-always" | "shell-once" | "shell-always" | "login" | "mfa" | "auth-frame" | "denied" = "normal";
+  let catalogMode: "normal" | "no-upload" | "chunk-once" | "chunk-always" | "shell-recovers" | "shell-once" | "shell-twice" | "shell-always" | "login" | "mfa" | "auth-frame" | "denied" = "normal";
   let catalogNavigations = 0;
   const uploaded: { surface: string; sha256: string }[] = [];
   await context.exposeBinding("recordUpload", (_source, surface: string, bytes: number[]) => {
@@ -30,6 +31,10 @@ try {
     if (url.hostname === "dev.teams.microsoft.com") {
       if (url.pathname !== "/apps") {
         await route.fulfill({ contentType: "text/html", body: "<main>Dashboard</main>" });
+        return;
+      }
+      if (portalRequiresSignIn) {
+        await route.fulfill({ contentType: "text/html", body: '<title>Sign in to your account</title><main>Approve sign in</main>' });
         return;
       }
       await route.fulfill({ contentType: "text/html", body: `
@@ -50,7 +55,12 @@ try {
     }
     if (url.hostname === "admin.teams.microsoft.com") {
       catalogNavigations++;
-      if (catalogMode === "shell-always" || (catalogMode === "shell-once" && catalogNavigations === 1)) {
+      if (catalogMode === "shell-recovers") {
+        const content = JSON.stringify(`${agent.appId}<p>Published version</p><p>${catalogVersion}</p><p>Everyone</p>`);
+        await route.fulfill({ contentType: "text/html", body: `<main></main><script>setTimeout(() => { document.querySelector("main").innerHTML = ${content}; }, 300);</script><script>throw new Error("[MobX] minified error nr: 35. Synthetic fixture");</script>` });
+        return;
+      }
+      if (catalogMode === "shell-always" || (catalogMode === "shell-once" && catalogNavigations === 1) || (catalogMode === "shell-twice" && catalogNavigations <= 2)) {
         await route.fulfill({ contentType: "text/html", body: '<title>Manage app - Microsoft Teams admin center</title><main></main><script>throw new Error("[MobX] minified error nr: 35. Synthetic fixture");</script>' });
         return;
       }
@@ -96,6 +106,16 @@ try {
   const delay = async () => {};
   await publishStage(artifact, journal.entries[0].portal, () => openPortal(portal, artifact), () => uploadPortal(portal, artifact), persist, delay);
   await publishStage(artifact, journal.entries[0].catalog, () => openCatalog(catalog, artifact), () => uploadCatalog(catalog, artifact), persist, delay);
+  const recoveryPage = await context.newPage();
+  portalRequiresSignIn = true;
+  let signInPrompts = 0;
+  assert.equal(await openPortalWithSignInRecovery(recoveryPage, artifact, async () => {
+    signInPrompts++;
+    portalRequiresSignIn = false;
+  }), artifact.version);
+  assert.equal(signInPrompts, 1, "A portal OAuth redirect prompts once and retries in the same context");
+  assert.equal(uploaded.length, 2, "Portal sign-in recovery must not upload during preflight");
+  await recoveryPage.close();
   assert.deepEqual(uploaded, [
     { surface: "portal", sha256: artifact.sha256 }, { surface: "catalog", sha256: artifact.sha256 }
   ]);
@@ -114,14 +134,22 @@ try {
   catalogNavigations = 0;
   await assert.rejects(openCatalog(catalog, artifact), /catalog chunk-failure/);
   assert.equal(catalogNavigations, 2, "Persistent CDN failure stops after one retry");
+  catalogMode = "shell-recovers";
+  catalogNavigations = 0;
+  assert.equal(await openCatalog(catalog, artifact), artifact.version);
+  assert.equal(catalogNavigations, 1, "A MobX error does not force reload if the detail becomes ready");
   catalogMode = "shell-once";
   catalogNavigations = 0;
   assert.equal(await openCatalog(catalog, artifact), artifact.version);
   assert.equal(catalogNavigations, 2, "MobX shell failure permits one read-only reload");
+  catalogMode = "shell-twice";
+  catalogNavigations = 0;
+  assert.equal(await openCatalog(catalog, artifact), artifact.version);
+  assert.equal(catalogNavigations, 3, "A second MobX shell failure permits one more read-only reload");
   catalogMode = "shell-always";
   catalogNavigations = 0;
-  await assert.rejects(openCatalog(catalog, artifact), /after one read-only reload; runtimeFailure=MobX-35/);
-  assert.equal(catalogNavigations, 2, "Persistent shell failure must stop");
+  await assert.rejects(openCatalog(catalog, artifact), /after 2 read-only reloads; runtimeFailure=MobX-35/);
+  assert.equal(catalogNavigations, 3, "Persistent shell failure stops after two read-only reloads");
   catalogMode = "login";
   await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*Use --login/);
   catalogMode = "denied";
