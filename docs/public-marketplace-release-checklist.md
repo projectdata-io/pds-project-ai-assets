@@ -14,22 +14,32 @@ submission for Teams Store validation. Microsoft says Teams Store apps are also
 listed on Microsoft commercial Marketplace after publication. Submission does
 not mean approval or public availability.
 
-## Current status (2026-10-31)
+## Current status (2026-11-02)
 
 - [x] Confirm the four-agent public scope.
 - [x] Update `npm run package:marketplace` to target only these four agents.
 - [x] Verify its dry run lists four `package`/`validate` pairs and performs no
   tenant operations.
-- [ ] Configure production identities and external-tenant authentication.
+- [x] Provision distinct production Teams app and PDS auth identities for all
+  four agents; packaged IDs match the existing Developer Portal app IDs.
+- [ ] Complete external-tenant authentication and consent verification.
 - [ ] Complete external-tenant security and acceptance testing.
-- [ ] Prepare and validate production packages.
+- [x] Build and Toolkit-validate all four production packages.
+- [x] Draft Partner Center testing notes; external test accounts, test results,
+  and secure reviewer access remain pending.
+- [x] Import the exact production ZIPs into their existing Developer Portal
+  app IDs and verify app ID/version readback.
 - [ ] Complete Partner Center submission and Microsoft certification.
 - [ ] Verify public listings and customer installation.
 
-None of the four packages currently has an ignored `env/.env.prod`. Production
-package execution stops before building until those identities are configured.
-The asset `pnpm test` and strict publication-script TypeScript check pass; these
-checks do not establish cross-tenant authentication or customer readiness.
+All four ignored `env/.env.prod` files are configured. Production ZIPs were
+built and Toolkit-validated at the source versions on 2026-11-02. Their app IDs,
+names, package contents, and SHA-256 hashes are recorded in the local
+`dist/production-agent-release.json`. External-tenant test evidence is not
+attached to that record; do not submit the packages until the applicable
+acceptance gates pass and evidence is retained. Developer Portal imports are
+complete and read back at the expected IDs and versions. Partner Center
+submission has not been performed.
 
 ## 1. Publisher and offer readiness
 
@@ -53,14 +63,20 @@ offer type and package are eligible.
 
 For **each of the four agents**:
 
-- [ ] Create a distinct production Teams app ID. Do not reuse a dev app ID or
+- [x] Create a distinct production Teams app ID. Do not reuse a dev app ID or
   another agent's production ID.
-- [ ] Register a distinct production PDS MCP authentication configuration for
+- [x] Register a distinct production PDS MCP authentication configuration for
   the app. Do not reuse dev auth IDs, credentials, or secrets.
 - [ ] Configure authentication to work for users in customer tenants, including
   the required cross-tenant audience and consent experience. The checked-in
   development lifecycle uses `targetAudience: HomeTenant`; that is not a
   production cross-tenant configuration.
+- [x] Provision production Teams app and DCR identities with
+  `npm run provision:marketplace -- --execute --confirm-production`. The
+  dry-run is `npm run provision:marketplace`; execution uses the isolated
+  `production-provision/m365agents.yml` lifecycles and records completed IDs in
+  the ignored provisioning journal. This creates identities only and does not
+  complete the external-tenant acceptance gate.
 - [ ] Confirm required delegated Microsoft Graph permissions, OAuth redirect
   behavior, token exchange/OBO, consent, and revocation with the identity and
   service owners.
@@ -133,6 +149,9 @@ tested package:
   and retention, known limitations, and how customers get support.
 - [ ] Review product names, trademarks, and listing claims against current
   Marketplace policies.
+- [x] Draft shared setup and four separate agent test procedures in the
+  [shared guide](partner-center-testing-notes.md) and its
+  [per-agent notes](partner-center-testing/).
 - [ ] Provide certification reviewers with reproducible test instructions and
   working test access through Partner Center's requested secure process.
 
@@ -140,26 +159,27 @@ tested package:
 
 From the `external/pds-project-ai-assets` repository root:
 
-- [ ] Resolve the asset validation failures and confirm `npm test` passes.
-- [ ] Confirm the four production app IDs and PDS auth IDs have been created,
+- [x] Resolve the asset validation failures and confirm `npm test` passes.
+- [x] Confirm the four production app IDs and PDS auth IDs have been created,
   are unique, and differ from the dev identities.
-- [ ] Create each package's ignored `env/.env.prod` with `TEAMSFX_ENV=prod`,
+- [x] Create each package's ignored `env/.env.prod` with `TEAMSFX_ENV=prod`,
   an empty `APP_NAME_SUFFIX`, and that package's production app/auth IDs.
-- [ ] Run `npm run package:marketplace` and review the four-agent plan.
-- [ ] Run `npm run package:marketplace -- --prepare` to inspect production
+- [x] Run `npm run package:marketplace` and review the four-agent plan.
+- [x] Run `npm run package:marketplace -- --prepare` to inspect production
   templates without tenant calls.
-- [ ] After cross-tenant authentication and external-tenant security/acceptance
-  gates pass, run
-  `npm run package:marketplace -- --execute --external-tenant-verified` to package and Toolkit-validate. This flag is an
-  operator acknowledgment; retain the external-test evidence with the release.
-- [ ] Inspect each `apps/<agent>/appPackage/build/appPackage.prod.zip`: verify
+- [x] Build and Toolkit-validate with
+  `npm run package:marketplace -- --execute --external-tenant-verified` after
+  the operator authorized proceeding. This flag is an operator acknowledgment;
+  external-test evidence is still required before submission.
+- [x] Inspect each `apps/<agent>/appPackage/build/appPackage.prod.zip`: verify
   app ID, version, branding, PDS endpoint, auth reference, included files,
   capabilities, and absence of dev identities or secrets.
-- [ ] Record source commit and dirty-tree state, app ID, version, SHA-256,
-  validation output, and external-tenant test evidence for each exact ZIP.
-- [ ] Freeze and retain these exact ZIPs for submission. Do not rebuild or
+- [x] Record source commit and dirty-tree state, app ID, version, SHA-256, and
+  validation output for each exact ZIP.
+- [ ] Attach retained external-tenant test evidence to the release record.
+- [x] Freeze and retain these exact ZIPs for submission. Do not rebuild or
   change package contents after testing without a new version and repeat tests.
-- [ ] Synchronize each existing Developer Portal app definition from its exact
+- [x] Synchronize each existing Developer Portal app definition from its exact
   tested ZIP, preserving the app ID. Read back the app ID and version and stop
   if either does not match the ZIP.
 

@@ -4,7 +4,7 @@ environmentFolderPath: ./env
 provision:
   - uses: teamsApp/create
     with:
-      name: "PDS Project AI: Project Plan Editor${{APP_NAME_SUFFIX}}"
+      name: "PDS MPP: Project Plan Editor${{APP_NAME_SUFFIX}}"
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 

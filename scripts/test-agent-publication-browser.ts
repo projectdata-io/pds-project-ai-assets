@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { createServer } from "node:net";
 import { chromium } from "playwright";
 import { strToU8, zipSync } from "fflate";
-import { agents, inspectArtifact, openCatalog, openPortal, openPortalWithSignInRecovery, publishStage, reconcileJournal, uploadCatalog, uploadPortal } from "./publish-agents-playwright.js";
+import { agents, inspectArtifact, openCatalog, openCatalogWithSignInRecovery, openPortal, openPortalWithSignInRecovery, publishStage, reconcileJournal, uploadCatalog, uploadPortal } from "./publish-agents-playwright.js";
 
 const agent = agents[0];
 const artifact = inspectArtifact(agent, "fixture.zip", Buffer.from(zipSync({
@@ -10,13 +11,21 @@ const artifact = inspectArtifact(agent, "fixture.zip", Buffer.from(zipSync({
   "declarativeAgent.json": strToU8(JSON.stringify({ instructions: "Synthetic fixture instructions." }))
 })), "2.3.9");
 const journal = reconcileJournal(undefined, [artifact], { repository: "synthetic", assets: "synthetic" });
-const browser = await chromium.launch({ channel: "msedge", headless: true });
+const portProbe = createServer();
+await new Promise<void>((done) => portProbe.listen(0, "127.0.0.1", done));
+const address = portProbe.address();
+assert(address && typeof address !== "string");
+await new Promise<void>((done, reject) => portProbe.close((error) => error ? reject(error) : done()));
+const browser = await chromium.launch({ channel: "msedge", chromiumSandbox: true, headless: true,
+  args: [`--remote-debugging-port=${address.port}`, "--remote-debugging-address=127.0.0.1"] });
 try {
   const context = await browser.newContext();
   let portalVersion = "2.3.8";
   let portalRequiresSignIn = false;
+  let portalAutomaticSignIn = false;
+  let portalNavigations = 0;
   let catalogVersion = "2.3.8";
-  let catalogMode: "normal" | "no-upload" | "chunk-once" | "chunk-always" | "shell-recovers" | "shell-once" | "shell-twice" | "shell-always" | "login" | "mfa" | "auth-frame" | "denied" = "normal";
+  let catalogMode: "normal" | "no-upload" | "chunk-once" | "chunk-always" | "shell-recovers" | "shell-once" | "shell-twice" | "shell-always" | "login" | "mfa" | "auth-frame" | "mfa-recovers" | "auth-frame-recovers" | "denied" = "normal";
   let catalogNavigations = 0;
   const uploaded: { surface: string; sha256: string }[] = [];
   await context.exposeBinding("recordUpload", (_source, surface: string, bytes: number[]) => {
@@ -34,6 +43,12 @@ try {
         return;
       }
       if (portalRequiresSignIn) {
+        portalNavigations++;
+        if (portalAutomaticSignIn) {
+          const ready = JSON.stringify(`<div role="grid"><div role="row">${agent.appId} ${portalVersion}</div></div>`);
+          await route.fulfill({ contentType: "text/html", body: `<title>Sign in to your account</title><main>Approve sign in</main><script>setTimeout(() => { document.title = "Apps"; document.body.innerHTML = ${ready}; }, 300);</script>` });
+          return;
+        }
         await route.fulfill({ contentType: "text/html", body: '<title>Sign in to your account</title><main>Approve sign in</main>' });
         return;
       }
@@ -55,6 +70,12 @@ try {
     }
     if (url.hostname === "admin.teams.microsoft.com") {
       catalogNavigations++;
+      if (catalogMode === "mfa-recovers" || catalogMode === "auth-frame-recovers") {
+        const content = JSON.stringify(`${agent.appId}<p>Published version</p><p>${catalogVersion}</p><p>Everyone</p>`);
+        const auth = catalogMode === "mfa-recovers" ? '<title>Sign in to your account</title><main>Approve sign in</main>' : '<main>Loading</main><iframe src="https://login.microsoftonline.com/fixture"></iframe>';
+        await route.fulfill({ contentType: "text/html", body: `${auth}<script>setTimeout(() => { document.querySelector("iframe")?.remove(); document.title = "Manage app"; document.querySelector("main").innerHTML = ${content}; }, 800);</script>` });
+        return;
+      }
       if (catalogMode === "shell-recovers") {
         const content = JSON.stringify(`${agent.appId}<p>Published version</p><p>${catalogVersion}</p><p>Everyone</p>`);
         await route.fulfill({ contentType: "text/html", body: `<main></main><script>setTimeout(() => { document.querySelector("main").innerHTML = ${content}; }, 300);</script><script>throw new Error("[MobX] minified error nr: 35. Synthetic fixture");</script>` });
@@ -112,8 +133,16 @@ try {
   assert.equal(await openPortalWithSignInRecovery(recoveryPage, artifact, async () => {
     signInPrompts++;
     portalRequiresSignIn = false;
+    await recoveryPage.goto("https://dev.teams.microsoft.com/apps");
   }), artifact.version);
   assert.equal(signInPrompts, 1, "A portal OAuth redirect prompts once and retries in the same context");
+  portalRequiresSignIn = true;
+  portalAutomaticSignIn = true;
+  const beforeAutomaticSignIn = portalNavigations;
+  assert.equal(await openPortalWithSignInRecovery(recoveryPage, artifact), artifact.version);
+  assert.equal(portalNavigations, beforeAutomaticSignIn + 1, "Completed MFA resumes without another navigation or Enter prompt");
+  portalRequiresSignIn = false;
+  portalAutomaticSignIn = false;
   assert.equal(uploaded.length, 2, "Portal sign-in recovery must not upload during preflight");
   await recoveryPage.close();
   assert.deepEqual(uploaded, [
@@ -151,14 +180,24 @@ try {
   await assert.rejects(openCatalog(catalog, artifact), /after 2 read-only reloads; runtimeFailure=MobX-35/);
   assert.equal(catalogNavigations, 3, "Persistent shell failure stops after two read-only reloads");
   catalogMode = "login";
-  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*Use --login/);
+  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*current tab/);
   catalogMode = "denied";
   await assert.rejects(openCatalog(catalog, artifact), /catalog denied/);
   catalogMode = "mfa";
-  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*Use --login/);
+  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*current tab/);
   catalogMode = "auth-frame";
-  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*Use --login/);
+  await assert.rejects(openCatalog(catalog, artifact), /catalog login;.*current tab/);
+  for (const mode of ["mfa-recovers", "auth-frame-recovers"] as const) {
+    catalogMode = mode;
+    catalogNavigations = 0;
+    assert.equal(await openCatalogWithSignInRecovery(catalog, artifact), artifact.version);
+    assert.equal(catalogNavigations, 1, "Catalog MFA resumes in the same tab without restarting authentication");
+  }
   assert.equal(uploaded.length, 2, "Error handling must never trigger another upload");
+  const attached = await chromium.connectOverCDP(`http://127.0.0.1:${address.port}`);
+  await attached.close();
+  assert(browser.isConnected(), "Disconnecting the publisher must not close the shared browser");
+  assert.equal(await portal.title(), "", "Existing browser tabs survive publisher disconnection");
   console.log("Edge fixture passed: identical ZIP uploads, hidden upload controls, control-independent readback, bounded CDN recovery, explicit login/permission errors, and no duplicate uploads. No network publication.");
 } finally {
   await browser.close();

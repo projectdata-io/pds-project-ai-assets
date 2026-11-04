@@ -1,7 +1,7 @@
 {
   "name": "project-schedule-generator",
-  "title": "Project Schedule Generator",
-  "description": "Builds Microsoft Project schedules from user requirements and commits them to the requested destination.",
+  "title": "PDS MPP: Project Schedule Generator",
+  "description": "Creates, validates, and updates Microsoft Project schedules from user requirements, then commits the completed plan to the requested destination.",
   "access": "commit",
   "skills": [
     "mpp-create-project",

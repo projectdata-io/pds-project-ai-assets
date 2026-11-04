@@ -15,6 +15,7 @@
     "bump:teams-package-versions": "node scripts/bump-teams-package-versions.mjs",
     "manage:teams-packages": "node scripts/manage-teams-packages.mjs",
     "package:marketplace": "node scripts/package-marketplace.mjs",
+    "provision:marketplace": "node scripts/provision-marketplace.mjs",
     "deploy:agents": "npm run compile:agents && node scripts/deploy-agents.mjs",
     "package:agents": "npm run compile && npm run compile:agents && node scripts/package-agents.mjs",
     "site:data": "node scripts/stage-teams-site-packages.mjs && node scripts/generate-site-data.mjs",

@@ -1,6 +1,6 @@
 {
   "version": "v1.8",
-  "name": "Project Manager Assistant ${{APP_NAME_SUFFIX}}",
+  "name": "PDS MPP: Project Manager Assistant ${{APP_NAME_SUFFIX}}",
   "description": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [

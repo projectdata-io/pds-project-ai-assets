@@ -1,10 +1,10 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
   "manifestVersion": "1.30",
-  "version": "2.3.11",
+  "version": "2.3.12",
   "id": "${{TEAMS_APP_ID}}",
   "developer": {
-    "name": "WACG Inc.",
+    "name": "WACG",
     "websiteUrl": "https://projectdata.io/",
     "privacyUrl": "https://projectdata.io/privacy-policy",
     "termsOfUseUrl": "https://projectdata.io/terms-conditions"
@@ -15,7 +15,7 @@
   },
   "name": {
     "short": "PDS MPP Plan Editor ${{APP_NAME_SUFFIX}}",
-    "full": "PDS Project AI: Project Plan Editor"
+    "full": "PDS MPP: Project Plan Editor"
   },
   "description": {
     "short": "Stage requested plan edits informed by authorized M365 context.",

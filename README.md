@@ -6,7 +6,7 @@ Public, reusable agent assets for working with Microsoft Project MPP files throu
 
 Agent publication automation, its dependencies, and tests live in this repository.
 See [Playwright agent publication](docs/agent-publication-automation.md) for
-`pnpm publish:agents`, interactive Edge login, explicit execution, and safe
+`pnpm publish:agents`, reusable Edge sessions via `--cdp-endpoint`, in-tab MFA recovery, explicit execution, and safe
 partial-release recovery. Commands run from this repository's root, independently
 of any parent connector repository.
 
@@ -269,7 +269,30 @@ Public release prerequisites:
 - Test authentication, consent, Graph OBO, plan selection, pagination, and per-user data isolation with a non-admin user in an external test tenant. Verify read-only boundaries for Project Manager Assistant and MPP Data Auditor. For Project Plan Editor and Project Schedule Generator, verify that writes require a clear user request, target the selected project, and are authorized server-side; also test denied, ambiguous, expired-session, and failed-write cases.
 - Prepare the Partner Center publisher account and listing materials: publisher verification, unique names and descriptions, icons/screenshots, privacy statement, terms of use, support contact, customer setup instructions, and any required licensing/consent disclosures. Review the current [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines) and [publishing process](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish).
 
-Place the production IDs in each package's ignored `env/.env.prod`: `TEAMSFX_ENV=prod`, `APP_NAME_SUFFIX=` (empty), `TEAMS_APP_ID=<production app ID>`, and the package's `MCP_DA_AUTH_ID_*` key with its separately registered cross-tenant production auth registration. No Work IQ registrations are required. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. Production execution requires the explicit `--external-tenant-verified` acknowledgment after cross-tenant sign-in, authorization, and acceptance tests pass. This is an operator gate; the script cannot query the remote registration's audience itself. The command also checks all four identities before building. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
+### Production identity provisioning
+
+The production-only lifecycle under each package's `production-provision/`
+contains only `teamsApp/create` and `dcr/register` with `targetAudience:
+AnyTenant`. It does not update a Developer Portal package, extend or publish an
+agent, package a ZIP, or submit to Partner Center. The coordinator is dry-run by
+default:
+
+```powershell
+npm run provision:marketplace
+npm run provision:marketplace -- --execute --confirm-production
+```
+
+Run the execute command only while authenticated to the intended production
+publisher tenant and after approving those identity changes. It creates ignored
+`env/.env.prod` files with `TEAMSFX_ENV=prod` and an empty `APP_NAME_SUFFIX`,
+then provisions the four distinct Teams app and DCR IDs. The IDs are written to
+their package-local env files. The ignored `dist/production-agent-provisioning.json`
+journal lets completed packages be skipped on rerun; an uncertain partial run or
+pre-existing IDs without this journal stops for manual inspection rather than
+creating duplicates. This does not satisfy the external-tenant acceptance gate
+or Partner Center submission requirements. Node.js 22.9 or newer is required.
+
+After provisioning, verify each ignored `env/.env.prod` contains its generated `TEAMS_APP_ID` and package-specific `MCP_DA_AUTH_ID_*`, along with `TEAMSFX_ENV=prod` and an empty `APP_NAME_SUFFIX`. No Work IQ registrations are required. Run the Marketplace packaging command with Node.js 22.9 or newer (`node:util.parseEnv`); the other asset commands continue to support Node.js 20. Production execution requires the explicit `--external-tenant-verified` acknowledgment after cross-tenant sign-in, authorization, and acceptance tests pass. This is an operator gate; the script cannot query the remote registration's audience itself. The command also checks all four identities before building. It renders suffix-free production files under ignored `appPackage/build/marketplace/` and never modifies the checked-in dev templates.
 
 ```powershell
 npm run package:marketplace

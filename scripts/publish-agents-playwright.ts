@@ -171,6 +171,10 @@ async function domClick(locator: Locator): Promise<void> {
 
 export async function openPortal(page: Page, artifact: Artifact): Promise<string> {
   await page.goto(portalUrl, { waitUntil: "domcontentloaded", timeout: 45000 });
+  return readPortalVersion(page, artifact);
+}
+
+async function readPortalVersion(page: Page, artifact: Artifact): Promise<string> {
   if (await microsoftSignInRequired(page)) {
     throw new Error(`${artifact.name}: Developer Portal requires Microsoft sign-in.`);
   }
@@ -187,17 +191,22 @@ export async function openPortal(page: Page, artifact: Artifact): Promise<string
   return readVersion(await row.innerText(), "portal", artifact.appId);
 }
 
-async function promptForMicrosoftSignIn(): Promise<void> {
-  const input = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    await input.question("Developer Portal needs sign-in in the current Edge tab. Complete sign-in/MFA, then press Enter to retry the read-only check. No uploads have run. ");
-  } finally {
-    input.close();
-  }
+async function waitForMicrosoftSignIn(page: Page, surface: "portal" | "catalog"): Promise<void> {
+  console.log(`${surface}: complete Microsoft sign-in/MFA in the current tab. Continuing automatically when the app loads; no upload is being retried.`);
+  await page.waitForFunction(({ origin, selector }) => {
+    const signInFrameVisible = [...document.querySelectorAll("iframe")].some((frame) =>
+      ["login.microsoftonline.com", "login.microsoft.com", "login.live.com"].includes(new URL(frame.src || "about:blank", location.href).hostname) &&
+      frame.getClientRects().length > 0 && getComputedStyle(frame).visibility !== "hidden");
+    return location.origin === origin && document.querySelector(selector) !== null && !signInFrameVisible &&
+      !/Sign in to your account|Approve sign.in|Verify your identity/i.test(`${document.title}\n${document.body.innerText}`);
+  }, {
+    origin: new URL(surface === "portal" ? portalUrl : adminUrl).origin,
+    selector: surface === "portal" ? '[role="grid"]' : 'main, [role="main"]'
+  }, { timeout: 300000 });
 }
 
 export async function openPortalWithSignInRecovery(
-  page: Page, artifact: Artifact, confirmSignIn: () => Promise<void> = promptForMicrosoftSignIn
+  page: Page, artifact: Artifact, confirmSignIn?: () => Promise<void>
 ): Promise<string> {
   try {
     return await openPortal(page, artifact);
@@ -205,8 +214,19 @@ export async function openPortalWithSignInRecovery(
     if (!(await microsoftSignInRequired(page))) {
       throw error;
     }
-    await confirmSignIn();
-    return openPortal(page, artifact);
+    if (confirmSignIn) await confirmSignIn();
+    else await waitForMicrosoftSignIn(page, "portal");
+    return readPortalVersion(page, artifact);
+  }
+}
+
+export async function openCatalogWithSignInRecovery(page: Page, artifact: Artifact): Promise<string> {
+  try {
+    return await openCatalog(page, artifact);
+  } catch (error) {
+    if (await readCatalogState(page, artifact.appId) !== "login") throw error;
+    await waitForMicrosoftSignIn(page, "catalog");
+    return openCatalog(page, artifact, true);
   }
 }
 
@@ -243,7 +263,7 @@ async function catalogDiagnostic(page: Page, appId: string): Promise<string> {
   const state = await readCatalogState(page, appId);
   // Do not include page text, query strings, account names, or authentication data.
   return `page=${url.origin}${url.pathname}; state=${state}; uploadControls=${await catalogUploadControl(page).count()}. ` +
-    (state === "login" ? "Use --login with the same --profile and complete sign-in/MFA." :
+    (state === "login" ? "Complete sign-in/MFA in the current tab; preserve the browser session." :
       state === "denied" ? "Verify the intended tenant and Teams administrator permissions." :
         "The catalog UI did not render the required detail. No authentication failure was detected; preserve the journal and frozen ZIPs.");
 }
@@ -252,23 +272,25 @@ function catalogUploadControl(page: Page): Locator {
   return page.getByRole("button", { name: "Upload file", exact: true, includeHidden: true });
 }
 
-export async function openCatalog(page: Page, artifact: Artifact): Promise<string> {
+export async function openCatalog(page: Page, artifact: Artifact, reusePage = false): Promise<string> {
   let runtimeFailure = false;
   const onPageError = (error: Error) => {
     if (/\[MobX\] minified error nr: 35\b/.test(error.message)) runtimeFailure = true;
   };
   page.on("pageerror", onPageError);
   try {
-    return await readCatalog(page, artifact, () => runtimeFailure, () => { runtimeFailure = false; });
+    return await readCatalog(page, artifact, () => runtimeFailure, () => { runtimeFailure = false; }, reusePage);
   } finally {
     page.off("pageerror", onPageError);
   }
 }
 
-async function readCatalog(page: Page, artifact: Artifact, hasRuntimeFailure: () => boolean, resetRuntimeFailure: () => void): Promise<string> {
+async function readCatalog(page: Page, artifact: Artifact, hasRuntimeFailure: () => boolean, resetRuntimeFailure: () => void, reusePage: boolean): Promise<string> {
   for (let attempt = 0; attempt < 3; attempt++) {
     resetRuntimeFailure();
-    await page.goto(`${adminUrl}/${artifact.catalogId}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    if (attempt > 0 || !reusePage) {
+      await page.goto(`${adminUrl}/${artifact.catalogId}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    }
     const deadline = Date.now() + 60000;
     let state: ReturnType<typeof catalogState> = "loading";
     let runtimeFailureSince: number | undefined;
@@ -380,18 +402,21 @@ export function assertProfileOutsideRepository(profile: string, repository: stri
 async function main(): Promise<void> {
   const { values } = parseArgs({ options: {
     execute: { type: "boolean" }, login: { type: "boolean" }, agents: { type: "string" },
-    profile: { type: "string" }, report: { type: "string" }, help: { type: "boolean" }
+    profile: { type: "string" }, report: { type: "string" }, "cdp-endpoint": { type: "string" }, help: { type: "boolean" }
   } });
   if (values.help) {
-    console.log("pnpm publish:agents [--agents manager,auditor,editor,generator] [--login | --execute] [--profile <external-folder>] [--report <journal.json>]\nDefault: local artifact preflight only. Validate/package once before running. No backend deployment.");
+    console.log("pnpm publish:agents [--agents manager,auditor,editor,generator] [--login | --execute] [--profile <external-folder> | --cdp-endpoint http://127.0.0.1:<port>] [--report <journal.json>]\nDefault: local artifact preflight only. An attached browser stays open after completion or failure. No backend deployment.");
     return;
   }
   if (values.execute && values.login) throw new Error("Use --login separately from --execute.");
+  if (values.profile && values["cdp-endpoint"]) throw new Error("Use --profile or --cdp-endpoint, not both.");
+  if (values["cdp-endpoint"]) validateBrowserEndpoint(values["cdp-endpoint"]);
   const selected = selectAgents(values.agents);
   const profile = resolve(values.profile ?? join(process.env.LOCALAPPDATA ?? homedir(), "PDS-Project-AI", "publication-edge-profile"));
   assertProfileOutsideRepository(profile, root);
   if (values.login) {
-    const context = await chromium.launchPersistentContext(profile, { channel: "msedge", headless: false, viewport: { width: 1440, height: 1000 } });
+    const attached = values["cdp-endpoint"] ? await chromium.connectOverCDP(values["cdp-endpoint"]) : undefined;
+    const context = attached ? attached.contexts()[0] : await chromium.launchPersistentContext(profile, { channel: "msedge", chromiumSandbox: true, headless: false, viewport: { width: 1440, height: 1000 } });
     try {
       const portal = await context.newPage();
       const catalog = await context.newPage();
@@ -401,10 +426,13 @@ async function main(): Promise<void> {
       try { await input.question("Complete sign-in and MFA in both tabs for the intended tenant, then press Enter to verify access. No uploads will run. "); }
       finally { input.close(); }
       const artifact = loadArtifact(selected[0]);
-      await openPortal(portal, artifact);
-      await openCatalog(catalog, artifact);
-      console.log("Developer Portal and tenant catalog access verified. Edge will close; rerun --execute with the same profile and release journal.");
-    } finally { await context.close(); }
+      await openPortalWithSignInRecovery(portal, artifact);
+      await openCatalogWithSignInRecovery(catalog, artifact);
+      console.log("Developer Portal and tenant catalog access verified. Reuse the same browser endpoint and release journal for --execute.");
+    } finally {
+      if (attached) await attached.close();
+      else await context.close();
+    }
     return;
   }
   const artifacts = selected.map(loadArtifact);
@@ -419,7 +447,8 @@ async function main(): Promise<void> {
   });
   const persist = () => saveJournal(report, journal);
   persist();
-  const context = await chromium.launchPersistentContext(profile, { channel: "msedge", headless: false, viewport: { width: 1440, height: 1000 } });
+  const attached = values["cdp-endpoint"] ? await chromium.connectOverCDP(values["cdp-endpoint"]) : undefined;
+  const context = attached ? attached.contexts()[0] : await chromium.launchPersistentContext(profile, { channel: "msedge", chromiumSandbox: true, headless: false, viewport: { width: 1440, height: 1000 } });
   try {
     const portal = await context.newPage();
     const catalog = await context.newPage();
@@ -429,22 +458,33 @@ async function main(): Promise<void> {
     for (const artifact of artifacts) {
       const entry = journal.entries.find((candidate) => candidate.name === artifact.name)!;
       if (needsUpload(await readPortal(artifact), artifact.version)) assertUploadAllowed(entry.portal);
-      if (needsUpload(await openCatalog(catalog, artifact), artifact.version)) assertUploadAllowed(entry.catalog);
+      if (needsUpload(await openCatalogWithSignInRecovery(catalog, artifact), artifact.version)) assertUploadAllowed(entry.catalog);
     }
     for (const artifact of artifacts) {
       const entry = journal.entries.find((candidate) => candidate.name === artifact.name)!;
       console.log(`${artifact.name}: synchronizing Developer Portal`);
       await publishStage(artifact, entry.portal, () => readPortal(artifact), () => uploadPortal(portal, artifact), persist, delay);
       console.log(`${artifact.name}: synchronizing tenant catalog`);
-      await publishStage(artifact, entry.catalog, () => openCatalog(catalog, artifact), () => uploadCatalog(catalog, artifact), persist, delay);
+      await publishStage(artifact, entry.catalog, () => openCatalogWithSignInRecovery(catalog, artifact), () => uploadCatalog(catalog, artifact), persist, delay);
     }
     // Fresh persisted readback after all writes, not just an upload acknowledgement.
     for (const artifact of artifacts) {
       await verifyReadback(() => readPortal(artifact), artifact.version, delay);
-      await verifyReadback(() => openCatalog(catalog, artifact), artifact.version, delay);
+      await verifyReadback(() => openCatalogWithSignInRecovery(catalog, artifact), artifact.version, delay);
     }
     console.log(`Portal/catalog versions, app identities, and Everyone availability verified. Journal: ${report}\nAlready-current versions are not proof of remote ZIP checksum or live Copilot behavior.`);
-  } finally { await context.close(); }
+  } finally {
+    if (attached) await attached.close();
+    else await context.close();
+  }
+}
+
+export function validateBrowserEndpoint(value: string): void {
+  const endpoint = new URL(value);
+  if (endpoint.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname) ||
+      endpoint.username || endpoint.password || !endpoint.port || endpoint.pathname !== "/" || endpoint.search || endpoint.hash) {
+    throw new Error("Browser endpoint must be a loopback HTTP address with an explicit port and no credentials.");
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

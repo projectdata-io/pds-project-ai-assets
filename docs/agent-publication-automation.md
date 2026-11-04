@@ -31,6 +31,27 @@ requires an explicit reviewed code change, not an arbitrary CLI ID override.
 
 ## Run
 
+For a release that may need authentication or read-only recovery, keep one Edge
+process running and attach to it. Start it once with the existing publication
+profile, after closing any previous instance using that same profile:
+
+```powershell
+Start-Process "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe" -ArgumentList @(
+   "--user-data-dir=`"$env:LOCALAPPDATA\PDS-Project-AI\publication-edge-profile`"",
+   "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=9333"
+)
+pnpm publish:agents --execute --cdp-endpoint http://127.0.0.1:9333 --report .\tmp\release.json
+```
+
+The publisher disconnects when it finishes or fails, but leaves this browser and
+its tabs open. Retry read-only checks using the same endpoint, journal, selection,
+and ZIPs. Do not combine `--cdp-endpoint` with `--profile`. Only loopback HTTP
+endpoints with explicit ports are accepted. Close this Edge process after the
+release; a local debugging endpoint grants browser control to local processes.
+Edge's normal default profile is not supported by this remote-debugging method.
+
+The older publisher-owned browser flow remains available:
+
 ```powershell
 # When starting in the connector repository, first enter the assets submodule:
 Set-Location .\external\pds-project-ai-assets
@@ -63,9 +84,10 @@ while an MFA approval/code prompt is pending. Authentication can expire again
 later due to tenant policy; a persistent profile does not bypass MFA.
 
 If the execute-time Developer Portal navigation redirects to Microsoft sign-in,
-the publisher pauses in that same Edge context. Complete sign-in/MFA and press
-Enter to retry the read-only check. The all-target preflight still completes
-before any upload begins.
+the publisher waits in that same tab for up to five minutes. Complete sign-in/MFA
+there; the check continues automatically without pressing Enter or starting
+another sign-in navigation. Catalog authentication follows the same flow.
+The all-target preflight still completes before any upload begins.
 
 Use one journal per release and do not run concurrent publications. The default
 journal is `tmp/agent-publication.json` (gitignored); a dated `--report` is clearer.
@@ -118,20 +140,20 @@ then allows up to two read-only reloads. Further failure stops with the runtime
 classification; this is a rendering failure, not evidence of an MFA prompt.
 Runtime listeners are removed after each read. This shares the same one-reload
 budget as CDN recovery and does not reset journal stages or retry uploads.
-Login and access-denied pages fail explicitly. Readiness/upload-control failures
+Authentication recovery does not retry an upload; access-denied pages fail explicitly. Readiness/upload-control failures
 report the page origin/path (without query strings), classified state, and upload
 control count; no page text or browser storage is dumped.
 
 Authentication detection includes Microsoft sign-in frames inside the admin
 shell, page titles, and MFA screens such as **Approve sign in**, **Verify your
 identity**, and **Request wasn't sent**. These must not be mistaken for a stalled
-catalog page. Complete MFA yourself using `--login`; no automated approval is
+catalog page. Complete MFA yourself in the current tab; no automated approval is
 attempted.
 
 If a run previously timed out waiting for `Upload file`, rerun with the same
 profile, journal, selection, and frozen ZIPs. The all-target preflight does not
-upload anything. If authentication is reported, run `pnpm publish:agents --login`
-with that same profile first. A journaled uncertain write still requires the
+upload anything. If authentication is reported, complete it in the current tab
+and keep the same shared browser open. A journaled uncertain write still requires the
 manual recovery procedure above; do not delete the journal or bump versions.
 
 This script has local safety tests and an isolated Edge UI fixture; this is not

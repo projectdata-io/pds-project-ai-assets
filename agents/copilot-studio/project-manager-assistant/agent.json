@@ -1,6 +1,6 @@
 {
   "name": "project-manager-assistant",
-  "title": "Project Manager Assistant",
+  "title": "PDS MPP: Project Manager Assistant",
   "description": "Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan.",
   "access": "read-only",
   "skills": [

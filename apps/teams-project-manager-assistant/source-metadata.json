@@ -1,10 +1,10 @@
 {
   "packageSlug": "teams-project-manager-assistant",
   "role": "project-manager-assistant",
-  "title": "PDS Project AI: Project Manager Assistant",
+  "title": "PDS MPP: Project Manager Assistant",
   "shortName": "PDS MPP Project Manager",
   "shortDescription": "Understand delivery status, risks, milestones, and next steps.",
-  "version": "2.3.10",
+  "version": "2.3.11",
   "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
   "capabilities": [

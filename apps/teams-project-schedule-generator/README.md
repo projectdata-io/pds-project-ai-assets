@@ -1,4 +1,4 @@
-# PDS Project AI: Project Schedule Generator
+# PDS MPP: Project Schedule Generator
 
 This is an independently deployable Microsoft 365 declarative-agent package for project-plan editing. PDS MCP tools are discovered dynamically without a package tool allowlist. Role instructions govern intended use; OAuth scopes and server authorization enforce access. Native read-only capabilities search the user's accessible SharePoint and OneDrive files, email, and Teams conversations; no Work IQ actions are included.
 

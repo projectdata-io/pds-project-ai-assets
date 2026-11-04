@@ -1,6 +1,6 @@
 {
   "name": "project-plan-editor",
-  "title": "Project Plan Editor",
+  "title": "PDS MPP: Project Plan Editor",
   "description": "Applies requested Microsoft Project edits and reports the committed result.",
   "access": "commit",
   "skills": [

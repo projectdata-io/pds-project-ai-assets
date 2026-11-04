@@ -2,10 +2,10 @@
   "packageSlug": "teams-project-schedule-generator",
   "role": "project-schedule-generator",
   "access": "commit",
-  "title": "PDS Project AI: Project Schedule Generator",
+  "title": "PDS MPP: Project Schedule Generator",
   "shortName": "PDS MPP Schedule Generator",
-  "shortDescription": "Generate validated schedules informed by authorized M365 context.",
-  "version": "2.3.16",
+  "shortDescription": "Create, validate, and update Microsoft Project schedules from requirements.",
+  "version": "2.3.17",
   "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_SCHEDULE_GENERATOR",
   "capabilities": [

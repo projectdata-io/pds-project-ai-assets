@@ -3,7 +3,7 @@ import { strToU8, zipSync } from "fflate";
 import { join } from "node:path";
 import {
   agents, assertProfileOutsideRepository, catalogState, inspectArtifact, isMicrosoftSignInUrl, needsUpload, publishStage,
-  readVersion, reconcileJournal, selectAgents, verifyReadback
+  readVersion, reconcileJournal, selectAgents, validateBrowserEndpoint, verifyReadback
 } from "../../scripts/publish-agents-playwright.js";
 
 function artifact(overrides = {}) {
@@ -15,6 +15,13 @@ function artifact(overrides = {}) {
 const source = { repository: "root-sha", assets: "asset-sha + uncommitted changes" };
 
 describe("agent publication preflight", () => {
+  it("only attaches to an explicit local browser endpoint", () => {
+    expect(() => validateBrowserEndpoint("http://127.0.0.1:9333")).not.toThrow();
+    expect(() => validateBrowserEndpoint("http://localhost:9333/")).not.toThrow();
+    for (const endpoint of ["http://remote.example:9333", "http://127.0.0.1", "http://user:password@localhost:9333", "https://localhost:9333", "http://localhost:9333/?token=value"]) {
+      expect(() => validateBrowserEndpoint(endpoint)).toThrow("loopback");
+    }
+  });
   it("recognizes Microsoft sign-in redirects without matching app surfaces", () => {
     expect(isMicrosoftSignInUrl("https://login.microsoftonline.com/common/oauth2/authorize?client_id=x")).toBe(true);
     expect(isMicrosoftSignInUrl("https://login.microsoft.com/")).toBe(true);

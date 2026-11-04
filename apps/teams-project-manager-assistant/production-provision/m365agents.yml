@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/m365-agents-toolkits/v1.13/yaml.schema.json
+version: v1.13
+environmentFolderPath: ../env
+
+provision:
+  - uses: teamsApp/create
+    with:
+      name: "PDS MPP: Project Manager Assistant"
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: dcr/register
+    with:
+      name: pdsprojectaiprojectmanagerassistantprod
+      appId: ${{TEAMS_APP_ID}}
+      applicableToApps: AnyApp
+      targetAudience: AnyTenant
+      wellKnownAuthorizationServer: https://mcp.projectdata.ai/.well-known/oauth-authorization-server
+      targetUrlsShouldStartWith:
+        - https://mcp.projectdata.ai
+    writeToEnvironmentFile:
+      configurationId: MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT
+
+projectId: 32751b19-8b2e-407d-9168-e5192f738cec

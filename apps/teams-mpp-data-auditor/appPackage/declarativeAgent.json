@@ -1,6 +1,6 @@
 {
   "version": "v1.8",
-  "name": "MPP Data Auditor ${{APP_NAME_SUFFIX}}",
+  "name": "PDS MPP: Data Auditor ${{APP_NAME_SUFFIX}}",
   "description": "Helps you check Microsoft Project data quality, including task and resource relationships, hierarchy, custom fields, progress, calendars, and plan comparisons.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [

@@ -1,6 +1,6 @@
 {
   "name": "mpp-data-auditor",
-  "title": "MPP Data Auditor",
+  "title": "PDS MPP: Data Auditor",
   "description": "Helps you check Microsoft Project data quality, including task and resource relationships, hierarchy, custom fields, progress, calendars, and plan comparisons.",
   "access": "read-only",
   "skills": [

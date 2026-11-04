@@ -1,4 +1,4 @@
-# PDS Project AI: MPP Data Auditor
+# PDS MPP: Data Auditor
 
 This is one independently deployable Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_MPP_DATA_AUDITOR` binding. No Work IQ actions or report-storage OAuth connections are included.
 

@@ -1,4 +1,4 @@
-# PDS Project AI: Project Manager Assistant
+# PDS MPP: Project Manager Assistant
 
 This is one independently deployable Microsoft 365 declarative-agent package. It contains exactly one Teams manifest declarative-agent entry, its own Teams app lifecycle, and the package-local `MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT` binding. No Work IQ actions or report-storage OAuth connections are included.
 

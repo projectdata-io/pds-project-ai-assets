@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/m365-agents-toolkits/v1.13/yaml.schema.json
+version: v1.13
+environmentFolderPath: ../env
+
+provision:
+  - uses: teamsApp/create
+    with:
+      name: "PDS MPP: Project Plan Editor"
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: dcr/register
+    with:
+      name: pdsprojectaiprojectplaneditorprod
+      appId: ${{TEAMS_APP_ID}}
+      applicableToApps: AnyApp
+      targetAudience: AnyTenant
+      wellKnownAuthorizationServer: https://mcp.projectdata.ai/.well-known/oauth-authorization-server
+      targetUrlsShouldStartWith:
+        - https://mcp.projectdata.ai
+    writeToEnvironmentFile:
+      configurationId: MCP_DA_AUTH_ID_PROJECT_PLAN_EDITOR
+
+projectId: 680476f0-bef1-422d-8ef5-b3e5c49b5a27
