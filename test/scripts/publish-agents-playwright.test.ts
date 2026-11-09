@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { strToU8, zipSync } from "fflate";
 import { join } from "node:path";
 import {
-  agents, assertProfileOutsideRepository, catalogState, inspectArtifact, isMicrosoftSignInUrl, needsUpload, publishStage,
+  agents, assertProfileOutsideRepository, catalogState, findPageForHost, inspectArtifact, isMicrosoftSignInUrl, needsUpload, publishStage,
   readVersion, reconcileJournal, selectAgents, validateBrowserEndpoint, verifyReadback
 } from "../../scripts/publish-agents-playwright.js";
 
@@ -27,6 +27,13 @@ describe("agent publication preflight", () => {
     expect(isMicrosoftSignInUrl("https://login.microsoft.com/")).toBe(true);
     expect(isMicrosoftSignInUrl("https://dev.teams.microsoft.com/apps")).toBe(false);
     expect(isMicrosoftSignInUrl("not a url")).toBe(false);
+  });
+  it("reuses an existing authenticated surface tab by host", () => {
+    const portal = { url: () => "https://dev.teams.microsoft.com/apps" };
+    const admin = { url: () => "https://admin.teams.microsoft.com/policies/manage-apps" };
+    expect(findPageForHost([portal, admin], "dev.teams.microsoft.com")).toBe(portal);
+    expect(findPageForHost([portal, admin], "admin.teams.microsoft.com")).toBe(admin);
+    expect(findPageForHost([portal, admin], "login.microsoftonline.com")).toBeUndefined();
   });
   it("distinguishes catalog load, authentication, permission, and CDN failures", () => {
     const state = (text: string, origin = "https://admin.teams.microsoft.com") => catalogState({ origin, text, appId: agents[0].appId });

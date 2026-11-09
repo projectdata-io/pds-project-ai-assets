@@ -49,6 +49,7 @@ for (const [packageSlug, role] of expected) {
   if (metadata.mcpEndpoint !== m365McpEndpoint) failures.push(`${packageSlug} must use the PDS M365 compatibility endpoint.`);
   const access = metadata.access ?? "read-only";
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+  if (manifest.developer?.name !== "WACG") failures.push(`${packageSlug} developer name must remain WACG.`);
   const declarativeAgentPath = join(appPackagePath, "declarativeAgent.json");
   const declarativeAgent = existsSync(declarativeAgentPath) ? JSON.parse(readFileSync(declarativeAgentPath, "utf8")) : {};
   const expectedCapabilities = metadata.capabilities ?? [];
@@ -118,7 +119,7 @@ for (const [packageSlug, role] of expected) {
         [/idempotencyKey.*retries/is, "idempotent retries"],
         [/(?:persisted entities.*actual UIDs|persisted results.*actual UIDs)/is, "created-entity UID readback"],
         [/untrusted.*(?:never as authorization|not permission|not authorization)/is, "untrusted source handling"],
-        [/possibly committed (?:edits|creation).*blindly/i, "safe session recovery"],
+        [/(?:possibly committed (?:edits|creation).*blindly|If entities were committed, identify the partial session)/i, "safe session recovery"],
         [/(?:Close only sessions you created|close_session only for abandoned sessions you created)/i, "session ownership"]
       ];
       for (const [pattern, behavior] of workflowGuards) {
@@ -126,8 +127,11 @@ for (const [packageSlug, role] of expected) {
       }
       if (role === "project-schedule-generator") {
         const planningGuards = [
-          [/Tool discovery is not tool execution/i, "tool-execution truthfulness"],
-          [/never claim a session, draft, validation, commit, or download succeeded unless its actual tool result is present/i, "verified tool outcomes"],
+          [/Tool discovery is not execution/i, "tool-execution truthfulness"],
+          [/On `create_project_schedule` failure, quote returned `error\.code` and `error\.message`/i, "exact schedule failure reporting"],
+          [/include `stage`, `sessionId`, `entitiesCommitted`, and `diagnosticId` when present/i, "partial schedule diagnostic details"],
+          [/Never infer license\/quota failure unless the returned error states it/i, "evidence-based quota reporting"],
+          [/If entities were committed, identify the partial session; never claim nothing was created or call create again/i, "safe partial-creation recovery"],
           [/## PMI Alignment/, "PMI-aligned planning"],
           [/PMI\/PMBOK.*tailored recommendations/is, "tailored PMI recommendations"],
           [/do not invent PMI limits, clause citations, or compliance scores/i, "honest PMI attribution"],
@@ -164,8 +168,8 @@ for (const [packageSlug, role] of expected) {
     validateDynamicDiscovery(plugin, `${packageSlug} PDS plugin`);
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
     if (access === "commit") {
-      if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("For draft-only requests") || !plugin.description_for_model.includes("use create_new_project_session") || !plugin.description_for_model.includes("Do not use create_new_project_session for completed-file new-plan creation") || !plugin.description_for_model.includes("do not call it for draft-only requests, clarifications") || !plugin.description_for_model.includes("Only after a completed-file creation"))) failures.push(`${packageSlug} must scope creation-session and download rules to the correct schedule workflow.`);
-      if (role === "project-schedule-generator" && (!instruction.includes("Approved completed-file requests: invoke `create_project_schedule` now") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Explicit draft-only requests") || !instruction.includes("stop without committing"))) failures.push(`${packageSlug} must separate draft-only requests from atomic committed schedule creation.`);
+      if (role === "project-schedule-generator" && (!plugin.description_for_model?.includes("create_project_schedule") || !plugin.description_for_model.includes("Tool discovery is not execution") || !plugin.description_for_model.includes("For draft-only requests") || !plugin.description_for_model.includes("use create_new_project_session") || !plugin.description_for_model.includes("Do not use create_new_project_session for completed-file new-plan creation") || !plugin.description_for_model.includes("do not call it for draft-only requests, clarifications") || !plugin.description_for_model.includes("Only after a completed-file creation") || !plugin.description_for_model.includes("never call create_project_schedule again for the same approved request") || !plugin.description_for_model.includes("never pass expectedCounts") || !plugin.description_for_model.includes("budgetCost on tasks") || !plugin.description_for_model.includes("fixedCost only for genuine one-off expenses") || !plugin.description_for_model.includes("standardRate/overtimeRate/costPerUse values on resources") || !plugin.description_for_model.includes("proceed using the project default calendar and disclose the limitation"))) failures.push(`${packageSlug} must scope creation, budget and cost fields, and calendar fallback to the schedule workflow.`);
+      if (role === "project-schedule-generator" && (!instruction.includes("Approved completed-file requests: invoke `create_project_schedule` now") || !instruction.includes("`parentTaskKey` links") || !instruction.includes("Explicit draft-only requests") || !instruction.includes("stop without committing") || !instruction.includes("do not pass `expectedCounts`") || !instruction.includes("never call `create_project_schedule` again for the same approved request") || !instruction.includes("exact Level-2 account names as WBS parents") || !instruction.includes("in `budgetCost`, not `fixedCost`") || !instruction.includes("Use `fixedCost` only for one-off expenses") || !instruction.includes("do not stop: proceed using the project default calendar"))) failures.push(`${packageSlug} must enforce approved scope, preserve budget field semantics, and continue schedule creation when calendar writing is unavailable.`);
     }
   }
   const actionSignature = (declarativeAgent.actions ?? []).map((action) => `${action.id}:${action.file}`).join("|");

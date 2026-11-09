@@ -30,6 +30,7 @@
     { "name": "preview_edit_draft", "scope": "Session.ReadOnly" },
     { "name": "validate_edit_draft", "scope": "Session.ReadWrite" },
     { "name": "commit_edit_draft", "scope": "Session.ReadWrite" },
+    { "name": "commit_edit_draft_and_save", "scope": "Session.ReadWrite" },
     { "name": "open_project_plan_download", "scope": "Session.ReadOnly" },
     { "name": "close_session", "scope": "Session.ReadOnly" }
   ]

@@ -333,8 +333,8 @@ Compare the MCP tools shown in Copilot Studio with the `tools` array in `manifes
 
 1. Enable only the listed tools when the environment supports individual MCP tool controls.
 1. Disable unrelated tools.
-1. For the Project Plan Editor, set **Ask the end user before running** for `commit_edit_draft`.
-1. Keep confirmation enabled for other externally visible write actions where available.
+1. For the Project Plan Editor, set **Ask the end user before running** for `commit_edit_draft_and_save` and any other exposed MCP tool marked destructive, such as `create_project_schedule_and_save`.
+1. Do not gate `commit_edit_draft` solely for writing its session; it does not save to OneDrive or SharePoint.
 
 ### MCP ALM behavior
 
@@ -398,9 +398,9 @@ For `project-plan-editor`:
 
 1. Keep draft-authoring workflows separate from `mpp-safe-commit`.
 2. Require preview and validation after every draft change.
-3. Ask the user to confirm the exact validated draft, destination, and overwrite behavior.
-4. Run `commit_edit_draft` only after that confirmation.
-5. Preserve the same idempotency key during a retry.
+3. Use `commit_edit_draft` for a session-only commit with no provider target.
+4. For requested OneDrive or SharePoint write-back, confirm the exact validated draft, destination, and overwrite behavior through the host before calling `commit_edit_draft_and_save`.
+5. Never pass a provider target to `commit_edit_draft`; preserve the same idempotency key during a cloud-write retry.
 6. Stop on an ETag or concurrency conflict instead of overwriting newer content.
 
 ## 7. Test Before Publishing
@@ -414,7 +414,7 @@ For every applicable case, verify:
 3. Forbidden write tools are not called.
 4. Results include stable entity identifiers and data limitations.
 5. Sessions created by the workflow are closed when no longer needed.
-6. The Project Plan Editor does not commit before confirmation.
+6. The Project Plan Editor does not call `commit_edit_draft_and_save` before host confirmation; session-only `commit_edit_draft` remains distinct from cloud write-back.
 
 Also test invalid files, expired sessions, incomplete pagination, unavailable child projects, authentication failures, and quota errors.
 

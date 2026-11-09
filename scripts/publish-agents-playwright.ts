@@ -54,6 +54,16 @@ export function isMicrosoftSignInUrl(value: string): boolean {
   }
 }
 
+export function findPageForHost<T extends { url(): string }>(pages: readonly T[], hostname: string): T | undefined {
+  return pages.find((page) => {
+    try {
+      return new URL(page.url()).hostname.toLowerCase() === hostname.toLowerCase();
+    } catch {
+      return false;
+    }
+  });
+}
+
 async function microsoftSignInRequired(page: Page): Promise<boolean> {
   if (isMicrosoftSignInUrl(page.url())) return true;
   const [title, text] = await Promise.all([
@@ -418,8 +428,8 @@ async function main(): Promise<void> {
     const attached = values["cdp-endpoint"] ? await chromium.connectOverCDP(values["cdp-endpoint"]) : undefined;
     const context = attached ? attached.contexts()[0] : await chromium.launchPersistentContext(profile, { channel: "msedge", chromiumSandbox: true, headless: false, viewport: { width: 1440, height: 1000 } });
     try {
-      const portal = await context.newPage();
-      const catalog = await context.newPage();
+      const portal = findPageForHost(context.pages(), "dev.teams.microsoft.com") ?? await context.newPage();
+      const catalog = findPageForHost(context.pages(), "admin.teams.microsoft.com") ?? await context.newPage();
       await portal.goto(portalUrl, { waitUntil: "domcontentloaded" });
       await catalog.goto(adminUrl, { waitUntil: "domcontentloaded" });
       const input = createInterface({ input: process.stdin, output: process.stdout });
@@ -450,8 +460,8 @@ async function main(): Promise<void> {
   const attached = values["cdp-endpoint"] ? await chromium.connectOverCDP(values["cdp-endpoint"]) : undefined;
   const context = attached ? attached.contexts()[0] : await chromium.launchPersistentContext(profile, { channel: "msedge", chromiumSandbox: true, headless: false, viewport: { width: 1440, height: 1000 } });
   try {
-    const portal = await context.newPage();
-    const catalog = await context.newPage();
+    const portal = findPageForHost(context.pages(), "dev.teams.microsoft.com") ?? await context.newPage();
+    const catalog = findPageForHost(context.pages(), "admin.teams.microsoft.com") ?? await context.newPage();
     const delay = () => new Promise<void>((done) => setTimeout(done, 10000));
     const readPortal = (artifact: Artifact) => openPortalWithSignInRecovery(portal, artifact);
     // Check every target on both surfaces before the first write.

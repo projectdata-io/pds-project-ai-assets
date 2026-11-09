@@ -18,7 +18,7 @@ argument-hint: "Describe the requested MPP changes, source or session ID, and de
 
 ## Required MCP Capabilities
 
-- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `create_new_project_session`, `get_edit_capabilities`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `create_edit_draft`, `add_edit_operations`, `replace_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `open_project_plan_download`, `close_session`.
+- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `create_new_project_session`, `get_edit_capabilities`, `get_project`, `list_tasks`, `list_resources`, `list_assignments`, `create_edit_draft`, `add_edit_operations`, `replace_edit_operations`, `preview_edit_draft`, `validate_edit_draft`, `commit_edit_draft`, `commit_edit_draft_and_save`, `open_project_plan_download`, `close_session`.
 - Scope: `Session.ReadWrite` for editing and commit operations.
 
 ## Workflow
@@ -27,13 +27,14 @@ argument-hint: "Describe the requested MPP changes, source or session ID, and de
 2. Reuse the supplied `sessionId` and `editId`. Do not create a replacement draft or append operations when an existing draft was supplied. If no draft was supplied, reuse or create an authorized session, call `get_edit_capabilities`, resolve stable entity UIDs, then call `create_edit_draft` and `add_edit_operations` once with the requested changes.
 3. Preview and validate that draft with `preview_edit_draft` and `validate_edit_draft`. Repair unchanged intent using `replace_edit_operations` with the complete corrected list and repeat both checks. Stop if a correction changes the requested outcome.
 4. Resolve provider requirements from `get_edit_capabilities`. Never invent destinations or overwrite behavior. Use the source `ifMatch` when available and one `idempotencyKey` per logical commit, unchanged on retries.
-5. Call `commit_edit_draft` with the same validated `editId`. Omit `returnFormat`; set a provider target only when requested and all required fields are resolved. For an intermediate creation stage, omit the provider target, return the committed IDs to the authoring workflow, and keep the session open without presenting a final download.
-6. After the final commit, verify provider write-back or call `open_project_plan_download` with the committed `sessionId` and file name. Report completion only when the output is available.
+5. For a session-only commit, call `commit_edit_draft` with the same validated `editId` and no provider target. For an explicitly requested OneDrive or SharePoint write-back, call `commit_edit_draft_and_save` with that `editId` and the resolved provider target after the MCP host's destructive-action confirmation. Intermediate creation stages always use `commit_edit_draft` without a target; return committed IDs to the authoring workflow and keep the session open without presenting a final download.
+6. After a cloud commit, verify the provider write-back result. After a session-only commit, call `open_project_plan_download` with the committed `sessionId` and file name when a completed file is requested. Report completion only when the output is available.
 
 ## Guardrails
 
 - Never turn advice or analysis into a write operation without an explicit edit request.
 - Never commit an invalid or ambiguously targeted draft.
+- Never pass a provider target to `commit_edit_draft`; use `commit_edit_draft_and_save` for OneDrive or SharePoint write-back.
 - Do not invent drive IDs, item IDs, parent IDs, upload URLs, file names, ETags, or target modes.
 - Do not edit protected, inserted-subproject, external, cross-project, or read-only tasks when prohibited by the capability contract.
 - Do not retry with a new idempotency key. On an ETag conflict, stop and ask the user to refresh or choose a new target.
@@ -52,4 +53,4 @@ Return the confirmed commit status, file or provider destination, and concise ch
 
 ## Compatibility
 
-Uses the current public PDS Project AI capability-discovery, draft, preview, validation, commit, project-query, session-creation, and cleanup tools.
+Uses the current public PDS Project AI capability-discovery, draft, preview, validation, session-only commit, cloud-write commit, project-query, session-creation, and cleanup tools.

@@ -263,7 +263,7 @@ ${renderSharePointSetup(agent.name)}
 3. Configure the deployed PDS Project AI MCP endpoint and its connection.
 4. Use **end-user authentication** so API authorization stays scoped to the signed-in user.
 5. Save the tool and confirm its operations appear on the tool details page.
-${isCommit ? "\nSet **Ask the end user before running** for `commit_edit_draft`." : ""}
+${isCommit ? "\nSet **Ask the end user before running** for `commit_edit_draft_and_save` and any other exposed MCP cloud-write tool, such as `create_project_schedule_and_save` or `save_project_plan`. `commit_edit_draft` is session-only." : ""}
 
 ## Load the skills
 
@@ -292,7 +292,7 @@ For every case verify:
 2. Required MCP inputs are collected rather than invented.
 3. Forbidden write tools are not called.
 4. Results include stable entity identifiers and data limitations.
-5. Sessions created by the workflow are closed when no longer needed.${isCommit ? "\n6. The agent does not commit before explicit user confirmation." : ""}
+5. Sessions created by the workflow are closed when no longer needed.${isCommit ? "\n6. The agent does not call cloud-write tools before explicit user confirmation; session-only commits remain distinct." : ""}
 
 Publish the agent only after its evaluation cases pass.
 `;

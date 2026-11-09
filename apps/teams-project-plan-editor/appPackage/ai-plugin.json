@@ -3,7 +3,7 @@
   "schema_version": "v2.4",
   "name_for_human": "PDS Project AI",
   "description_for_human": "PDS MPP: Project Plan Editor Microsoft Project plan creation and editing.",
-  "description_for_model": "Use these PDS Project AI tools to edit real Microsoft Project MPP files. Discover capabilities, stage and validate a draft, commit only an authorized write, and use the host download app when no provider target is requested. Tool discovery is not execution; never claim an operation succeeded without its actual tool result. Do not return raw signed URLs.",
+  "description_for_model": "Use these PDS Project AI tools to edit real Microsoft Project MPP files. Discover capabilities and validate drafts. Use commit_edit_draft for session-only edits; use commit_edit_draft_and_save only for an explicitly requested OneDrive or SharePoint write-back after host confirmation. Use the host download app when no provider target is requested. Tool discovery is not execution; never claim an operation succeeded without its actual tool result. Do not return raw signed URLs.",
   "contact_email": "support@projectdata.io",
   "namespace": "pdsprojectaiprojectplaneditor",
   "functions": [],

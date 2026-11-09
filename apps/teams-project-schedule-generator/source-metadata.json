@@ -5,7 +5,7 @@
   "title": "PDS MPP: Project Schedule Generator",
   "shortName": "PDS MPP Schedule Generator",
   "shortDescription": "Create, validate, and update Microsoft Project schedules from requirements.",
-  "version": "2.3.17",
+  "version": "2.3.21",
   "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_SCHEDULE_GENERATOR",
   "capabilities": [
