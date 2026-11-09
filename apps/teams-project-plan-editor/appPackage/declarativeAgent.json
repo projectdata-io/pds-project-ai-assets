@@ -1,6 +1,6 @@
 {
   "version": "v1.8",
-  "name": "PDS MPP: Project Plan Editor ${{APP_NAME_SUFFIX}}",
+  "name": "PDS MPP Plan Editor ${{APP_NAME_SUFFIX}}",
   "description": "Applies requested Microsoft Project edits and reports the committed result.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [

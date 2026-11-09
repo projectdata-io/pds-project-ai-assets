@@ -15,7 +15,7 @@
   },
   "name": {
     "short": "PDS MPP Plan Editor ${{APP_NAME_SUFFIX}}",
-    "full": "PDS MPP: Project Plan Editor"
+    "full": "PDS MPP Plan Editor ${{APP_NAME_SUFFIX}}"
   },
   "description": {
     "short": "Stage requested plan edits informed by authorized M365 context.",

@@ -137,7 +137,7 @@ for (const packageSlug of packageSlugs) {
   if (packageMetadata.packageSlug !== packageSlug || metadata.name !== packageMetadata.role || metadata.access !== access || !["read-only", "commit"].includes(access)) {
     throw new Error(`${packageSlug} does not map to a supported canonical role and access level.`);
   }
-  if (typeof packageMetadata.shortName !== "string" || packageMetadata.shortName.length > 26 || typeof packageMetadata.shortDescription !== "string" || packageMetadata.shortDescription.length > 80) {
+  if (typeof packageMetadata.shortName !== "string" || packageMetadata.shortName.length > 26 || typeof packageMetadata.shortDescription !== "string" || packageMetadata.shortDescription.length > 80 || (packageMetadata.longDescription !== undefined && (typeof packageMetadata.longDescription !== "string" || packageMetadata.longDescription.length > 4_000))) {
     throw new Error(`${packageSlug} has invalid Store display metadata.`);
   }
   if (packageMetadata.capabilities !== undefined && (!Array.isArray(packageMetadata.capabilities) || new Set(packageMetadata.capabilities).size !== packageMetadata.capabilities.length || packageMetadata.capabilities.some((name) => !supportedCapabilities.has(name)))) {
@@ -146,6 +146,8 @@ for (const packageSlug of packageSlugs) {
   const { instruction } = requiredText(metadata, source, packageMetadata.capabilities);
   const appPackagePath = join(packagePath, "appPackage");
   const dcrReference = `\${{${packageMetadata.dcrEnvironmentVariable}}}`;
+  const displayName = `${packageMetadata.shortName} \${{APP_NAME_SUFFIX}}`;
+  const fullDescription = packageMetadata.longDescription ?? `Powered by PDS Project AI. ${metadata.description}${access === "commit" ? "" : " It only reads project information and never changes your project files."}`;
   const manifest = `${JSON.stringify({
     $schema: "https://developer.microsoft.com/en-us/json-schemas/teams/v1.30/MicrosoftTeams.schema.json",
     manifestVersion: "1.30",
@@ -153,8 +155,8 @@ for (const packageSlug of packageSlugs) {
     id: "${{TEAMS_APP_ID}}",
     developer: { name: "WACG", websiteUrl: "https://projectdata.io/", privacyUrl: "https://projectdata.io/privacy-policy", termsOfUseUrl: "https://projectdata.io/terms-conditions" },
     icons: { color: "color.png", outline: "outline.png" },
-    name: { short: `${packageMetadata.shortName} \${{APP_NAME_SUFFIX}}`, full: packageMetadata.title },
-    description: { short: packageMetadata.shortDescription, full: `Powered by PDS Project AI. ${metadata.description}${access === "commit" ? "" : " It only reads project information and never changes your project files."}` },
+    name: { short: displayName, full: displayName },
+    description: { short: packageMetadata.shortDescription, full: fullDescription },
     accentColor: "#FFFFFF",
     supportsChannelFeatures: "tier1",
     composeExtensions: [],
@@ -164,7 +166,7 @@ for (const packageSlug of packageSlugs) {
   }, null, 2)}\n`;
   const agent = `${JSON.stringify({
     version: "v1.8",
-    name: `${metadata.title} \${{APP_NAME_SUFFIX}}`,
+    name: displayName,
     description: metadata.description,
     instructions: "$[file('instruction.txt')]",
     conversation_starters: packageMetadata.conversationStarters.map((text) => ({ text, title: text.split(/[.:]/)[0] })),
@@ -175,7 +177,7 @@ for (const packageSlug of packageSlugs) {
   const plugin = `${JSON.stringify({
     $schema: "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
     schema_version: "v2.4",
-    name_for_human: "PDS Project AI",
+    name_for_human: displayName,
     description_for_human: `${metadata.title} ${access === "commit" ? "Microsoft Project plan creation and editing" : "read-only MPP analysis"}.`,
     ...(access === "commit" ? { description_for_model: metadata.name === "project-schedule-generator"
       ? "Tool discovery is not execution. For draft-only requests, including the Build a draft schedule starter, do not call create_project_schedule because it commits; use create_new_project_session and the session/draft tools, preview and validate, then stop without committing or downloading. For completed-file requests, call create_project_schedule once with parent-before-child tasks and parentTaskKey links. Do not use create_new_project_session for completed-file new-plan creation. For follow-up edits, reuse sessionId from the successful creation/download result; read affected entities and use edit tools. Ask for unspecified resource/allocation decisions without losing the session. Re-select only a different file, an absent sessionId, or a session proven unavailable by a tool error. Dates/work items supplied later continue the pending request. Ask only for missing scheduling inputs or estimate approval, never a save location or delivery choice. Retain the returned sessionId for later edits. Only after a completed-file creation or final edit commit without provider write-back, call open_project_plan_download as the final tool action; do not call it for draft-only requests, clarifications, or stages without a committed output. The user chooses OneDrive, SharePoint, or Download in its card. Report actual results; never print signed URLs or claim cloud saving merely because the card opened. After successful delivery, stop; never call create_project_schedule again for the same approved request. Reopen a missing download with the same sessionId. For approved scope, send every planned task and resource; never pass expectedCounts. Put task constraintType/constraintDate and budgetCost on tasks; use fixedCost only for genuine one-off expenses. Put standardRate/overtimeRate/costPerUse values on resources when supplied. Represent each budget account as a Level-2 WBS task and apply its budgetCost once. If custom calendar writes are unavailable, proceed using the project default calendar and disclose the limitation; never claim custom working times/holidays were applied without committed-MPP readback."

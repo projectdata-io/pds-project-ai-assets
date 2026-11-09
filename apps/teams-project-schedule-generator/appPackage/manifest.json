@@ -15,7 +15,7 @@
   },
   "name": {
     "short": "PDS MPP Schedule Generator ${{APP_NAME_SUFFIX}}",
-    "full": "PDS MPP: Project Schedule Generator"
+    "full": "PDS MPP Schedule Generator ${{APP_NAME_SUFFIX}}"
   },
   "description": {
     "short": "Create, validate, and update Microsoft Project schedules from requirements.",

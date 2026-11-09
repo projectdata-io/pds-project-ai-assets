@@ -1,6 +1,6 @@
 {
   "version": "v1.8",
-  "name": "PDS MPP: Project Schedule Generator ${{APP_NAME_SUFFIX}}",
+  "name": "PDS MPP Schedule Generator ${{APP_NAME_SUFFIX}}",
   "description": "Creates, validates, and updates Microsoft Project schedules from user requirements, then commits the completed plan to the requested destination.",
   "instructions": "$[file('instruction.txt')]",
   "conversation_starters": [

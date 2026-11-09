@@ -15,7 +15,7 @@
   },
   "name": {
     "short": "PDS MPP Data Auditor ${{APP_NAME_SUFFIX}}",
-    "full": "PDS MPP: Data Auditor"
+    "full": "PDS MPP Data Auditor ${{APP_NAME_SUFFIX}}"
   },
   "description": {
     "short": "Check Microsoft Project data quality and consistency.",

@@ -53,16 +53,18 @@ for (const [packageSlug, role] of expected) {
   const declarativeAgentPath = join(appPackagePath, "declarativeAgent.json");
   const declarativeAgent = existsSync(declarativeAgentPath) ? JSON.parse(readFileSync(declarativeAgentPath, "utf8")) : {};
   const expectedCapabilities = metadata.capabilities ?? [];
+  const expectedDisplayName = `${metadata.shortName} \${{APP_NAME_SUFFIX}}`;
+  const expectedFullDescription = metadata.longDescription ?? `Powered by PDS Project AI. ${JSON.parse(readFileSync(join(rootPath, "agents", "copilot-studio", role, "agent.json"), "utf8")).description}${access === "commit" ? "" : " It only reads project information and never changes your project files."}`;
   const actualCapabilities = (declarativeAgent.capabilities ?? []).map((capability) => capability.name);
   if (JSON.stringify(actualCapabilities) !== JSON.stringify(expectedCapabilities)) failures.push(`${packageSlug} does not preserve its declared agent capabilities.`);
   if (access === "read-only" && readOnlyContextCapabilities.some((capability) => !expectedCapabilities.includes(capability))) failures.push(`${packageSlug} must enable read-only SharePoint/OneDrive, Teams message, and email context capabilities.`);
   if (commitRoles.has(role) && JSON.stringify([...expectedCapabilities].sort()) !== JSON.stringify([...commitContextCapabilities].sort())) failures.push(`${packageSlug} must enable only read-only SharePoint/OneDrive, Teams message, and email context capabilities.`);
   const entries = manifest.copilotAgents?.declarativeAgents ?? [];
-  if (metadata.packageSlug !== packageSlug || metadata.role !== role || !["read-only", "commit"].includes(access) || access === "commit" !== commitRoles.has(role) || !/^MCP_DA_AUTH_ID_[A-Z_]+$/.test(metadata.dcrEnvironmentVariable) || typeof metadata.shortName !== "string" || metadata.shortName.length > 26 || typeof metadata.shortDescription !== "string" || metadata.shortDescription.length > 80) failures.push(`${packageSlug} has invalid package-local metadata.`);
+  if (metadata.packageSlug !== packageSlug || metadata.role !== role || !["read-only", "commit"].includes(access) || access === "commit" !== commitRoles.has(role) || !/^MCP_DA_AUTH_ID_[A-Z_]+$/.test(metadata.dcrEnvironmentVariable) || typeof metadata.shortName !== "string" || metadata.shortName.length > 26 || typeof metadata.shortDescription !== "string" || metadata.shortDescription.length > 80 || (metadata.longDescription !== undefined && (typeof metadata.longDescription !== "string" || metadata.longDescription.length > 4_000))) failures.push(`${packageSlug} has invalid package-local metadata.`);
   if (entries.length !== 1 || entries[0]?.id !== role || entries[0]?.file !== "declarativeAgent.json") failures.push(`${packageSlug} must expose exactly one local declarative agent.`);
   if (manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} must use its package-local Teams app placeholder.`);
-  if (manifest.name?.short !== `${metadata.shortName} \${{APP_NAME_SUFFIX}}` || manifest.description?.short !== metadata.shortDescription) failures.push(`${packageSlug} does not use its Store display metadata.`);
-  if (!manifest.description?.full?.startsWith("Powered by PDS Project AI.") || manifest.description.full.includes("Connects to your existing PDS Project AI service.")) failures.push(`${packageSlug} must use the concise PDS product attribution in its full description.`);
+  if (manifest.name?.short !== expectedDisplayName || manifest.name?.full !== expectedDisplayName || declarativeAgent.name !== expectedDisplayName || manifest.description?.short !== metadata.shortDescription) failures.push(`${packageSlug} does not use consistent package display metadata.`);
+  if (manifest.description?.full !== expectedFullDescription) failures.push(`${packageSlug} manifest long description does not match its validated package description.`);
   if (dcrVariables.has(metadata.dcrEnvironmentVariable)) failures.push(`${packageSlug} reuses a DCR environment variable.`);
   dcrVariables.add(metadata.dcrEnvironmentVariable);
   if (appIds.has(manifest.id) && manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} reuses a generated Teams app ID.`);
@@ -164,6 +166,7 @@ for (const [packageSlug, role] of expected) {
   }
   if (existsSync(join(appPackagePath, "ai-plugin.json"))) {
     const plugin = JSON.parse(readFileSync(join(appPackagePath, "ai-plugin.json"), "utf8"));
+    if (plugin.name_for_human !== expectedDisplayName) failures.push(`${packageSlug} PDS plugin display name must match its Teams app and declarative agent.`);
     if (plugin.runtimes?.[0]?.spec?.url !== m365McpEndpoint) failures.push(`${packageSlug} PDS plugin must use the M365 compatibility endpoint.`);
     validateDynamicDiscovery(plugin, `${packageSlug} PDS plugin`);
     if (plugin.runtimes?.[0]?.auth?.reference_id !== `\${{${metadata.dcrEnvironmentVariable}}}`) failures.push(`${packageSlug} does not use its own DCR binding.`);
