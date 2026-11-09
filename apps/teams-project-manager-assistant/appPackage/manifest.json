@@ -18,7 +18,7 @@
     "full": "PDS MPP: Project Manager Assistant"
   },
   "description": {
-    "short": "Understand delivery status, risks, milestones, and next steps.",
+    "short": "Analyze Microsoft Project plans for delivery insights in Microsoft 365 Copilot.",
     "full": "Powered by PDS Project AI. Helps you understand project delivery status, upcoming work, milestones, dependencies, constraints, and risks from a Microsoft Project plan. It only reads project information and never changes your project files."
   },
   "accentColor": "#FFFFFF",

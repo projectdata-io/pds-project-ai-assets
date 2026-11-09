@@ -3,7 +3,7 @@
   "role": "project-manager-assistant",
   "title": "PDS MPP: Project Manager Assistant",
   "shortName": "PDS MPP Project Manager",
-  "shortDescription": "Understand delivery status, risks, milestones, and next steps.",
+  "shortDescription": "Analyze Microsoft Project plans for delivery insights in Microsoft 365 Copilot.",
   "version": "2.3.12",
   "mcpEndpoint": "https://mcp.projectdata.ai/mcp/m365",
   "dcrEnvironmentVariable": "MCP_DA_AUTH_ID_PROJECT_MANAGER_ASSISTANT",
