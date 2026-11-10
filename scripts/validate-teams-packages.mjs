@@ -55,6 +55,8 @@ for (const [packageSlug, role] of expected) {
   const expectedCapabilities = metadata.capabilities ?? [];
   const expectedDisplayName = `${metadata.shortName} \${{APP_NAME_SUFFIX}}`;
   const expectedFullDescription = metadata.longDescription ?? `Powered by PDS Project AI. ${JSON.parse(readFileSync(join(rootPath, "agents", "copilot-studio", role, "agent.json"), "utf8")).description}${access === "commit" ? "" : " It only reads project information and never changes your project files."}`;
+  const requiredAccountDisclosure = "An active PDS account and access to Microsoft 365 Copilot in Teams are required to use this app.";
+  const requiredFreemiumDisclosure = "automatically created and assigned to the Freemium plan when you first sign in through MCP. You can start directly in Microsoft 365 Copilot; no separate PDS web-portal visit or account sign-up is required.";
   const actualCapabilities = (declarativeAgent.capabilities ?? []).map((capability) => capability.name);
   if (JSON.stringify(actualCapabilities) !== JSON.stringify(expectedCapabilities)) failures.push(`${packageSlug} does not preserve its declared agent capabilities.`);
   if (access === "read-only" && readOnlyContextCapabilities.some((capability) => !expectedCapabilities.includes(capability))) failures.push(`${packageSlug} must enable read-only SharePoint/OneDrive, Teams message, and email context capabilities.`);
@@ -65,6 +67,17 @@ for (const [packageSlug, role] of expected) {
   if (manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} must use its package-local Teams app placeholder.`);
   if (manifest.name?.short !== expectedDisplayName || manifest.name?.full !== expectedDisplayName || declarativeAgent.name !== expectedDisplayName || manifest.description?.short !== metadata.shortDescription) failures.push(`${packageSlug} does not use consistent package display metadata.`);
   if (manifest.description?.full !== expectedFullDescription) failures.push(`${packageSlug} manifest long description does not match its validated package description.`);
+  if (!manifest.description?.full?.includes(requiredAccountDisclosure)) failures.push(`${packageSlug} long description must disclose the active PDS account and Microsoft 365 Copilot access requirements.`);
+  if (!manifest.description?.full?.toLowerCase().includes(requiredFreemiumDisclosure.toLowerCase())) failures.push(`${packageSlug} long description must explain that MCP first sign-in creates the Freemium account without a separate portal visit or sign-up.`);
+  for (const requiredLink of [
+    "https://projectdata.io/project-ai",
+    "https://my.projectdata.ai",
+    "https://pdms.zendesk.com/hc/en-us/categories/40422614580893-ProjectData-AI",
+    "https://projectdata.io/contact-us",
+    "support@projectdata.io"
+  ]) {
+    if (!manifest.description?.full?.includes(requiredLink)) failures.push(`${packageSlug} long description is missing onboarding or support link ${requiredLink}.`);
+  }
   if (dcrVariables.has(metadata.dcrEnvironmentVariable)) failures.push(`${packageSlug} reuses a DCR environment variable.`);
   dcrVariables.add(metadata.dcrEnvironmentVariable);
   if (appIds.has(manifest.id) && manifest.id !== "${{TEAMS_APP_ID}}") failures.push(`${packageSlug} reuses a generated Teams app ID.`);
