@@ -1,6 +1,6 @@
 {
   "name": "@pds-project-ai/teams-project-plan-editor",
-  "version": "2.3.13",
+  "version": "2.3.15",
   "private": true,
   "type": "module",
   "scripts": {

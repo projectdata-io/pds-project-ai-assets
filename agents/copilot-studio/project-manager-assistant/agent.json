@@ -10,6 +10,7 @@
     "mpp-milestone-review",
     "mpp-progress-audit",
     "mpp-wbs-analysis",
+    "mpp-custom-field-analysis",
     "mpp-lookahead-report",
     "mpp-dependency-audit",
     "mpp-constraint-review",

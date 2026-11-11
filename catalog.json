@@ -114,7 +114,7 @@
       "category": "analysis",
       "access": "read-only",
       "tools": ["create_session_from_reference", "create_session_from_onedrive", "get_entity_schema", "get_project", "list_attributes", "list_tasks", "list_resources", "close_session"],
-      "agents": ["mpp-data-auditor"]
+      "agents": ["project-manager-assistant", "mpp-data-auditor"]
     },
     {
       "name": "mpp-lookahead-report",
@@ -176,7 +176,7 @@
       "name": "mpp-dependency-audit",
       "category": "audit",
       "access": "read-only",
-      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "list_dependencies", "close_session"],
+      "tools": ["create_session_from_reference", "create_session_from_onedrive", "list_tasks", "list_dependencies", "list_external_dependencies", "close_session"],
       "agents": ["project-manager-assistant", "schedule-quality-analyst"]
     },
     {

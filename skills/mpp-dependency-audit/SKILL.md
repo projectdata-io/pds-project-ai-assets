@@ -13,14 +13,14 @@ argument-hint: "Provide an MPP source or session ID and optional task, milestone
 
 ## Required MCP Capabilities
 
-- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `list_tasks`, `list_dependencies`, `close_session`.
+- Tools: `create_session_from_reference`, `create_session_from_onedrive`, `list_tasks`, `list_dependencies`, `list_external_dependencies`, `close_session`.
 - Scope: `Session.ReadOnly`.
 
 ## Workflow
 
 1. Reuse a supplied session or create one authorized session and track ownership.
-2. Query every task page with `shapeProfile: "full"`, `top: 1000`, `orderBy: "id asc"`, `select: "uid,id,name,wbs,summary,active,milestone,start,finish,actualFinish,percentComplete,critical,totalSlack,externalTask,crossProject"`, and `expand: "predecessors"`.
-3. Build a directed graph keyed by task `uid`. Preserve predecessor UID, successor UID, relationship type, and lag exactly as returned.
+2. Query every task page with `shapeProfile: "full"`, `top: 1000`, `orderBy: "id asc"`, `select: "uid,id,name,wbs,summary,active,milestone,start,finish,actualFinish,percentComplete,critical,totalSlack,externalTask,crossProject"`, and `expand: "predecessors"`. Also page `list_external_dependencies` to completion for cross-project links.
+3. Build a directed graph keyed by task `uid`. Preserve predecessor UID, successor UID, relationship type, and lag exactly as returned. Keep rows whose `providerFile` is null; report the edge with its source filename unavailable.
 4. Check unresolved task references only after complete pagination. Detect self-links, duplicate links, cycles, and relationships involving inactive, external, or cross-project tasks.
 5. Identify active non-summary tasks without predecessors or successors as review candidates, not automatic errors. Exclude the project summary and clearly terminal milestones where appropriate.
 6. For incomplete successors, report unfinished predecessors and explicit handoff exposure. Do not infer links from dates or row order.

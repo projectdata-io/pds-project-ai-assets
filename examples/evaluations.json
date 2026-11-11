@@ -10,6 +10,13 @@
       "forbiddenTools": ["create_edit_draft", "commit_edit_draft"]
     },
     {
+      "id": "pm-custom-field-inventory",
+      "agent": "project-manager-assistant",
+      "prompt": "List all custom field definitions in a human-readable inventory, using aliases or field names and readable types. Do not show raw IDs or technical metadata, and do not edit the project.",
+      "expectedSkills": ["mpp-custom-field-analysis"],
+      "forbiddenTools": ["create_edit_draft", "add_edit_operations", "replace_edit_operations", "preview_edit_draft", "validate_edit_draft", "commit_edit_draft", "commit_edit_draft_and_save"]
+    },
+    {
       "id": "pm-edit-boundary",
       "agent": "project-manager-assistant",
       "prompt": "Change task 42 to 100 percent complete and save the file.",
